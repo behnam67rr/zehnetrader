@@ -724,6 +724,36 @@
   }
 </style>
 
+
+<style id="zt-mt5control-mobile-fix">
+  #view-mt5control .mt5-kpi-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-bottom:0}
+  #view-mt5control .stat{min-height:118px;padding:15px 14px;border-radius:20px;position:relative;overflow:hidden}
+  #view-mt5control .stat:before{display:none!important}
+  #view-mt5control .stat .label{padding-left:0!important;min-height:auto!important;font-size:11px;color:var(--muted)}
+  #view-mt5control .stat .value{font-size:22px!important;line-height:1.25!important;margin:8px 0 4px!important;direction:ltr;text-align:right;overflow-wrap:anywhere}
+  #view-mt5control .stat .hint{font-size:10px;line-height:1.6;color:var(--muted)}
+  #view-mt5control .mt5-cmd-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:14px}
+  #view-mt5control .mt5-cmd-row .btn{width:100%;text-align:center;font-weight:800;font-size:11px;padding:10px 8px}
+  #view-mt5control .mt5-action-group{display:flex;gap:8px;flex-wrap:wrap}
+  @media(max-width:1100px){
+    #view-mt5control .mt5-kpi-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  }
+  @media(max-width:760px){
+    #view-mt5control .mt5-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+    #view-mt5control .stat{min-height:102px;padding:12px;border-radius:17px}
+    #view-mt5control .stat .value{font-size:19px!important}
+    #view-mt5control .mt5-cmd-row{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+    #view-mt5control .form-grid{grid-template-columns:1fr!important}
+    .mobile-nav{grid-template-columns:repeat(6,minmax(0,1fr))!important;padding:7px 2px calc(7px + env(safe-area-inset-bottom))!important;gap:1px}
+    .mobile-nav button{gap:3px!important;padding:3px 1px!important}
+    .mobile-nav button b{width:24px!important;height:22px!important}
+    .mobile-nav button svg{width:18px!important;height:18px!important}
+    .mobile-nav button span{font-size:8px!important;letter-spacing:-.2px}
+    .mobile-nav button[data-nav-key="manual"] b{width:44px!important;height:44px!important;margin-top:-18px!important;border-radius:15px!important}
+    .mobile-nav button[data-nav-key="manual"] svg{width:22px!important;height:22px!important}
+  }
+</style>
+
 </head>
 <body>
   <div id="loginWrap" class="login-wrap">
@@ -940,12 +970,12 @@
         <div class="card" style="margin-bottom:14px">
           <div class="card-head">
             <h3>نظارت زنده متاتریدر ۵ (MT5 Live Monitor)</h3>
-            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <div class="mt5-action-group">
               <span class="pill" id="mt5LiveBadge">در حال بررسی…</span>
               <button type="button" class="btn primary" id="mt5RefreshBtn">بروزرسانی وضعیت</button>
             </div>
           </div>
-          <div class="grid stats" style="grid-template-columns:repeat(5,minmax(0,1fr));margin-bottom:0">
+          <div class="mt5-kpi-grid">
             <div class="stat"><div class="label">موجودی (Balance)</div><div class="value" id="mt5Bal">$0.00</div><div class="hint" id="mt5AccHint">حساب: —</div></div>
             <div class="stat"><div class="label">اکوئیتی (Equity)</div><div class="value" id="mt5Eq">$0.00</div><div class="hint" id="mt5MarginHint">مارجین آزاد: —</div></div>
             <div class="stat"><div class="label">سود/زیان شناور</div><div class="value" id="mt5Float">$0.00</div><div class="hint">پوزیشن‌های باز</div></div>
@@ -957,7 +987,7 @@
         <div class="grid two" style="margin-bottom:14px">
           <div class="card">
             <div class="card-head"><h3>کنترل سریع اکسپرت و تنظیمات ریسک</h3><span class="pill good">Command Queue</span></div>
-            <div class="form-actions" style="margin-bottom:14px">
+            <div class="mt5-cmd-row">
               <button type="button" class="btn" data-mt5-cmd="TOGGLE_AUTO" id="mt5BtnAuto">AUTO: —</button>
               <button type="button" class="btn" data-mt5-cmd="TOGGLE_SECOND" id="mt5BtnSecond">سفارش دوم: —</button>
               <button type="button" class="btn" data-mt5-cmd="TOGGLE_SIGNAL" id="mt5BtnSignal">سیگنال: —</button>
@@ -967,7 +997,7 @@
               <div class="field"><label>حالت ریسک</label><select id="mt5RiskModeInput"><option value="PERCENT">درصدی (%)</option><option value="CASH">مبلغی ($)</option></select></div>
               <div class="field"><label>مقدار ریسک</label><input id="mt5RiskValInput" type="number" step="any" min="0.01" placeholder="مثلاً 1.0"></div>
               <div class="field"><label>نسبت Reward R</label><input id="mt5RrInput" type="number" step="any" min="0.1" placeholder="مثلاً 2.0"></div>
-              <div class="field"><label>اعمال تغییرات</label><div class="form-actions"><button type="button" class="btn primary" id="mt5ApplyRiskBtn">ذخیره ریسک</button><button type="button" class="btn" id="mt5ApplyRrBtn">ذخیره R:R</button><button type="button" class="btn warn" data-mt5-cmd="APPLY_RR_OPEN">اعمال R:R روی پندینگ‌ها</button></div></div>
+              <div class="field"><label>اعمال تغییرات</label><div class="mt5-action-group"><button type="button" class="btn primary" id="mt5ApplyRiskBtn">ذخیره ریسک</button><button type="button" class="btn" id="mt5ApplyRrBtn">ذخیره R:R</button><button type="button" class="btn warn" data-mt5-cmd="APPLY_RR_OPEN">اعمال R:R روی پندینگ‌ها</button></div></div>
             </div>
           </div>
 
@@ -979,7 +1009,7 @@
               <div class="field"><label>قیمت ورود اول (Entry 1)</label><input id="mt5QoEntry" type="number" step="any" placeholder="مثلاً 4010.00"></div>
               <div class="field"><label>حد ضرر (SL)</label><input id="mt5QoSl" type="number" step="any" placeholder="مثلاً 4000.00"></div>
             </div>
-            <div class="form-actions">
+            <div class="mt5-action-group">
               <button type="button" class="btn primary" id="mt5SendQoBtn">ارسال Quick Order به MT5</button>
               <button type="button" class="btn danger" data-mt5-cmd="CLOSE_ALL">بستن همه پوزیشن‌ها</button>
             </div>
