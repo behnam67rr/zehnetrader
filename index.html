@@ -1,0 +1,799 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#080d17">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="ذهن تریدر">
+  <meta name="description" content="ذهن تریدر؛ ژورنال معاملاتی، تحلیل عملکرد و مدیریت روان‌شناسی ترید">
+  <title>ذهن تریدر</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <style>
+    :root{--bg:#0b1220;--panel:#111c2e;--panel2:#17243a;--text:#eef4ff;--muted:#91a3bd;--line:#263650;--green:#16c784;--red:#ff6577;--amber:#f4b740;--blue:#58b5f7;--shadow:0 16px 40px #0005;--radius:18px}
+    body.light{--bg:#f1f5fa;--panel:#fff;--panel2:#f5f8fc;--text:#17243a;--muted:#63738a;--line:#dce5ef;--shadow:0 12px 30px #24364b12}
+    *{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Vazirmatn,Tahoma,Arial,sans-serif;background:var(--bg);color:var(--text)}body{padding-bottom:82px}button,input,select,textarea{font:inherit}button{cursor:pointer}
+    .hidden{display:none!important}.muted{color:var(--muted)}.small{font-size:12px}.ltr{direction:ltr;unicode-bidi:embed}.positive{color:var(--green)}.negative{color:var(--red)}.warning{color:var(--amber)}
+    .login-wrap{position:fixed;inset:0;z-index:100;background:radial-gradient(circle at 80% 10%,#16c78424,transparent 34%),var(--bg);display:grid;place-items:center;padding:20px}.login-card{width:min(100%,430px);background:var(--panel);border:1px solid var(--line);border-radius:24px;padding:28px;box-shadow:var(--shadow)}.logo{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;background:linear-gradient(135deg,#16c784,#2785d7);color:#fff;font-weight:900;font-size:20px;margin-bottom:16px}.login-card h1{font-size:22px;margin:0 0 8px}.login-card p{color:var(--muted);font-size:13px;line-height:1.9;margin:0 0 18px}
+    .app{max-width:1440px;margin:auto;padding:18px 20px 30px;display:grid;grid-template-columns:230px minmax(0,1fr);gap:20px}.sidebar{position:sticky;top:18px;height:calc(100vh - 36px);background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:18px 12px;display:flex;flex-direction:column;gap:8px}.brand{display:flex;align-items:center;gap:10px;padding:4px 8px 18px;border-bottom:1px solid var(--line);margin-bottom:8px}.brand .logo{margin:0;width:42px;height:42px;font-size:17px}.brand b{display:block}.brand span{font-size:11px;color:var(--muted)}.nav{display:grid;gap:5px}.nav button{border:0;background:transparent;color:var(--muted);text-align:right;padding:12px 13px;border-radius:12px;font-size:13px;display:flex;align-items:center;gap:10px}.nav button.active,.nav button:hover{background:var(--panel2);color:var(--green)}.nav .ico{width:22px;text-align:center;font-size:17px}.side-foot{margin-top:auto;border-top:1px solid var(--line);padding:14px 8px 2px;color:var(--muted);font-size:11px;line-height:1.9}
+    .main{min-width:0}.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:13px 16px;box-shadow:var(--shadow)}.topbar h2{font-size:17px;margin:0}.topbar p{font-size:11px;color:var(--muted);margin:3px 0 0}.actions{display:flex;gap:7px;flex-wrap:wrap}.icon-btn,.btn{border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:11px;padding:9px 12px;font-size:12px}.icon-btn{min-width:39px}.btn.primary{background:var(--green);color:#062016;border-color:var(--green);font-weight:800}.btn.danger{color:var(--red);border-color:#ff657744;background:#ff657710}.btn.warn{color:var(--amber);border-color:#f4b74055;background:#f4b74012}.btn.ghost{background:transparent}.btn:disabled{opacity:.5;cursor:not-allowed}
+    .statusline{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:11px}.dot{width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block}.dot.off{background:var(--amber)}
+    .view{display:none}.view.active{display:block}.grid{display:grid;gap:14px}.stats{grid-template-columns:repeat(5,minmax(0,1fr));margin-bottom:14px}.stat,.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:17px;box-shadow:var(--shadow);min-width:0}.stat .label{color:var(--muted);font-size:11px}.stat .value{font-size:23px;font-weight:900;margin:8px 0 3px;direction:ltr;text-align:right;white-space:nowrap}.stat .hint{color:var(--muted);font-size:10px}.two{grid-template-columns:1.25fr .75fr}.three{grid-template-columns:repeat(3,minmax(0,1fr))}.card h3{font-size:14px;margin:0 0 14px}.card-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}.card-head h3{margin:0}.pill{display:inline-flex;align-items:center;gap:5px;padding:5px 9px;border-radius:99px;background:var(--panel2);color:var(--muted);font-size:10px}.pill.good{color:var(--green);background:#16c78416}.pill.bad{color:var(--red);background:#ff657716}.pill.warn{color:var(--amber);background:#f4b74016}.chart-wrap{height:245px;position:relative}.chart-wrap canvas{width:100%;height:100%}.readiness-row{display:flex;justify-content:space-between;align-items:center;gap:10px}.range-row{margin:13px 0}.range-row label{display:flex;justify-content:space-between;color:var(--muted);font-size:12px;margin-bottom:7px}.range-row input{width:100%;accent-color:var(--green)}.advice{font-size:12px;padding:10px 12px;border-radius:11px;background:var(--panel2);margin-top:10px;line-height:1.8}
+    .field{display:grid;gap:6px;margin-bottom:12px}.field label{font-size:11px;color:var(--muted)}input,select,textarea{width:100%;border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:11px;padding:10px 12px;outline:none;font-size:12px;min-width:0}input:focus,select:focus,textarea:focus{border-color:var(--green)}textarea{resize:vertical;min-height:75px}.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 12px}.form-actions{display:flex;gap:8px;flex-wrap:wrap}.filters{display:flex;gap:7px;flex-wrap:wrap;margin:12px 0}.filter{border:1px solid var(--line);border-radius:99px;padding:7px 11px;background:var(--panel2);color:var(--muted);font-size:11px}.filter.active{border-color:var(--green);color:var(--green);background:#16c78414}
+    .trade-list{display:grid;gap:9px}.trade{border:1px solid var(--line);border-radius:14px;background:var(--panel2);padding:13px}.trade-top,.trade-bottom{display:flex;align-items:center;justify-content:space-between;gap:8px}.trade-top strong{font-size:13px}.trade-meta{display:flex;gap:6px;flex-wrap:wrap;margin:9px 0}.trade-bottom{border-top:1px solid var(--line);padding-top:9px}.trade-bottom .muted{font-size:10px}.trade-actions{display:flex;gap:6px}.trade-actions button{font-size:10px;padding:6px 9px}.empty{padding:28px;text-align:center;color:var(--muted);font-size:12px}
+    .metric-row{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);font-size:12px}.metric-row:last-child{border:0}.bar{height:8px;background:var(--panel2);border-radius:99px;overflow:hidden;margin-top:7px}.bar>i{display:block;height:100%;background:var(--green);border-radius:99px}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:540px;font-size:11px}th,td{padding:10px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}th{color:var(--muted);font-weight:600}
+    .breath{display:grid;place-items:center;padding:12px}.breath-circle{width:145px;height:145px;border-radius:50%;border:2px solid var(--green);background:radial-gradient(circle,#16c78433,#58b5f711);display:grid;place-content:center;text-align:center;transition:transform 1s ease}.breath-circle.expand{transform:scale(1.15)}.breath-circle.contract{transform:scale(.88)}.breath-circle b{font-size:15px}.breath-circle span{font-size:22px;font-weight:900;direction:ltr}.rules{display:grid;gap:7px}.rule{display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--panel2);border:1px solid var(--line);border-radius:11px;padding:9px 11px;font-size:11px}.toast{position:fixed;z-index:200;bottom:92px;left:50%;transform:translateX(-50%);background:#101b2b;color:#fff;padding:11px 16px;border-radius:99px;font-size:12px;box-shadow:var(--shadow);max-width:90vw;text-align:center}
+    .modal{position:fixed;inset:0;background:#0009;z-index:120;display:none;place-items:center;padding:15px}.modal.open{display:grid}.modal-box{width:min(100%,600px);max-height:90vh;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:20px}.modal-box h3{margin:0 0 14px;font-size:15px}.notice{padding:11px 13px;border-radius:12px;background:#58b5f711;border:1px solid #58b5f733;color:var(--muted);font-size:11px;line-height:1.9;margin:10px 0}.notice.warn{background:#f4b74010;border-color:#f4b74044}.mobile-nav{display:none}
+    @media(max-width:1100px){.stats{grid-template-columns:repeat(3,minmax(0,1fr))}.two{grid-template-columns:1fr}.app{grid-template-columns:205px minmax(0,1fr)}}
+    @media(max-width:760px){body{padding-bottom:78px}.app{display:block;padding:10px 10px 24px}.sidebar{display:none}.topbar{padding:11px 12px;margin-bottom:12px}.topbar h2{font-size:15px}.topbar p{display:none}.actions .wide{display:none}.stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.stat{padding:13px}.stat .value{font-size:20px}.card{padding:14px}.three{grid-template-columns:1fr}.mobile-nav{position:fixed;z-index:80;bottom:0;left:0;right:0;display:grid;grid-template-columns:repeat(5,1fr);background:var(--panel);border-top:1px solid var(--line);padding:7px 4px calc(7px + env(safe-area-inset-bottom));backdrop-filter:blur(16px)}.mobile-nav button{border:0;background:none;color:var(--muted);font-size:9px;display:grid;gap:3px;place-items:center;padding:4px 0}.mobile-nav button b{font-size:17px}.mobile-nav button.active{color:var(--green)}.form-grid{grid-template-columns:1fr}.chart-wrap{height:205px}.topbar .statusline{display:none}.trade-top{align-items:flex-start}.trade-bottom{align-items:flex-start}.trade-actions{flex-wrap:wrap}.login-card{padding:22px}}
+  
+    /* v2.4.2: cohesive mobile header, readable forms and intentional reports */
+    .sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+    :root{--muted:#a5b4ca;--line:#293a56;--green:#16c79a;--blue:#4b8dff;--panel:#111d31;--panel2:#17263d}
+    body.light{--muted:#64748b;--line:#dbe4ef;--green:#059669;--blue:#2563eb;--panel:#fff;--panel2:#f4f7fb}
+    .topbar{gap:14px;align-items:center}
+    .topbar-brand{display:flex;align-items:center;gap:11px;min-width:0}
+    .topbar-brand-copy{min-width:0}
+    .topbar-brand-copy strong{font-size:18px;letter-spacing:-.25px}
+    .topbar-brand-copy small{display:block;margin-top:4px;line-height:1.5;color:var(--muted)}
+    .sync-pill{flex:0 0 auto}
+    .actions{align-items:center;gap:8px;flex-wrap:nowrap}
+    .actions .icon-btn{display:grid;place-items:center;position:relative;width:43px;height:43px;min-width:43px;padding:0;border-radius:14px;border:1px solid #2a3c5a;background:linear-gradient(180deg,#17263c,#111d30);color:#dce8fa;box-shadow:0 5px 15px #0002;transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease}
+    .actions .icon-btn svg{width:20px;height:20px;stroke:currentColor;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+    .actions .icon-btn:active{transform:scale(.96)}
+    .actions .icon-btn[data-tone="sync"]{background:linear-gradient(145deg,#2563eb,#397dff);border-color:#397dff;color:white;box-shadow:0 7px 18px #2563eb40}
+    .actions .icon-btn[data-tone="backup"]{background:linear-gradient(145deg,#103c35,#125446);border-color:#1d6c58;color:#76e5c1}
+    .actions .icon-btn[data-tone="theme"]{color:#e4ecfa}
+    .actions .icon-btn[data-tone="settings"]{color:#b8c8e3}
+    .actions .icon-btn[data-tone="lock"]{color:#b8c8e3}
+    .actions .statusline{margin-inline-start:4px;white-space:nowrap}
+    .view .card{min-width:0}
+    .view .card h3{line-height:1.65}
+    .field{gap:8px;margin-bottom:14px}
+    .field label{font-size:12px;line-height:1.65;color:var(--muted)}
+    input,select,textarea{min-height:46px;border-radius:13px;padding:11px 13px;font-size:13px}
+    textarea{min-height:92px}
+    .form-grid{gap:0 12px}
+    .report-hero{padding:20px;background:radial-gradient(circle at 92% 8%,#1c8b7a22,transparent 36%),linear-gradient(145deg,#14243b,#101b2d);border:1px solid #2b4264;box-shadow:0 12px 28px #0002}
+    .report-headline{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+    .report-eyebrow{display:inline-flex;align-items:center;padding:6px 11px;border-radius:99px;background:#1a3151;border:1px solid #34557e;color:#9dc4ff;font-size:10px;font-weight:800;letter-spacing:.3px;margin-bottom:10px}
+    .report-title{margin:0;font-size:23px;line-height:1.55;font-weight:900;color:#f5f8ff}
+    .report-sub{margin:7px 0 0;color:#a8b8d0;line-height:1.9;font-size:12px;max-width:680px}
+    .report-meta{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-start}
+    .report-chip{display:inline-flex;align-items:center;padding:7px 10px;border-radius:11px;background:#0e1a2c;border:1px solid #2a3f5e;color:#d6e5fa;font-size:11px;font-weight:700;white-space:nowrap}
+    .report-controls{margin-top:12px}
+    #view-reports .grid{align-items:start}
+    #view-reports .grid.two{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    #view-reports .card{height:auto;align-self:start;padding:17px;border-radius:19px}
+    #view-reports .card h3{font-size:14px;margin:0 0 12px}
+    #view-reports .card-head{align-items:center;flex-wrap:wrap}
+    #view-reports .notice{background:#14243a;border:1px solid #2b4264;color:#b0bfd4;border-radius:13px;line-height:1.85}
+    #view-reports .stats{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:9px;margin:10px 0 0}
+    #view-reports .stat{padding:13px;border-radius:15px;box-shadow:none;background:#14243a;border-color:#2b4264;min-height:100px}
+    #view-reports .stat .label{font-size:11px;line-height:1.6;color:#a9bad1}
+    #view-reports .stat .value{font-size:21px;margin:8px 0 2px}
+    #view-reports .calendar-grid{gap:5px}
+    #view-reports .calendar-cell{min-height:58px;border-radius:10px;padding:6px;background:#17263d;border-color:#2c405e}
+    #view-reports .calendar-cell .day{font-size:12px;color:#e5edf9}
+    #view-reports .calendar-cell .day-pnl{font-size:9px}
+    #view-reports .calendar-cell.has-profit{background:#0e392f;border-color:#16785e}
+    #view-reports .calendar-cell.has-loss{background:#3a202c;border-color:#91445a}
+    #view-reports .calendar-cell.weekday{background:transparent;border:0;color:#9fb0c8}
+    #view-reports .calendar-cell.empty{background:transparent;border:0}
+    #view-reports .table-wrap{border-radius:12px}
+    #view-reports .analysis-table{min-width:0;font-size:12px}
+    #view-reports .analysis-table th,#view-reports .analysis-table td{padding:10px 8px}
+    #view-reports .metric-row{font-size:12px;line-height:1.7}
+    #view-reports .report-actions{gap:7px}
+    #view-reports .report-actions .btn{min-height:40px}
+    @media(max-width:760px){
+      body{padding-bottom:88px}
+      .app{padding:9px 10px 22px}
+      .topbar{display:grid;grid-template-columns:1fr;gap:11px;padding:12px;border-radius:18px;margin-bottom:12px}
+      .topbar-brand{width:100%;justify-content:flex-start;gap:10px}
+      .topbar-brand-copy strong{font-size:17px}
+      .topbar-brand-copy small{font-size:11px}
+      .topbar-brand .app-orbit{width:44px;height:44px;flex:0 0 44px}
+      .topbar-brand .sync-pill{margin-inline-start:auto;font-size:10px;padding:6px 9px}
+      .actions{width:100%;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;overflow:visible}
+      .actions .statusline{display:none!important}
+      .actions .wide{display:grid!important}
+      .actions .icon-btn{width:100%;min-width:0;height:42px;border-radius:13px}
+      .actions .icon-btn svg{width:19px;height:19px}
+      .topbar .statusline{display:none!important}
+      .form-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:0 9px}
+      .field label{font-size:11px;min-height:18px}
+      input,select,textarea{font-size:12px;min-height:44px;padding:10px 11px}
+      .view .card{padding:15px;border-radius:18px}
+      #view-reports .grid.two{grid-template-columns:1fr}
+      #view-reports .stats{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+      #view-reports .stat{min-height:88px}
+      #view-reports .stat .value{font-size:20px}
+      .report-title{font-size:20px}
+      .report-sub{font-size:11px}
+      .report-meta{width:100%}
+      .report-chip{font-size:10px}
+      #view-reports .calendar-cell{min-height:49px;padding:5px}
+      #view-reports .calendar-cell .day{font-size:11px}
+      #view-reports .calendar-cell .day-pnl{font-size:8px}
+      #view-reports .calendar-cell .muted{display:none}
+      #view-reports .report-actions{width:100%}
+      #view-reports .report-actions .btn{flex:1}
+    }
+    @media(max-width:370px){
+      .form-grid{grid-template-columns:1fr}
+      .topbar-brand .sync-pill{display:none}
+      .actions{gap:6px}
+    }
+    @media print{
+      @page{size:A4 portrait;margin:11mm 10mm 12mm}
+      html,body{background:#fff!important;color:#172033!important;padding:0!important;margin:0!important;font-family:Tahoma,Arial,sans-serif!important;font-size:11px!important;line-height:1.65!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+      .sidebar,.mobile-nav,.topbar,.login-wrap,.toast,.no-print,button,.report-actions{display:none!important}
+      .app{display:block!important;max-width:none!important;margin:0!important;padding:0!important}
+      .main{display:block!important;width:100%!important}
+      .view{display:none!important}
+      #view-reports{display:block!important;color:#172033!important}
+      #view-reports .report-hero{background:#fff!important;border:1px solid #cbd7e5!important;box-shadow:none!important;padding:14px 16px!important;margin:0 0 8px!important;border-radius:12px!important;break-inside:avoid}
+      #view-reports .report-eyebrow{background:#edf4ff!important;border:1px solid #d6e4fa!important;color:#315c9d!important;margin-bottom:5px!important}
+      #view-reports .report-title{color:#13243b!important;font-size:19px!important}
+      #view-reports .report-sub{color:#596b83!important;font-size:10px!important}
+      #view-reports .report-chip{background:#f5f8fc!important;border:1px solid #d8e2ee!important;color:#33445d!important;font-size:9px!important}
+      #view-reports .report-controls{margin:0 0 8px!important;padding:12px!important;border:1px solid #cbd7e5!important;background:#fff!important;box-shadow:none!important;break-inside:avoid}
+      #view-reports .report-controls .form-grid{display:none!important}
+      #view-reports .report-controls .card-head{margin-bottom:6px!important}
+      #view-reports .report-controls .card-head h3{font-size:12px!important}
+      #view-reports .grid{gap:8px!important;align-items:start!important}
+      #view-reports .grid.two{grid-template-columns:1fr 1fr!important;gap:8px!important}
+      #view-reports .stats{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:7px!important;margin:6px 0 0!important}
+      #view-reports .stat{min-height:70px!important;padding:9px!important;background:#f7f9fc!important;border:1px solid #d7e0eb!important;border-radius:10px!important;box-shadow:none!important;break-inside:avoid}
+      #view-reports .stat .label{font-size:9px!important;color:#5d6b7f!important}
+      #view-reports .stat .value{font-size:17px!important;color:#14243b!important;margin:5px 0 0!important}
+      #view-reports .stat .hint{font-size:8px!important;color:#718096!important}
+      #view-reports .card{background:#fff!important;color:#172033!important;border:1px solid #d5deea!important;border-radius:11px!important;padding:10px!important;box-shadow:none!important;height:auto!important;break-inside:avoid-page}
+      #view-reports .card h3{font-size:11.5px!important;color:#172b46!important;margin:0 0 7px!important}
+      #view-reports .notice{background:#f5f9fd!important;border:1px solid #dce8f3!important;color:#607087!important;font-size:8.5px!important;padding:7px 9px!important;margin:7px 0 0!important;line-height:1.6!important}
+      #view-reports .calendar-cell{min-height:43px!important;padding:4px!important;background:#f5f8fc!important;border:1px solid #dce4ee!important;border-radius:6px!important}
+      #view-reports .calendar-cell .day{font-size:10px!important;color:#26364d!important}
+      #view-reports .calendar-cell .day-pnl{font-size:7px!important}
+      #view-reports .calendar-cell.has-profit{background:#e8f7f1!important;border-color:#a8dfca!important}
+      #view-reports .calendar-cell.has-loss{background:#fff0f1!important;border-color:#efc0c6!important}
+      #view-reports .calendar-cell.weekday{background:transparent!important;border:0!important;color:#607087!important;min-height:17px!important}
+      #view-reports .calendar-cell.empty{background:transparent!important;border:0!important}
+      #view-reports .analysis-table{min-width:0!important;font-size:9px!important}
+      #view-reports .analysis-table th,#view-reports .analysis-table td{padding:6px 5px!important;border-color:#e1e7ef!important}
+      #view-reports .table-wrap table{min-width:0!important;font-size:9px!important}
+      #view-reports th,#view-reports td{padding:6px 5px!important;border-color:#e1e7ef!important;color:#26364d!important}
+      #view-reports .metric-row{font-size:9.5px!important;padding:6px 0!important;border-color:#e5eaf1!important}
+      #view-reports .positive{color:#07845f!important}
+      #view-reports .negative{color:#c43d54!important}
+      #view-reports .pill{background:#edf4ff!important;color:#315c9d!important;border:1px solid #d6e4fa!important}
+      #view-reports .report-page-break{break-before:page!important;page-break-before:always!important}
+      #view-reports .report-analytics-grid{break-inside:avoid-page}
+      #view-reports .report-detail-grid,#view-reports .report-behavior-grid,#view-reports .report-symbols{break-inside:avoid-page}
+      *{box-shadow:none!important}
+    }
+
+
+  </style>
+
+  <style id="zt-visual-refresh-23">
+    #tradeForm,#gasUrl{scroll-margin-top:100px}
+    :root{--bg:#080d17;--panel:#101a2e;--panel2:#172239;--text:#f0f4fb;--muted:#8796ae;--line:#24324a;--green:#10b981;--red:#f04468;--amber:#f59e0b;--blue:#3b82f6;--shadow:0 14px 36px #0005;--radius:24px;color-scheme:dark}
+    body.light{--bg:#f2f5f9;--panel:#fff;--panel2:#f5f7fb;--text:#172033;--muted:#66748a;--line:#dce3ed;--green:#0ca678;--red:#df3f60;--amber:#d98b08;--blue:#286de0;--shadow:0 10px 28px #182b4512;color-scheme:light}
+    html{scroll-behavior:smooth}body{background:var(--bg);letter-spacing:-.12px}button{transition:transform .16s ease,background .16s ease,border-color .16s ease,color .16s ease}button:active{transform:scale(.97)}
+    .logo,.brand .logo{background:#07101a;border:1px solid #1c3b39;color:var(--green);box-shadow:0 0 0 5px #10b98112,inset 0 0 18px #10b98114;position:relative}
+    .logo{font-size:0!important}.logo:before,.brand .logo:before{content:"";width:56%;height:56%;border:4px solid var(--green);border-radius:50%;box-shadow:0 0 12px #10b98166,inset 0 0 0 4px #07101a}
+    .logo:after,.brand .logo:after{content:"";position:absolute;width:13%;height:13%;border-radius:50%;background:var(--green);box-shadow:0 0 10px #10b981aa}
+    .login-card{border-radius:30px;background:linear-gradient(155deg,#121e34,#0e1728);border-color:#243650;padding:30px}
+    .login-card .logo{width:70px;height:70px;border-radius:22px;margin:0 auto 18px}
+    .login-card h1,.login-card p{text-align:center}.login-card .btn.primary{border-radius:14px}
+    .app{max-width:1320px;gap:18px}.sidebar{background:linear-gradient(180deg,#101a2e,#0d1627);border-color:#22324c;border-radius:26px}.brand{padding-bottom:20px}.brand .logo{width:46px;height:46px;border-radius:16px}.nav button{border-radius:14px;padding:13px 14px}.nav button.active{background:linear-gradient(90deg,#10b98120,#10b98108);box-shadow:inset -3px 0 var(--green)}
+    .topbar{background:transparent;border:0;border-radius:0;box-shadow:none;padding:8px 2px 16px;margin-bottom:12px;min-height:66px}.topbar-brand{display:flex;align-items:center;gap:11px;min-width:0}.topbar-brand .app-orbit{width:48px;height:48px;border-radius:17px;background:linear-gradient(145deg,#10b981,#07956e);display:grid;place-items:center;box-shadow:0 8px 22px #10b98130;flex:0 0 auto}.app-orbit:before{content:"";width:25px;height:25px;border:3px solid #effff9;border-radius:50%;box-shadow:inset 0 0 0 5px #10b981,inset 0 0 0 7px #effff9}.topbar-brand-copy{display:grid;gap:2px}.topbar-brand-copy strong{font-size:19px;color:var(--green);font-weight:900;white-space:nowrap}.topbar-brand-copy small{font-size:11px;color:var(--muted)}.sync-pill{border:1px solid #28518a;background:#132746;color:#69aaff;border-radius:10px;padding:6px 10px;font-size:11px;font-weight:800;white-space:nowrap}
+    .actions{align-items:center;gap:8px}.icon-btn{width:44px;height:44px;min-width:44px;border-radius:15px;background:#101a2c;border-color:#1f2d45;font-size:19px;padding:0;display:grid;place-items:center}.icon-btn:hover{border-color:#10b98188;color:var(--green)}.icon-btn#syncBtn{background:#245de8;color:#fff;border-color:#245de8;box-shadow:0 7px 18px #245de844}.icon-btn#backupBtn{background:#0c2c2b;color:#36d6a5;border-color:#0e3c37}.icon-btn#themeBtn{background:#111d31;color:#d5dfed}.icon-btn#lockBtn{background:#111d31}
+    .statusline{font-size:10px}.stats{gap:14px}.stat,.card{background:linear-gradient(155deg,#111c31,#10192b);border:1px solid #202e47;border-radius:26px;box-shadow:none}.stat{padding:19px 18px;min-height:132px;position:relative;overflow:hidden}.stat:before{content:"◎";font-size:21px;font-weight:800;text-align:center;line-height:43px;position:absolute;left:17px;top:17px;width:43px;height:43px;border-radius:50%;display:grid;place-items:center;background:#16355b;color:#4d9aff}.stat:nth-child(2):before{content:"$";font-size:23px;background:#0d3937}.stat:nth-child(3):before{content:"◉";background:#2d2149}.stat:nth-child(4):before{content:"⚖";background:#0c343b}.stat:nth-child(5):before{content:"↘";background:#392b1a}.stat .label{font-size:12px;font-weight:700;padding-left:50px;min-height:34px;display:flex;align-items:center}.stat .value{font-size:27px;margin:10px 0 5px}.stat .hint{font-size:11px}.card{padding:20px}.card h3{font-size:16px;font-weight:800}.card-head{margin-bottom:16px}.pill{font-size:10px;border-radius:10px;padding:6px 10px}.chart-wrap{height:270px}.advice{border:1px solid #1e4c47;background:#0e292c;color:#7be1bd;border-radius:16px;padding:14px}.range-row{margin:18px 0}.range-row label{font-size:13px;color:var(--text)}input,select,textarea{border-radius:15px;background:#151f34;border-color:#30405a;padding:13px 14px;font-size:13px}.btn{border-radius:14px;padding:11px 15px;font-size:12px}.btn.primary{background:#0ca678;border-color:#0ca678;color:#041b14}.trade{border-radius:18px;padding:16px;background:#151f34;border-color:#263650}.trade-top strong{font-size:14px}.trade-meta .pill{background:#1c2941}.metric-row{font-size:13px;padding:12px 2px}.filter{border-radius:12px;padding:9px 13px}.filter.active{background:#0d3b35;border-color:#10b981}.notice{border-radius:15px;font-size:12px;padding:13px 15px}.notice.warn{background:#302412;border-color:#60441c;color:#e9c16a}.modal-box{border-radius:26px;background:#101a2e;border-color:#273750}
+    .topbar #pageTitle{display:block;font-size:10px;color:var(--muted);font-weight:500;margin-top:1px}.topbar p#todayText{display:none}
+    @media(max-width:760px){
+      body{padding-bottom:calc(88px + env(safe-area-inset-bottom))}.app{padding:0 10px 26px;display:block}.main{min-width:0}.topbar{position:sticky;top:0;z-index:65;margin:0 -10px 14px;padding:10px 13px;background:rgba(8,13,23,.94);border-bottom:1px solid #1c2940;backdrop-filter:blur(18px);min-height:76px;gap:8px}.topbar-brand{gap:8px}.topbar-brand .app-orbit{width:43px;height:43px;border-radius:15px}.topbar-brand-copy strong{font-size:16px}.topbar-brand-copy small{font-size:10px}.sync-pill{font-size:9px;padding:5px 7px}.actions{gap:5px}.icon-btn{width:37px;height:39px;min-width:37px;border-radius:13px;font-size:17px}.actions #lockBtn{display:none}.actions .wide{display:grid}.topbar .statusline{display:none}
+      .stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.stat{padding:15px 13px;min-height:126px;border-radius:23px}.stat .label{font-size:10px;padding-left:38px;min-height:32px}.stat:before{width:34px;height:34px;left:12px;top:13px}.stat .value{font-size:22px;margin-top:9px}.stat .hint{font-size:9px}.card{padding:16px;border-radius:24px}.card h3{font-size:14px}.two{grid-template-columns:1fr}.three{grid-template-columns:1fr}.chart-wrap{height:220px}.form-grid{grid-template-columns:1fr}.mobile-nav{position:fixed;z-index:90;bottom:0;left:0;right:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));background:rgba(8,13,23,.97);border-top:1px solid #1d2b43;padding:8px 4px calc(8px + env(safe-area-inset-bottom));backdrop-filter:blur(20px)}.mobile-nav button{border:0;background:transparent;color:#8796ae;font-size:9px;display:grid;gap:5px;place-items:center;padding:4px 1px;min-width:0}.mobile-nav button b{font-size:0;line-height:1;height:23px;display:grid;place-items:center}.mobile-nav button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}.mobile-nav button span{font-size:9px;white-space:nowrap}.mobile-nav button.active{color:#10b981;font-weight:800}.mobile-nav button.active:before{content:"";position:absolute;top:0;width:34px;height:2px;background:#10b981;border-radius:4px}.mobile-nav button{position:relative}.mobile-nav button[data-nav-key="manual"] b{width:40px;height:40px;border-radius:14px;background:#0ca678;color:#031b13;margin-top:-17px;box-shadow:0 7px 18px #0ca67844}.mobile-nav button[data-nav-key="manual"] svg{stroke:#031b13;width:24px;height:24px}.mobile-nav button.active[data-nav-key="manual"]:before{display:none}
+      .trade-top{align-items:flex-start}.trade-bottom{align-items:flex-start}.trade-actions{flex-wrap:wrap}.login-card{padding:24px;border-radius:26px}.login-card h1{font-size:21px}.login-card .logo{width:64px;height:64px}.field label{font-size:12px}.table-wrap{border-radius:12px}
+    }
+    @media(min-width:761px){.topbar{border-bottom:1px solid var(--line)}.topbar-brand-copy strong{font-size:20px}}
+    @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+    /* v2.4: responsive RTL navigation, analytics widgets and print report */
+    .mobile-nav{direction:rtl}
+    .mobile-nav button{direction:rtl}
+    .risk-banner{border-color:#f4b74066;background:linear-gradient(110deg,#f4b74012,#111c2e)}
+    .risk-banner.safe{border-color:#16c78455;background:linear-gradient(110deg,#16c78412,#111c2e)}
+    .risk-banner.danger{border-color:#ff657766;background:linear-gradient(110deg,#ff657718,#111c2e)}
+    .calendar-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+    .calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
+    .calendar-cell{min-height:62px;border:1px solid var(--line);border-radius:10px;background:var(--panel2);padding:6px;display:flex;flex-direction:column;gap:4px;min-width:0}
+    .calendar-cell.weekday{min-height:auto;background:transparent;border:0;color:var(--muted);text-align:center;align-items:center;font-size:10px}
+    .calendar-cell.empty{background:transparent;border:0;min-height:0}
+    .calendar-cell .day{font-size:11px;font-weight:800}
+    .calendar-cell .day-pnl{font-size:9px;direction:ltr;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .calendar-cell.has-profit{border-color:#16c78466;background:#16c78410}
+    .calendar-cell.has-loss{border-color:#ff657766;background:#ff657710}
+    .analysis-table{width:100%;border-collapse:collapse;min-width:380px;font-size:11px}
+    .analysis-table th,.analysis-table td{padding:9px 7px;border-bottom:1px solid var(--line);text-align:right}
+    .analysis-table th{color:var(--muted);font-weight:600}
+    .risk-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 12px}
+    .alert-list{display:grid;gap:7px}
+    .alert-item{border-radius:11px;padding:10px 12px;background:var(--panel2);border:1px solid var(--line);font-size:11px;line-height:1.8}
+    .alert-item.warn{border-color:#f4b74066;background:#f4b74010}
+    .alert-item.bad{border-color:#ff657766;background:#ff657710}
+    .alert-item.good{border-color:#16c78455;background:#16c78410}
+    .report-actions{display:flex;gap:8px;flex-wrap:wrap}
+    @media(max-width:760px){.calendar-cell{min-height:52px;padding:4px}.calendar-cell .day-pnl{font-size:8px}.risk-fields{grid-template-columns:1fr}.mobile-nav{grid-template-columns:repeat(5,minmax(0,1fr));direction:rtl}.actions #syncBtn{display:inline-flex!important}}
+    @media print{body{background:#fff!important;color:#111!important;padding:0!important}.sidebar,.mobile-nav,.topbar,.login-wrap,.toast,.no-print,button{display:none!important}.app{display:block!important;max-width:none!important;padding:0!important}.view{display:none!important}#view-reports{display:block!important}.card,.stat{background:#fff!important;color:#111!important;box-shadow:none!important;border:1px solid #ccc!important;break-inside:avoid}.muted,.stat .label,.stat .hint{color:#555!important}.analysis-table th,.analysis-table td{border-color:#ddd!important}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+  
+    /* v2.4.2: icon and report visual refresh */
+    .sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+    .actions{align-items:center}
+    .actions .icon-btn{display:grid;place-items:center;position:relative;width:44px;height:44px;min-width:44px;padding:0;border-radius:15px;border:1px solid #22324f;background:linear-gradient(180deg,#101a2a,#0d1624);box-shadow:0 10px 24px rgba(5,10,20,.18), inset 0 1px 0 rgba(255,255,255,.03);transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;color:#dce6ff}
+    .actions .icon-btn svg{width:20px;height:20px;stroke:currentColor;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+    .actions .icon-btn:hover,.actions .icon-btn:focus-visible{transform:translateY(-1px);box-shadow:0 14px 28px rgba(5,10,20,.26), inset 0 1px 0 rgba(255,255,255,.05);border-color:#33507b;outline:none}
+    .actions .icon-btn[data-tone="sync"]{background:linear-gradient(145deg,#245af2,#2f72ff);border-color:#366ef5;color:#eef4ff;box-shadow:0 10px 25px rgba(47,114,255,.28)}
+    .actions .icon-btn[data-tone="backup"]{background:linear-gradient(145deg,#0f2b26,#114135);border-color:#184e43;color:#7de4bd;box-shadow:0 10px 25px rgba(16,185,129,.15)}
+    .actions .icon-btn[data-tone="theme"]{color:#f5f7ff}
+    .actions .icon-btn[data-tone="settings"]{color:#e8edf9}
+    .actions .icon-btn[data-tone="lock"]{color:#dbe2f2}
+    .actions .statusline{margin-inline-start:8px}
+    .report-hero{background:linear-gradient(180deg,rgba(18,32,53,.96),rgba(11,23,41,.96));border:1px solid #223a5f;box-shadow:0 18px 40px rgba(0,0,0,.18)}
+    .report-eyebrow{display:inline-flex;align-items:center;gap:8px;padding:6px 11px;border-radius:999px;background:#132746;border:1px solid #284776;color:#78a9ff;font-size:11px;font-weight:800;margin-bottom:10px}
+    .report-title{margin:0;font-size:23px;font-weight:900;color:#f6fbff}
+    .report-sub{margin:8px 0 0;color:#95a8c8;line-height:1.9;font-size:13px}
+    .report-headline{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;flex-wrap:wrap}
+    .report-meta{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+    .report-chip{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:999px;background:rgba(15,27,45,.88);border:1px solid #29415f;color:#ddecff;font-size:12px;font-weight:700}
+    .report-grid-gap{margin-top:14px}
+    #view-reports .card h3{font-size:16px}
+    #view-reports .notice{background:#0e1a2d;border-color:#22395b;color:#99abc6}
+    #view-reports .table-wrap table{font-size:13px}
+    #view-reports .stat{border-radius:18px}
+    @media(max-width:760px){
+      .actions .icon-btn{width:42px;height:42px;min-width:42px;border-radius:14px}
+      .actions .icon-btn svg{width:19px;height:19px}
+      .report-title{font-size:20px}
+      .report-sub{font-size:12px}
+      .report-meta{justify-content:flex-start}
+    }
+    @media print{
+      @page{size:A4 portrait;margin:10mm}
+      html,body{background:#fff!important;color:#111!important}
+      #view-reports{display:block!important;color:#0f172a}
+      #view-reports .report-hero{background:#fff!important;border:1px solid #d9e2ef!important;box-shadow:none!important;padding:14px!important}
+      #view-reports .report-eyebrow{background:#eef4ff!important;border-color:#d7e4ff!important;color:#355ea8!important}
+      #view-reports .report-title{color:#0f172a!important;font-size:20px!important}
+      #view-reports .report-sub{color:#5b6880!important;font-size:11px!important}
+      #view-reports .report-chip{background:#f7fafc!important;border-color:#dbe4f0!important;color:#23324b!important}
+      #view-reports .grid.two{grid-template-columns:1fr 1fr!important;gap:10px!important}
+      #view-reports .stats{grid-template-columns:repeat(4,1fr)!important;gap:10px!important}
+      #view-reports .card,#view-reports .stat{background:#fff!important;color:#111!important;box-shadow:none!important;border:1px solid #d9e2ef!important;border-radius:14px!important;padding:12px!important;break-inside:avoid-page}
+      #view-reports .notice{background:#f8fbfe!important;border:1px solid #dbeaf7!important;color:#64748b!important}
+      #view-reports .table-wrap table{font-size:10.5px!important}
+      #view-reports h3{font-size:13px!important;color:#0f172a!important}
+      #view-reports .pill{background:#eef4ff!important;color:#274c8f!important;border:1px solid #d7e4ff!important}
+      #view-reports .positive{color:#0f9b6b!important}
+      #view-reports .negative{color:#cf4257!important}
+    }
+
+  </style>
+
+
+  <style id="zt-visual-refresh-242-final">
+    /* v2.4.2: cohesive mobile header, readable forms and intentional reports */
+    .sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+    :root{--muted:#a5b4ca;--line:#293a56;--green:#16c79a;--blue:#4b8dff;--panel:#111d31;--panel2:#17263d}
+    body.light{--muted:#64748b;--line:#dbe4ef;--green:#059669;--blue:#2563eb;--panel:#fff;--panel2:#f4f7fb}
+    .topbar{gap:14px;align-items:center}
+    .topbar-brand{display:flex;align-items:center;gap:11px;min-width:0}
+    .topbar-brand-copy{min-width:0}
+    .topbar-brand-copy strong{font-size:18px;letter-spacing:-.25px}
+    .topbar-brand-copy small{display:block;margin-top:4px;line-height:1.5;color:var(--muted)}
+    .sync-pill{flex:0 0 auto}
+    .actions{align-items:center;gap:8px;flex-wrap:nowrap}
+    .actions .icon-btn{display:grid;place-items:center;position:relative;width:43px;height:43px;min-width:43px;padding:0;border-radius:14px;border:1px solid #2a3c5a;background:linear-gradient(180deg,#17263c,#111d30);color:#dce8fa;box-shadow:0 5px 15px #0002;transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease}
+    .actions .icon-btn svg{width:20px;height:20px;stroke:currentColor;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+    .actions .icon-btn:active{transform:scale(.96)}
+    .actions .icon-btn[data-tone="sync"]{background:linear-gradient(145deg,#2563eb,#397dff);border-color:#397dff;color:white;box-shadow:0 7px 18px #2563eb40}
+    .actions .icon-btn[data-tone="backup"]{background:linear-gradient(145deg,#103c35,#125446);border-color:#1d6c58;color:#76e5c1}
+    .actions .icon-btn[data-tone="theme"]{color:#e4ecfa}
+    .actions .icon-btn[data-tone="settings"]{color:#b8c8e3}
+    .actions .icon-btn[data-tone="lock"]{color:#b8c8e3}
+    .actions .statusline{margin-inline-start:4px;white-space:nowrap}
+    .view .card{min-width:0}
+    .view .card h3{line-height:1.65}
+    .field{gap:8px;margin-bottom:14px}
+    .field label{font-size:12px;line-height:1.65;color:var(--muted)}
+    input,select,textarea{min-height:46px;border-radius:13px;padding:11px 13px;font-size:13px}
+    textarea{min-height:92px}
+    .form-grid{gap:0 12px}
+    .report-hero{padding:20px;background:radial-gradient(circle at 92% 8%,#1c8b7a22,transparent 36%),linear-gradient(145deg,#14243b,#101b2d);border:1px solid #2b4264;box-shadow:0 12px 28px #0002}
+    .report-headline{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+    .report-eyebrow{display:inline-flex;align-items:center;padding:6px 11px;border-radius:99px;background:#1a3151;border:1px solid #34557e;color:#9dc4ff;font-size:10px;font-weight:800;letter-spacing:.3px;margin-bottom:10px}
+    .report-title{margin:0;font-size:23px;line-height:1.55;font-weight:900;color:#f5f8ff}
+    .report-sub{margin:7px 0 0;color:#a8b8d0;line-height:1.9;font-size:12px;max-width:680px}
+    .report-meta{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-start}
+    .report-chip{display:inline-flex;align-items:center;padding:7px 10px;border-radius:11px;background:#0e1a2c;border:1px solid #2a3f5e;color:#d6e5fa;font-size:11px;font-weight:700;white-space:nowrap}
+    .report-controls{margin-top:12px}
+    #view-reports .grid{align-items:start}
+    #view-reports .grid.two{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    #view-reports .card{height:auto;align-self:start;padding:17px;border-radius:19px}
+    #view-reports .card h3{font-size:14px;margin:0 0 12px}
+    #view-reports .card-head{align-items:center;flex-wrap:wrap}
+    #view-reports .notice{background:#14243a;border:1px solid #2b4264;color:#b0bfd4;border-radius:13px;line-height:1.85}
+    #view-reports .stats{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:9px;margin:10px 0 0}
+    #view-reports .stat{padding:13px;border-radius:15px;box-shadow:none;background:#14243a;border-color:#2b4264;min-height:100px}
+    #view-reports .stat .label{font-size:11px;line-height:1.6;color:#a9bad1}
+    #view-reports .stat .value{font-size:21px;margin:8px 0 2px}
+    #view-reports .calendar-grid{gap:5px}
+    #view-reports .calendar-cell{min-height:58px;border-radius:10px;padding:6px;background:#17263d;border-color:#2c405e}
+    #view-reports .calendar-cell .day{font-size:12px;color:#e5edf9}
+    #view-reports .calendar-cell .day-pnl{font-size:9px}
+    #view-reports .calendar-cell.has-profit{background:#0e392f;border-color:#16785e}
+    #view-reports .calendar-cell.has-loss{background:#3a202c;border-color:#91445a}
+    #view-reports .calendar-cell.weekday{background:transparent;border:0;color:#9fb0c8}
+    #view-reports .calendar-cell.empty{background:transparent;border:0}
+    #view-reports .table-wrap{border-radius:12px}
+    #view-reports .analysis-table{min-width:0;font-size:12px}
+    #view-reports .analysis-table th,#view-reports .analysis-table td{padding:10px 8px}
+    #view-reports .metric-row{font-size:12px;line-height:1.7}
+    #view-reports .report-actions{gap:7px}
+    #view-reports .report-actions .btn{min-height:40px}
+    @media(max-width:760px){
+      body{padding-bottom:88px}
+      .app{padding:9px 10px 22px}
+      .topbar{display:grid;grid-template-columns:1fr;gap:11px;padding:12px;border-radius:18px;margin-bottom:12px}
+      .topbar-brand{width:100%;justify-content:flex-start;gap:10px}
+      .topbar-brand-copy strong{font-size:17px}
+      .topbar-brand-copy small{font-size:11px}
+      .topbar-brand .app-orbit{width:44px;height:44px;flex:0 0 44px}
+      .topbar-brand .sync-pill{margin-inline-start:auto;font-size:10px;padding:6px 9px}
+      .actions{width:100%;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;overflow:visible}
+      .actions .statusline{display:none!important}
+      .actions .wide{display:grid!important}
+      .actions .icon-btn{width:100%;min-width:0;height:42px;border-radius:13px}
+      .actions .icon-btn svg{width:19px;height:19px}
+      .topbar .statusline{display:none!important}
+      .form-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:0 9px}
+      .field label{font-size:11px;min-height:18px}
+      input,select,textarea{font-size:12px;min-height:44px;padding:10px 11px}
+      .view .card{padding:15px;border-radius:18px}
+      #view-reports .grid.two{grid-template-columns:1fr}
+      #view-reports .stats{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+      #view-reports .stat{min-height:88px}
+      #view-reports .stat .value{font-size:20px}
+      .report-title{font-size:20px}
+      .report-sub{font-size:11px}
+      .report-meta{width:100%}
+      .report-chip{font-size:10px}
+      #view-reports .calendar-cell{min-height:49px;padding:5px}
+      #view-reports .calendar-cell .day{font-size:11px}
+      #view-reports .calendar-cell .day-pnl{font-size:8px}
+      #view-reports .calendar-cell .muted{display:none}
+      #view-reports .report-actions{width:100%}
+      #view-reports .report-actions .btn{flex:1}
+    }
+    @media(max-width:370px){
+      .form-grid{grid-template-columns:1fr}
+      .topbar-brand .sync-pill{display:none}
+      .actions{gap:6px}
+    }
+    @media print{
+      @page{size:A4 portrait;margin:11mm 10mm 12mm}
+      html,body{background:#fff!important;color:#172033!important;padding:0!important;margin:0!important;font-family:Tahoma,Arial,sans-serif!important;font-size:11px!important;line-height:1.65!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+      .sidebar,.mobile-nav,.topbar,.login-wrap,.toast,.no-print,button,.report-actions{display:none!important}
+      .app{display:block!important;max-width:none!important;margin:0!important;padding:0!important}
+      .main{display:block!important;width:100%!important}
+      .view{display:none!important}
+      #view-reports{display:block!important;color:#172033!important}
+      #view-reports .report-hero{background:#fff!important;border:1px solid #cbd7e5!important;box-shadow:none!important;padding:14px 16px!important;margin:0 0 8px!important;border-radius:12px!important;break-inside:avoid}
+      #view-reports .report-eyebrow{background:#edf4ff!important;border:1px solid #d6e4fa!important;color:#315c9d!important;margin-bottom:5px!important}
+      #view-reports .report-title{color:#13243b!important;font-size:19px!important}
+      #view-reports .report-sub{color:#596b83!important;font-size:10px!important}
+      #view-reports .report-chip{background:#f5f8fc!important;border:1px solid #d8e2ee!important;color:#33445d!important;font-size:9px!important}
+      #view-reports .report-controls{margin:0 0 8px!important;padding:12px!important;border:1px solid #cbd7e5!important;background:#fff!important;box-shadow:none!important;break-inside:avoid}
+      #view-reports .report-controls .form-grid{display:none!important}
+      #view-reports .report-controls .card-head{margin-bottom:6px!important}
+      #view-reports .report-controls .card-head h3{font-size:12px!important}
+      #view-reports .grid{gap:8px!important;align-items:start!important}
+      #view-reports .grid.two{grid-template-columns:1fr 1fr!important;gap:8px!important}
+      #view-reports .stats{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:7px!important;margin:6px 0 0!important}
+      #view-reports .stat{min-height:70px!important;padding:9px!important;background:#f7f9fc!important;border:1px solid #d7e0eb!important;border-radius:10px!important;box-shadow:none!important;break-inside:avoid}
+      #view-reports .stat .label{font-size:9px!important;color:#5d6b7f!important}
+      #view-reports .stat .value{font-size:17px!important;color:#14243b!important;margin:5px 0 0!important}
+      #view-reports .stat .hint{font-size:8px!important;color:#718096!important}
+      #view-reports .card{background:#fff!important;color:#172033!important;border:1px solid #d5deea!important;border-radius:11px!important;padding:10px!important;box-shadow:none!important;height:auto!important;break-inside:avoid-page}
+      #view-reports .card h3{font-size:11.5px!important;color:#172b46!important;margin:0 0 7px!important}
+      #view-reports .notice{background:#f5f9fd!important;border:1px solid #dce8f3!important;color:#607087!important;font-size:8.5px!important;padding:7px 9px!important;margin:7px 0 0!important;line-height:1.6!important}
+      #view-reports .calendar-cell{min-height:43px!important;padding:4px!important;background:#f5f8fc!important;border:1px solid #dce4ee!important;border-radius:6px!important}
+      #view-reports .calendar-cell .day{font-size:10px!important;color:#26364d!important}
+      #view-reports .calendar-cell .day-pnl{font-size:7px!important}
+      #view-reports .calendar-cell.has-profit{background:#e8f7f1!important;border-color:#a8dfca!important}
+      #view-reports .calendar-cell.has-loss{background:#fff0f1!important;border-color:#efc0c6!important}
+      #view-reports .calendar-cell.weekday{background:transparent!important;border:0!important;color:#607087!important;min-height:17px!important}
+      #view-reports .calendar-cell.empty{background:transparent!important;border:0!important}
+      #view-reports .analysis-table{min-width:0!important;font-size:9px!important}
+      #view-reports .analysis-table th,#view-reports .analysis-table td{padding:6px 5px!important;border-color:#e1e7ef!important}
+      #view-reports .table-wrap table{min-width:0!important;font-size:9px!important}
+      #view-reports th,#view-reports td{padding:6px 5px!important;border-color:#e1e7ef!important;color:#26364d!important}
+      #view-reports .metric-row{font-size:9.5px!important;padding:6px 0!important;border-color:#e5eaf1!important}
+      #view-reports .positive{color:#07845f!important}
+      #view-reports .negative{color:#c43d54!important}
+      #view-reports .pill{background:#edf4ff!important;color:#315c9d!important;border:1px solid #d6e4fa!important}
+      #view-reports .report-page-break{break-before:page!important;page-break-before:always!important}
+      #view-reports .report-analytics-grid{break-inside:avoid-page}
+      #view-reports .report-detail-grid,#view-reports .report-behavior-grid,#view-reports .report-symbols{break-inside:avoid-page}
+      *{box-shadow:none!important}
+    }
+
+  </style>
+
+</head>
+<body>
+  <div id="loginWrap" class="login-wrap">
+    <div class="login-card">
+      <div class="logo" aria-hidden="true"></div>
+      <h1 id="loginTitle">ورود به ذهن تریدر</h1>
+      <p id="loginHint">اطلاعات ژورنال روی همین دستگاه و به‌صورت رمزگذاری‌شده نگهداری می‌شود. برای شروع یک رمز عبور قوی تعیین کن.</p>
+      <form id="loginForm">
+        <div class="field"><label for="password">رمز عبور</label><input id="password" type="password" minlength="8" autocomplete="current-password" placeholder="حداقل ۸ کاراکتر" required></div>
+        <div class="field" id="confirmField"><label for="confirmPassword">تکرار رمز عبور</label><input id="confirmPassword" type="password" minlength="8" autocomplete="new-password" placeholder="تکرار رمز عبور"></div>
+        <div class="field" id="rememberField" style="margin:4px 0 12px">
+          <label style="display:flex;align-items:center;gap:8px;color:var(--muted)"><input id="rememberSession" type="checkbox" checked style="width:auto"> این نشست را تا ۱۰ دقیقه عدم فعالیت باز نگه دار</label>
+        </div>
+        <div id="loginError" class="small negative" style="min-height:18px;margin-bottom:8px"></div>
+        <button class="btn primary" id="loginSubmit" type="submit" style="width:100%;padding:12px">ساخت فضای امن</button>
+      </form>
+      <button class="btn" id="passkeyLogin" type="button" style="width:100%;margin-top:9px;display:none">⌁ ورود با اثر انگشت / Passkey دستگاه</button>
+      <div style="display:flex;justify-content:space-between;gap:8px;margin-top:13px;flex-wrap:wrap">
+        <label class="btn ghost" for="restoreFile">بازیابی پشتیبان رمزگذاری‌شده</label><input id="restoreFile" type="file" accept="application/json,.json" class="hidden">
+        <span class="small muted" id="cryptoStatus">بررسی امنیت مرورگر…</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="appRoot" class="app hidden">
+    <aside class="sidebar">
+      <div class="brand"><div class="logo" aria-hidden="true"></div><div><b>ذهن تریدر</b><span>نسخه 2.4 · دستیار عملکرد معامله‌گر</span></div></div>
+      <nav class="nav" id="sideNav">
+        <button class="active" data-view="dashboard"><span class="ico">▦</span>داشبورد</button>
+        <button data-view="trades"><span class="ico">⇄</span>ژورنال معاملات</button>
+        <button data-view="psychology"><span class="ico">◉</span>کنترل روان</button>
+        <button data-view="reports"><span class="ico">▤</span>گزارش‌ها و تحلیل</button>
+        <button data-view="settings"><span class="ico">⚙</span>اتصال و تنظیمات</button>
+      </nav>
+      <div class="side-foot">اطلاعات محلی رمزگذاری می‌شود.<br>برای انتقال بین دستگاه‌ها از پشتیبان رمزگذاری‌شده استفاده کن.</div>
+    </aside>
+    <main class="main">
+      <header class="topbar">
+        <div class="topbar-brand">
+          <div class="app-orbit" aria-hidden="true"></div>
+          <div class="topbar-brand-copy"><strong>ذهن تریدر</strong><small id="pageTitle">داشبورد عملکرد</small></div>
+          <span class="sync-pill">MT5 Sync</span>
+        </div>
+        <div class="actions">
+          <span class="statusline"><i id="syncDot" class="dot off"></i><span id="syncStatus">همگام‌سازی انجام نشده</span></span>
+          <button class="icon-btn wide" data-tone="sync" title="همگام‌سازی" aria-label="همگام‌سازی" id="syncBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 0 1-15.3 6.36"></path><path d="M3 12A9 9 0 0 1 18.3 5.64"></path><path d="M7 18H5v-2"></path><path d="M17 6h2v2"></path></svg><span class="sr-only">همگام‌سازی</span></button>
+          <button class="icon-btn wide" data-tone="backup" title="پشتیبان رمزگذاری‌شده" aria-label="پشتیبان رمزگذاری‌شده" id="backupBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11"></path><path d="m7 10 5 5 5-5"></path><path d="M5 19h14"></path></svg><span class="sr-only">پشتیبان</span></button>
+          <button class="icon-btn" data-tone="theme" title="تغییر پوسته" aria-label="تغییر پوسته" id="themeBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg><span class="sr-only">پوسته</span></button>
+          <button class="icon-btn" data-tone="settings" title="تنظیمات" aria-label="تنظیمات" id="settingsBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1.07V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 9.2 20a1.7 1.7 0 0 0-1-.6 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1.07-.4H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4 9.2a1.7 1.7 0 0 0 .6-1 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6c.37 0 .72-.14 1-.4.28-.28.44-.66.4-1.06V3a2 2 0 1 1 4 0v.09c-.03.4.12.78.4 1.06.28.26.63.4 1 .4.69 0 1.35-.27 1.83-.76l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06c-.49.48-.76 1.14-.76 1.83 0 .37.14.72.4 1 .28.28.66.44 1.06.4H21a2 2 0 1 1 0 4h-.09c-.4-.03-.78.12-1.06.4-.26.28-.4.63-.4 1Z"></path></svg><span class="sr-only">تنظیمات</span></button>
+          <button class="icon-btn" data-tone="lock" title="قفل برنامه" aria-label="قفل برنامه" id="lockBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg><span class="sr-only">قفل</span></button>
+        </div>
+      </header>
+
+      <section class="view active" id="view-dashboard">
+        <div class="grid stats">
+          <div class="stat"><div class="label">نرخ برد</div><div class="value" id="sWin">0%</div><div class="hint" id="sWinSub">۰ برد / ۰ باخت</div></div>
+          <div class="stat"><div class="label">سود و زیان خالص</div><div class="value" id="sNet">$0.00</div><div class="hint">بر اساس معاملات واردشده</div></div>
+          <div class="stat"><div class="label">Profit Factor</div><div class="value" id="sPf">0.00</div><div class="hint">سود ناخالص ÷ زیان ناخالص</div></div>
+          <div class="stat"><div class="label">امید ریاضی هر معامله</div><div class="value" id="sExp">$0.00</div><div class="hint">میانگین سود/زیان هر معامله</div></div>
+          <div class="stat"><div class="label">حداکثر افت سرمایه</div><div class="value" id="sDd">$0.00</div><div class="hint">Max Drawdown از منحنی تجمعی</div></div>
+        </div>
+        <div class="card risk-banner safe" id="dailyRiskCard" style="margin-bottom:14px">
+          <div class="card-head"><h3>مدیریت ریسک و هشدارهای امروز</h3><span class="pill" id="dailyRiskBadge">در حال محاسبه</span></div>
+          <div id="dailyRiskContent" class="alert-list"><div class="muted small">پس از بارگذاری داده‌ها، وضعیت ریسک روزانه نمایش داده می‌شود.</div></div>
+        </div>
+        <div class="grid two">
+          <div class="card"><div class="card-head"><h3>منحنی تجمعی سود و زیان</h3><span class="pill">بر اساس ترتیب زمانی</span></div><div class="chart-wrap"><canvas id="equityChart"></canvas></div></div>
+          <div class="card"><div class="card-head"><h3>آمادگی ذهنی پیش از معامله</h3><span class="pill good" id="readyBadge">آمادگی 87%</span></div>
+            <div class="range-row"><label>خواب و انرژی <b id="sleepVal">4/5</b></label><input id="sleepRange" type="range" min="1" max="5" value="4"></div>
+            <div class="range-row"><label>تمرکز و آرامش <b id="focusVal">4/5</b></label><input id="focusRange" type="range" min="1" max="5" value="4"></div>
+            <div class="range-row"><label>پایبندی به پلن <b id="planVal">5/5</b></label><input id="planRange" type="range" min="1" max="5" value="5"></div>
+            <div class="advice" id="readyAdvice">آمادگی مناسب؛ پیش از ورود، حد ضرر و ریسک را دوباره بررسی کن.</div>
+          </div>
+        </div>
+        <div class="grid two report-grid-gap">
+          <div class="card"><div class="card-head"><h3>آخرین معاملات</h3><button class="btn ghost" data-goto="trades">مشاهده همه</button></div><div id="recentTrades" class="trade-list"></div></div>
+          <div class="card"><div class="card-head"><h3>وضعیت تکمیل روان‌شناسی</h3><span class="pill warn" id="pendingPill">۰ معامله منتظر</span></div><div id="psychProgress"></div><button class="btn warn" id="openPendingBtn" style="margin-top:12px">تکمیل معامله بعدی</button></div>
+        </div>
+      </section>
+
+      <section class="view" id="view-trades">
+        <div class="grid two">
+          <div class="card"><div class="card-head"><h3>ثبت دستی معامله</h3><span class="pill">Manual Entry</span></div>
+            <form id="tradeForm">
+              <div class="form-grid">
+                <div class="field"><label>نماد</label><input id="fSymbol" value="XAUUSD" required></div>
+                <div class="field"><label>جهت</label><select id="fSide"><option value="Buy">Buy / خرید</option><option value="Sell">Sell / فروش</option></select></div>
+                <div class="field"><label>حجم (Lot)</label><input id="fLots" type="number" min="0.00001" step="any" value="0.05" required></div>
+                <div class="field"><label>سود/زیان خالص ($)</label><input id="fPnl" type="number" step="any" placeholder="مثلاً 25 یا -15" required></div>
+                <div class="field"><label>تاریخ و زمان بسته‌شدن</label><input id="fDate" type="datetime-local"></div>
+                <div class="field"><label>قیمت ورود (اختیاری)</label><input id="fEntry" type="number" step="any"></div>
+                <div class="field"><label>استراتژی معاملاتی</label><input id="fStrategy" placeholder="مثلاً EMA 60 + FVG"></div>
+                <div class="field"><label>ریسک اولیه معامله ($) برای محاسبه R</label><input id="fRiskAmount" type="number" min="0" step="any" placeholder="مثلاً 20"></div>
+              </div>
+              <div class="field"><label>یادداشت کوتاه</label><textarea id="fNotes" placeholder="دلیل ورود، کیفیت ستاپ، نکته قابل یادگیری..."></textarea></div>
+              <button class="btn primary" type="submit">ثبت معامله</button>
+            </form>
+          </div>
+          <div class="card"><div class="card-head"><h3>راهنمای ورود معاملات MT5</h3><span class="pill">Google Sheets</span></div>
+            <p class="small muted" style="line-height:2">معاملات بسته‌شده از شیت Journal دریافت می‌شوند. شناسه تیکت/Deal برای جلوگیری از ثبت تکراری استفاده می‌شود. اطلاعات روان‌شناسی در این برنامه نگهداری می‌شود و هنگام همگام‌سازی، بازنویسی نخواهد شد.</p>
+            <div class="notice">اگر شیت شما ستون شناسه یکتا ندارد، برنامه از ترکیب نماد، جهت، حجم، زمان و سود برای تشخیص معامله استفاده می‌کند؛ وجود Ticket یا Deal ID مطمئن‌تر است.</div>
+            <button class="btn" data-goto="settings">تنظیم اتصال Google Sheets</button>
+          </div>
+        </div>
+        <div class="card" style="margin-top:14px"><div class="card-head"><h3>تاریخچه معاملات</h3><span class="pill" id="tradeCountPill">۰ معامله</span></div>
+          <div class="form-grid"><div class="field"><label>جستجوی نماد یا شناسه</label><input id="tradeSearch" placeholder="XAUUSD، BTCUSD یا Ticket..."></div><div class="field"><label>مرتب‌سازی</label><select id="tradeSort"><option value="new">جدیدترین ابتدا</option><option value="old">قدیمی‌ترین ابتدا</option><option value="profit">بیشترین سود</option><option value="loss">بیشترین زیان</option></select></div></div>
+          <div class="filters" id="tradeFilters"><button class="filter active" data-filter="all">همه</button><button class="filter" data-filter="pending">نیازمند روان‌شناسی</button><button class="filter" data-filter="win">سودده</button><button class="filter" data-filter="loss">زیان‌ده</button><button class="filter" data-filter="mistake">دارای خطا</button><button class="filter" data-filter="mt5">فقط MT5</button></div>
+          <div id="tradeList" class="trade-list"></div>
+        </div>
+      </section>
+
+      <section class="view" id="view-psychology">
+        <div class="grid two">
+          <div class="card"><div class="card-head"><h3>تمرین تنفس جعبه‌ای ۴-۴-۴-۴</h3><span class="pill">تنظیم هیجان</span></div><div class="breath"><div id="breathCircle" class="breath-circle"><b id="breathPhase">آماده</b><span id="breathSeconds">4s</span></div></div><div class="form-actions" style="justify-content:center"><button class="btn primary" id="breathStart">شروع تنفس</button><button class="btn" id="breathStop">توقف</button></div><p class="small muted" style="text-align:center;line-height:1.8">دم، نگه‌داشتن، بازدم و مکث؛ هر مرحله ۴ ثانیه.</p></div>
+          <div class="card"><div class="card-head"><h3>قفل ضد معامله انتقامی</h3><span class="pill warn">Tilt Lock</span></div><p class="small muted" style="line-height:1.9">پس از ضرر یا افزایش هیجان، وقفه ایجاد کن. پایان قفل بر اساس ساعت دستگاه ذخیره می‌شود و با بستن صفحه از بین نمی‌رود.</p><div id="tiltDisplay" style="font-size:34px;font-weight:900;text-align:center;direction:ltr;margin:18px 0">00:00</div><div class="form-actions"><button class="btn warn" data-tilt="15">قفل ۱۵ دقیقه</button><button class="btn danger" data-tilt="30">قفل ۳۰ دقیقه</button><button class="btn" id="tiltStop">لغو قفل</button></div></div>
+        </div>
+        <div class="grid two report-grid-gap">
+          <div class="card"><div class="card-head"><h3>قوانین شخصی معامله‌گری</h3><span class="pill">Discipline</span></div><div class="field"><label>قانون جدید</label><div style="display:flex;gap:7px"><input id="newRule" placeholder="مثلاً پس از دو باخت متوالی توقف"><button class="btn primary" id="addRule">افزودن</button></div></div><div class="rules" id="rulesList"></div></div>
+          <div class="card"><div class="card-head"><h3>خلاصه رفتار معاملاتی</h3><span class="pill">از معاملات تکمیل‌شده</span></div><div id="behaviorSummary"></div></div>
+        </div>
+        <div class="card" style="margin-top:14px"><div class="card-head"><h3>دستیار تحلیلی ذهن تریدر</h3><span class="pill good">تحلیل خودکار رفتار</span></div><div id="smartInsights"></div><div class="notice">این دستیار از آمار و برچسب‌هایی که ثبت می‌کنی بینش توصیفی می‌سازد؛ رابطه آماری به‌تنهایی علت و معلول را ثابت نمی‌کند.</div></div>
+      </section>
+
+      <section class="view" id="view-reports">
+        <div class="card report-hero">
+          <div class="report-headline">
+            <div>
+              <div class="report-eyebrow">Performance Analytics</div>
+              <h2 class="report-title">گزارش تحلیلی ذهن تریدر</h2>
+              <p class="report-sub">خلاصه عملکرد معاملاتی، انضباط اجرایی، ریسک واقعی و الگوهای رفتاری در بازه زمانی انتخاب‌شده.</p>
+            </div>
+            <div class="report-meta">
+              <span class="report-chip" id="reportRangeChip">۳۰ روز اخیر</span>
+              <span class="report-chip" id="reportGeneratedChip">در حال آماده‌سازی</span>
+              <span class="report-chip" id="reportTradeCountChip">۰ معامله</span>
+            </div>
+          </div>
+        </div>
+        <div class="card report-controls"><div class="card-head"><h3>فیلتر و شاخص‌های عملکرد</h3><span class="pill">خلاصه دوره</span></div>
+          <div class="form-grid"><div class="field"><label>بازه گزارش</label><select id="reportRange"><option value="7">۷ روز اخیر</option><option value="30" selected>۳۰ روز اخیر</option><option value="90">۹۰ روز اخیر</option><option value="all">تمام دوره</option></select></div><div class="field"><label>واحد نمایش</label><select id="reportCurrency"><option value="USD">USD</option></select></div></div>
+          <div class="grid stats" style="grid-template-columns:repeat(4,minmax(0,1fr))"><div class="stat"><div class="label">تعداد معاملات</div><div class="value" id="rCount">0</div></div><div class="stat"><div class="label">سود خالص</div><div class="value" id="rNet">$0</div></div><div class="stat"><div class="label">میانگین سود</div><div class="value" id="rAvg">$0</div></div><div class="stat"><div class="label">درصد پایبندی</div><div class="value" id="rDiscipline">0%</div></div></div>
+        </div>
+        <div class="grid two report-analytics-grid">
+          <div class="card"><div class="calendar-head"><h3 style="margin:0">تقویم عملکرد معاملاتی</h3><div class="form-actions"><button class="icon-btn" id="calendarPrev" aria-label="ماه قبل">‹</button><button class="icon-btn" id="calendarNext" aria-label="ماه بعد">›</button></div></div><div class="small muted" id="calendarMonthLabel" style="margin-bottom:9px"></div><div id="tradeCalendar" class="calendar-grid"></div><div class="notice">مبالغ بر اساس تاریخ بسته‌شدن معامله و منطقه زمانی همین دستگاه محاسبه می‌شوند.</div></div>
+          <div class="card"><div class="card-head"><h3>تحلیل ریسک و بازده واقعی (R)</h3><span class="pill">P/L ÷ ریسک اولیه</span></div><div id="rMultipleSummary"></div><div class="notice">برای محاسبه R هر معامله باید ریسک اولیه دلاری آن را در فرم ثبت دستی وارد کنی یا ستون ریسک را از Google Sheets وارد کنی. داده‌های قدیمی بدون ریسک، در این محاسبه لحاظ نمی‌شوند.</div></div>
+        </div>
+        <div class="grid two report-page-break report-detail-grid">
+          <div class="card"><h3>عملکرد بر اساس ساعت ورود</h3><div class="table-wrap" id="hourTable"></div><div class="notice">اگر زمان ورود در داده MT5 موجود نباشد، ساعت بسته‌شدن به‌عنوان تقریب استفاده می‌شود.</div></div>
+          <div class="card"><h3>مقایسه استراتژی‌ها</h3><div class="table-wrap" id="strategyTable"></div><div class="notice">برای معاملات قدیمی که نام استراتژی ندارند، مقدار «نامشخص» نمایش داده می‌شود.</div></div>
+        </div>
+        <div class="grid two report-grid-gap report-behavior-grid"><div class="card"><h3>مقایسه معاملات منضبط و دارای خطا</h3><div id="disciplineCompare"></div></div><div class="card"><h3>عملکرد بر اساس احساس غالب</h3><div id="emotionBreakdown"></div></div></div>
+        <div class="card report-grid-gap report-symbols"><div class="card-head"><h3>خلاصه نمادها</h3><div class="report-actions"><button class="btn" id="csvBtn">خروجی CSV</button><button class="btn primary" id="pdfBtn">چاپ / ذخیره PDF</button></div></div><div class="table-wrap"><table><thead><tr><th>نماد</th><th>تعداد</th><th>برد</th><th>نرخ برد</th><th>سود خالص</th><th>میانگین</th></tr></thead><tbody id="symbolTable"></tbody></table></div></div>
+      </section>
+
+      <section class="view" id="view-settings">
+        <div class="grid two">
+          <div class="card"><div class="card-head"><h3>اتصال Google Sheets</h3><span class="pill">MT5 → Sheets → ذهن تریدر</span></div>
+            <div class="field"><label>آدرس وب‌اپ Apps Script با انتهای /exec</label><input id="gasUrl" type="url" placeholder="https://script.google.com/macros/s/.../exec" dir="ltr"></div>
+            <div class="field"><label>کلید دسترسی API</label><input id="apiToken" type="password" placeholder="کلید تنظیم‌شده در Script Properties" dir="ltr"></div>
+            <div class="field"><label style="display:flex;align-items:center;gap:8px"><input id="autoSync" type="checkbox" style="width:auto"> همگام‌سازی خودکار هنگام ورود</label></div>
+            <div class="field"><label>نام شیت معاملات</label><input id="sheetName" value="Journal"></div>
+            <div class="form-actions"><button class="btn primary" id="saveSettings">ذخیره تنظیمات</button><button class="btn" id="syncNow">همگام‌سازی اکنون</button></div>
+            <div class="notice warn">اتصال خارجی از روش JSONP برای خواندن استفاده می‌کند. کلید دسترسی را محرمانه نگه دار؛ هر فردی که هم URL و هم کلید را داشته باشد می‌تواند داده‌های قابل‌خواندن شیت را دریافت کند.</div>
+          </div>
+          <div class="card"><div class="card-head"><h3>پشتیبان و انتقال بین دستگاه‌ها</h3><span class="pill good">رمزگذاری‌شده</span></div>
+            <p class="small muted" style="line-height:2">اطلاعات روان‌شناسی و معاملات دستی در فضای امن همین مرورگر ذخیره می‌شود. برای انتقال کامل به موبایل یا کامپیوتر دیگر، پشتیبان رمزگذاری‌شده بگیر و با همان رمز عبور در دستگاه مقصد بازیابی کن.</p>
+            <div class="form-actions"><button class="btn primary" id="settingsBackup">دانلود پشتیبان امن</button><label class="btn" for="settingsRestore">بازیابی پشتیبان</label><input id="settingsRestore" type="file" accept="application/json,.json" class="hidden"></div>
+            <div class="notice">معاملات MT5 از شیت دوباره قابل دریافت هستند؛ یادداشت‌های روان‌شناسی در فایل پشتیبان نگهداری می‌شوند. نسخه فعلی اطلاعات روان‌شناسی را به Google Sheets نمی‌نویسد.</div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:14px">
+          <div class="card-head"><h3>حد ریسک روزانه و قوانین هشدار</h3><span class="pill warn">Risk Guard</span></div>
+          <div class="form-grid"><div class="field"><label>حداکثر زیان خالص روزانه ($) · صفر = غیرفعال</label><input id="dailyLossLimit" type="number" min="0" step="any" placeholder="مثلاً 100"></div><div class="field"><label>تعداد باخت متوالی برای هشدار</label><select id="lossStreakLimit"><option value="2">۲ باخت</option><option value="3" selected>۳ باخت</option><option value="4">۴ باخت</option><option value="5">۵ باخت</option></select></div></div>
+          <button class="btn primary" id="saveRiskSettings">ذخیره قوانین ریسک</button>
+          <div class="notice warn">این بخش هشدار و پایش ژورنال است؛ جلوی ارسال سفارش در MT5 را نمی‌گیرد و جایگزین حدضرر یا کنترل ریسک بروکر نیست.</div>
+        </div>
+        <div class="card" style="margin-top:14px">
+          <div class="card-head"><h3>ورود سریع و امنیت نشست</h3><span class="pill good">Passkey / WebAuthn</span></div>
+          <p class="small muted" style="line-height:2">می‌توانی ورود با اثر انگشت، تشخیص چهره یا PIN امن دستگاه را فعال کنی. کلید رمزگذاری فضای ژورنال با قابلیت PRF در Passkey محافظت می‌شود؛ خود اثر انگشت از دستگاه خارج نمی‌شود. این قابلیت به HTTPS و پشتیبانی مرورگر و احرازگر دستگاه از PRF نیاز دارد.</p>
+          <div class="metric-row"><span>قفل خودکار پس از عدم فعالیت</span><b>۱۰ دقیقه</b></div>
+          <div class="metric-row"><span>وضعیت ورود بیومتریک</span><b id="passkeyStatus">در حال بررسی…</b></div>
+          <div class="form-actions" style="margin-top:12px"><button class="btn primary" id="registerPasskey" type="button">فعال‌سازی اثر انگشت / Passkey</button><button class="btn danger" id="removePasskey" type="button">حذف اتصال این دستگاه</button></div>
+          <div class="notice warn">پس از Refresh در همان تب، نشست باز می‌ماند؛ با بستن تب/مرورگر یا ۱۰ دقیقه عدم فعالیت، رمز یا Passkey لازم می‌شود. برای امنیت بیشتر، روی دستگاه مشترک گزینه قفل دستی را بزن.</div>
+        </div>
+        <div class="grid two" style="margin-top:14px">
+          <div class="card"><h3>امنیت فضای محلی</h3><p class="small muted" style="line-height:2">داده‌های ذخیره‌شده در مرورگر با AES-GCM و کلید مشتق‌شده از رمز عبور رمزگذاری می‌شوند. رمز عبور پیش‌فرض وجود ندارد. قفل برنامه فقط دسترسی رابط را می‌بندد و رمزگذاری فضای داده، لایه محافظ اصلی در حالت ذخیره محلی است.</p><button class="btn danger" id="wipeData">پاک‌کردن کامل داده‌های این دستگاه</button></div>
+          <div class="card"><h3>وضعیت برنامه</h3><div class="metric-row"><span>نسخه</span><b>2.4.2</b></div><div class="metric-row"><span>حالت ذخیره‌سازی</span><b>رمزگذاری‌شده و محلی</b></div><div class="metric-row"><span>اتصال به Sheets</span><b id="connectionState">تنظیم نشده</b></div><div class="metric-row"><span>آخرین همگام‌سازی</span><b id="lastSyncText">—</b></div></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <nav class="mobile-nav" id="mobileNav" aria-label="ناوبری اصلی">
+    <button class="active" data-view="dashboard" data-nav-key="dashboard"><b><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></b><span>داشبورد</span></button>
+    <button data-view="trades" data-nav-key="trades"><b><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 2.6-6.4L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></svg></b><span>ژورنال</span></button>
+    <button data-view="trades" data-nav-key="manual" data-jump="tradeForm"><b><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></b><span>ثبت معامله</span></button>
+    <button data-view="psychology" data-nav-key="psychology"><b><svg viewBox="0 0 24 24"><path d="M12 3 4.5 6v5.5c0 4.7 3.2 7.8 7.5 9.5 4.3-1.7 7.5-4.8 7.5-9.5V6L12 3Z"/><path d="m8.5 12 2.2 2.2 4.8-5"/></svg></b><span>روان‌شناسی</span></button>
+    <button data-view="reports" data-nav-key="reports"><b><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h17"/><path d="m7 15 4-4 3 2 6-7"/></svg></b><span>گزارش‌ها</span></button>
+  </nav>
+
+  <div id="psychModal" class="modal"><div class="modal-box"><div class="card-head"><h3>تکمیل روان‌شناسی معامله</h3><button class="icon-btn" id="closePsych">✕</button></div><div id="psychSummary" class="pill" style="margin-bottom:13px"></div>
+    <form id="psychForm">
+      <div class="form-grid"><div class="field"><label>احساس غالب</label><select id="pEmotion"><option>آرام و منضبط</option><option>FOMO / عجله</option><option>انتقامی / خشم</option><option>ترس / تردید</option><option>طمع / زیاده‌روی</option><option>خستگی / بی‌حوصلگی</option></select></div><div class="field"><label>رعایت پلن و حد ضرر</label><select id="pRule"><option>کاملاً رعایت شد</option><option>خطای جزئی</option><option>نقض حد ضرر یا حجم</option><option>ورود خارج از پلن</option></select></div></div>
+      <div class="form-grid"><div class="field"><label>شدت استرس: <b id="stressValue">2/5</b></label><input id="pStress" type="range" min="1" max="5" value="2"></div><div class="field"><label>آیا بعد از ضرر قبلی وارد شدی؟</label><select id="pAfterLoss"><option value="no">خیر</option><option value="yes">بله</option></select></div></div>
+      <div class="field"><label>دلیل اصلی ورود</label><select id="pReason"><option>ستاپ مطابق پلن</option><option>شکست / پولبک</option><option>FOMO و ترس از جا ماندن</option><option>جبران ضرر قبلی</option><option>سیگنال یا توصیه دیگران</option><option>سایر</option></select></div>
+      <div class="field"><label>یادداشت و درس این معامله</label><textarea id="pNotes" placeholder="چه چیزی درست بود؟ چه چیزی باید اصلاح شود؟"></textarea></div>
+      <div class="form-actions"><button class="btn primary" type="submit">ذخیره روان‌شناسی</button><button class="btn" type="button" id="cancelPsych">انصراف</button></div>
+    </form>
+  </div></div>
+  <div id="toast" class="toast hidden"></div>
+
+<script>
+(() => {
+  'use strict';
+  const VERSION = '2.4.2';
+  const AUTH_KEY = 'zt2_auth_v1';
+  const VAULT_KEY = 'zt2_vault_v1';
+  const THEME_KEY = 'zt2_theme_v1';
+  const SESSION_DB = 'zt2_session_db_v1';
+  const SESSION_STORE = 'keys';
+  const SESSION_MARKER = 'zt2_session_marker_v1';
+  const SESSION_ACTIVITY = 'zt2_session_activity_v1';
+  const IDLE_TIMEOUT = 10 * 60 * 1000;
+  let idleTimer = null, lastActivityWrite = 0, lockingForIdle = false;
+  const DEFAULT_STATE = {
+    trades: [], rules: [
+      'قبل از ورود، روند و فیلتر EMA 60 را بررسی می‌کنم.',
+      'پس از ضرر برای جبران سریع، حجم را افزایش نمی‌دهم.',
+      'حد ضرر را جابه‌جا نمی‌کنم و بدون پلن وارد نمی‌شوم.'
+    ],
+    settings: {gasUrl:'', apiToken:'', autoSync:false, sheetName:'Journal', dailyLossLimit:0, lossStreakLimit:3},
+    readiness: {sleep:4, focus:4, plan:5},
+    tiltEnd: 0,
+    lastSync: null,
+    lastSyncCount: 0,
+    ignoredSourceKeys: []
+  };
+  const $ = id => document.getElementById(id);
+  let app = {data:null, key:null, currentView:'dashboard', currentFilter:'all', editingId:null, breathTimer:null, tiltTimer:null, toastTimer:null, saveChain:Promise.resolve(), syncing:false, chartResize:null,calendarCursor:new Date(new Date().getFullYear(),new Date().getMonth(),1)};
+  const enc = new TextEncoder(), dec = new TextDecoder();
+  const b64 = buf => { const bytes=new Uint8Array(buf); let binary=''; for(let i=0;i<bytes.length;i+=0x8000) binary+=String.fromCharCode(...bytes.subarray(i,i+0x8000)); return btoa(binary); };
+  const unb64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+  const clone = x => JSON.parse(JSON.stringify(x));
+  const fmtMoney = n => (Number(n)<0?'-':'')+'$'+Math.abs(Number(n)||0).toFixed(2);
+  const faNum = n => Number(n||0).toLocaleString('fa-IR');
+  const nowLocalInput = () => {const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,16)};
+  const normalize = s => String(s??'').toLowerCase().replace(/[\s_\-./()\[\]]/g,'').replace(/[آأإ]/g,'ا').trim();
+  function toast(msg){$('toast').textContent=msg;$('toast').classList.remove('hidden');clearTimeout(app.toastTimer);app.toastTimer=setTimeout(()=>$('toast').classList.add('hidden'),3000)}
+  function safeDate(v){if(v instanceof Date)return v;if(v===null||v===undefined||v==='')return null;let d=new Date(v);if(!Number.isNaN(d.getTime()))return d;const s=String(v).trim();const m=s.match(/^(\d{4})[./-](\d{1,2})[./-](\d{1,2})(?:[ T](\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?/);if(m){d=new Date(+m[1],+m[2]-1,+m[3],+(m[4]||0),+(m[5]||0),+(m[6]||0));return Number.isNaN(d.getTime())?null:d}return null}
+  function fmtDate(v){const d=safeDate(v);return d?d.toLocaleString('fa-IR',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}):String(v||'—')}
+  function getCrypto(){if(!window.crypto?.subtle)throw new Error('برای رمزگذاری، برنامه را در مرورگر به‌روز و بستر امن HTTPS اجرا کن.');return crypto.subtle}
+  async function deriveKey(password,salt){return getCrypto().deriveKey({name:'PBKDF2',salt,iterations:250000,hash:'SHA-256'},await crypto.subtle.importKey('raw',enc.encode(password),'PBKDF2',false,['deriveKey']),{name:'AES-GCM',length:256},false,['encrypt','decrypt'])}
+  async function deriveKeyExportable(password,salt){return getCrypto().deriveKey({name:'PBKDF2',salt,iterations:250000,hash:'SHA-256'},await crypto.subtle.importKey('raw',enc.encode(password),'PBKDF2',false,['deriveKey']),{name:'AES-GCM',length:256},true,['encrypt','decrypt'])}
+  async function encryptText(key,text){const iv=crypto.getRandomValues(new Uint8Array(12));const cipher=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,enc.encode(text));return {iv:b64(iv),data:b64(cipher)}}
+  async function decryptText(key,obj){const plain=await crypto.subtle.decrypt({name:'AES-GCM',iv:unb64(obj.iv)},key,unb64(obj.data));return dec.decode(plain)}
+  async function encryptBytes(key,bytes){const iv=crypto.getRandomValues(new Uint8Array(12));const cipher=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,bytes);return {iv:b64(iv),data:b64(cipher)}}
+  async function decryptBytes(key,obj){return new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:unb64(obj.iv)},key,unb64(obj.data)))}
+  function openSessionDb(){return new Promise((resolve,reject)=>{if(!('indexedDB'in window)){reject(new Error('IndexedDB در این مرورگر در دسترس نیست.'));return}const req=indexedDB.open(SESSION_DB,1);req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains(SESSION_STORE))req.result.createObjectStore(SESSION_STORE,{keyPath:'id'})};req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error||new Error('بازکردن حافظه نشست ناموفق بود.'))})}
+  async function sessionDbPut(record){const db=await openSessionDb();return new Promise((resolve,reject)=>{const tx=db.transaction(SESSION_STORE,'readwrite');tx.objectStore(SESSION_STORE).put(record);tx.oncomplete=()=>{db.close();resolve()};tx.onerror=()=>{db.close();reject(tx.error||new Error('ذخیره نشست ناموفق بود.'))}})}
+  async function sessionDbGet(id){const db=await openSessionDb();return new Promise((resolve,reject)=>{const tx=db.transaction(SESSION_STORE,'readonly'),req=tx.objectStore(SESSION_STORE).get(id);req.onsuccess=()=>{const v=req.result||null;db.close();resolve(v)};req.onerror=()=>{db.close();reject(req.error)}})}
+  async function sessionDbDelete(id){if(!id)return;try{const db=await openSessionDb();await new Promise((resolve,reject)=>{const tx=db.transaction(SESSION_STORE,'readwrite');tx.objectStore(SESSION_STORE).delete(id);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)});db.close()}catch(e){}}
+  async function clearRememberedSession(){let id=app.sessionId;try{id=id||sessionStorage.getItem(SESSION_MARKER);sessionStorage.removeItem(SESSION_MARKER);sessionStorage.removeItem(SESSION_ACTIVITY)}catch(e){}app.sessionId=null;app.lastActivity=0;await sessionDbDelete(id);clearTimeout(idleTimer);idleTimer=null}
+  function getLastActivity(){try{const value=Number(sessionStorage.getItem(SESSION_ACTIVITY)||0);if(value)return value}catch(e){}return Number(app.lastActivity||0)}
+  async function startVolatileSession(){await clearRememberedSession();app.sessionId='volatile';app.lastActivity=Date.now();try{sessionStorage.setItem(SESSION_ACTIVITY,String(app.lastActivity))}catch(e){}startIdleMonitor()}
+  async function rememberCurrentSession(){try{const id=crypto.randomUUID();await sessionDbPut({id,cryptoKey:app.key,createdAt:Date.now()});sessionStorage.setItem(SESSION_MARKER,id);sessionStorage.setItem(SESSION_ACTIVITY,String(Date.now()));app.sessionId=id;app.lastActivity=Date.now();startIdleMonitor()}catch(e){app.sessionId='volatile';app.lastActivity=Date.now();try{sessionStorage.removeItem(SESSION_MARKER);sessionStorage.setItem(SESSION_ACTIVITY,String(app.lastActivity))}catch(e2){}startIdleMonitor();toast('حفظ نشست پس از Refresh در این مرورگر پشتیبانی نشد؛ قفل خودکار همچنان فعال است.')}}
+  function sessionExpired(){const last=getLastActivity();return !last||Date.now()-last>IDLE_TIMEOUT}
+  async function resumeRememberedSession(){let id='';try{id=sessionStorage.getItem(SESSION_MARKER)||'';if(!id||sessionExpired()) {await clearRememberedSession();return false}const record=await sessionDbGet(id);if(!record?.cryptoKey){await clearRememberedSession();return false}const auth=JSON.parse(localStorage.getItem(AUTH_KEY)||'null');if(!auth){await clearRememberedSession();return false}const verified=await decryptText(record.cryptoKey,auth.verifier);if(verified!=='ZehnTrader-Verified-v1'){await clearRememberedSession();return false}const raw=localStorage.getItem(VAULT_KEY);const data=raw?JSON.parse(await decryptText(record.cryptoKey,JSON.parse(raw))):clone(DEFAULT_STATE);app.key=record.cryptoKey;app.data={...clone(DEFAULT_STATE),...data,settings:{...DEFAULT_STATE.settings,...(data.settings||{})},readiness:{...DEFAULT_STATE.readiness,...(data.readiness||{})}};app.sessionId=id;touchSession(true);startIdleMonitor();return true}catch(e){await clearRememberedSession();return false}}
+  function touchSession(force=false){if(!app.key||!app.sessionId)return;const now=Date.now();if(!force&&now-lastActivityWrite<8000)return;lastActivityWrite=now;app.lastActivity=now;try{sessionStorage.setItem(SESSION_ACTIVITY,String(now))}catch(e){}startIdleMonitor()}
+  function startIdleMonitor(){clearTimeout(idleTimer);if(!app.key||!app.sessionId)return;const last=getLastActivity()||Date.now(),remaining=Math.max(0,IDLE_TIMEOUT-(Date.now()-last));idleTimer=setTimeout(()=>lockForInactivity(),remaining)}
+  async function lockForInactivity(){if(lockingForIdle||!app.key||!app.sessionId)return;if(!sessionExpired()){startIdleMonitor();return}lockingForIdle=true;try{await persist();await lockApp();toast('به‌دلیل ۱۰ دقیقه عدم فعالیت، برنامه قفل شد.')}finally{lockingForIdle=false}}
+  function biometricSupported(){return Boolean(window.isSecureContext&&window.PublicKeyCredential&&navigator.credentials?.create&&navigator.credentials?.get&&crypto?.subtle)}
+  function refreshPasskeyUI(){const auth=JSON.parse(localStorage.getItem(AUTH_KEY)||'null'),ready=Boolean(auth?.biometric?.credentialId);const loginBtn=$('passkeyLogin');if(loginBtn)loginBtn.style.display=ready?'block':'none';const status=$('passkeyStatus');if(status)status.textContent=ready?'روی این دستگاه فعال است':(biometricSupported()?'فعال نشده':'مرورگر/بستر از آن پشتیبانی نمی‌کند');const reg=$('registerPasskey'),rem=$('removePasskey');if(reg)reg.disabled=!biometricSupported();if(rem)rem.disabled=!ready}
+  function showLogin(isSetup){$('loginWrap').classList.remove('hidden');$('appRoot').classList.add('hidden');$('mobileNav').classList.add('hidden');$('loginTitle').textContent=isSetup?'ساخت فضای امن ذهن تریدر':'ورود به ذهن تریدر';$('loginHint').textContent=isSetup?'برای محافظت از اطلاعات ژورنال، یک رمز عبور حداقل ۸ کاراکتری تعیین کن. این رمز روی سرور ارسال نمی‌شود.':'رمز عبور فضای رمزگذاری‌شده این دستگاه را وارد کن؛ یا از Passkey دستگاه استفاده کن.';$('confirmField').classList.toggle('hidden',!isSetup);$('rememberField').classList.toggle('hidden',isSetup);$('loginSubmit').textContent=isSetup?'ساخت فضای امن':'ورود امن';$('password').value='';$('confirmPassword').value='';$('cryptoStatus').textContent=window.crypto?.subtle?'رمزگذاری فعال':'مرورگر امن لازم است';refreshPasskeyUI()}
+  async function setupVault(password){const salt=crypto.getRandomValues(new Uint8Array(16));const key=await deriveKey(password,salt);const verifier=await encryptText(key,'ZehnTrader-Verified-v1');const data=clone(DEFAULT_STATE);const vault=await encryptText(key,JSON.stringify(data));localStorage.setItem(AUTH_KEY,JSON.stringify({salt:b64(salt),verifier}));localStorage.setItem(VAULT_KEY,JSON.stringify(vault));app.key=key;app.data=data;}
+  async function unlockVault(password){const auth=JSON.parse(localStorage.getItem(AUTH_KEY)||'null');if(!auth)throw new Error('فضای امن هنوز ساخته نشده است.');const key=await deriveKey(password,unb64(auth.salt));const verified=await decryptText(key,auth.verifier);if(verified!=='ZehnTrader-Verified-v1')throw new Error('رمز عبور نادرست است.');const raw=localStorage.getItem(VAULT_KEY);const data=raw?JSON.parse(await decryptText(key,JSON.parse(raw))):clone(DEFAULT_STATE);app.key=key;app.data={...clone(DEFAULT_STATE),...data,settings:{...DEFAULT_STATE.settings,...(data.settings||{})},readiness:{...DEFAULT_STATE.readiness,...(data.readiness||{})}};}
+  async function derivePasskeyWrapKey(prfBytes,salt){const material=await crypto.subtle.importKey('raw',prfBytes,'HKDF',false,['deriveKey']);return crypto.subtle.deriveKey({name:'HKDF',hash:'SHA-256',salt,info:enc.encode('ZehnTrader local vault Passkey PRF v1')},material,{name:'AES-GCM',length:256},false,['encrypt','decrypt'])}
+  async function getPasskeyPrf(credentialId,salt){const assertion=await navigator.credentials.get({publicKey:{challenge:crypto.getRandomValues(new Uint8Array(32)),allowCredentials:[{type:'public-key',id:unb64(credentialId)}],userVerification:'required',timeout:60000,extensions:{prf:{eval:{first:salt}}}}});const result=assertion?.getClientExtensionResults?.().prf?.results?.first;if(!result)throw new Error('این Passkey خروجی امن PRF ارائه نکرد. از رمز عبور استفاده کن یا Passkey سازگار دیگری ثبت کن.');return new Uint8Array(result)}
+  async function registerPasskey(){if(!app.key||!biometricSupported())throw new Error('برای ثبت Passkey به HTTPS و مرورگر سازگار نیاز است.');const password=prompt('برای اتصال امن اثر انگشت، یک‌بار رمز اصلی فضای ذهن تریدر را وارد کن:');if(!password)return;const auth=JSON.parse(localStorage.getItem(AUTH_KEY)||'null');const checkKey=await deriveKey(password,unb64(auth.salt));if(await decryptText(checkKey,auth.verifier)!=='ZehnTrader-Verified-v1')throw new Error('رمز اصلی نادرست است.');const exportKey=await deriveKeyExportable(password,unb64(auth.salt));const salt=crypto.getRandomValues(new Uint8Array(32));const credential=await navigator.credentials.create({publicKey:{challenge:crypto.getRandomValues(new Uint8Array(32)),rp:{name:'ذهن تریدر'},user:{id:crypto.getRandomValues(new Uint8Array(16)),name:'zehn-trader-user',displayName:'ذهن تریدر'},pubKeyCredParams:[{type:'public-key',alg:-7},{type:'public-key',alg:-257}],authenticatorSelection:{authenticatorAttachment:'platform',residentKey:'preferred',userVerification:'required'},timeout:60000,extensions:{prf:{eval:{first:salt}}}}});if(!credential)throw new Error('ثبت Passkey لغو شد.');const credentialId=b64(credential.rawId);const prfBytes=await getPasskeyPrf(credentialId,salt);const wrapKey=await derivePasskeyWrapKey(prfBytes,salt);const rawKey=new Uint8Array(await crypto.subtle.exportKey('raw',exportKey));auth.biometric={credentialId,salt:b64(salt),wrappedKey:await encryptBytes(wrapKey,rawKey),createdAt:new Date().toISOString()};localStorage.setItem(AUTH_KEY,JSON.stringify(auth));refreshPasskeyUI();toast('ورود با Passkey این دستگاه فعال شد.')}
+  async function unlockWithPasskey(){const auth=JSON.parse(localStorage.getItem(AUTH_KEY)||'null');if(!auth?.biometric)throw new Error('برای این دستگاه Passkey ثبت نشده است.');if(!biometricSupported())throw new Error('ورود بیومتریک فقط در بستر HTTPS و مرورگر سازگار فعال می‌شود.');const salt=unb64(auth.biometric.salt);const prfBytes=await getPasskeyPrf(auth.biometric.credentialId,salt);const wrapKey=await derivePasskeyWrapKey(prfBytes,salt);const rawKey=await decryptBytes(wrapKey,auth.biometric.wrappedKey);const key=await crypto.subtle.importKey('raw',rawKey,{name:'AES-GCM'},false,['encrypt','decrypt']);const verified=await decryptText(key,auth.verifier);if(verified!=='ZehnTrader-Verified-v1')throw new Error('این Passkey به فضای امن فعلی متصل نیست. با رمز اصلی وارد شو.');const raw=localStorage.getItem(VAULT_KEY);const data=raw?JSON.parse(await decryptText(key,JSON.parse(raw))):clone(DEFAULT_STATE);app.key=key;app.data={...clone(DEFAULT_STATE),...data,settings:{...DEFAULT_STATE.settings,...(data.settings||{})},readiness:{...DEFAULT_STATE.readiness,...(data.readiness||{})}};await showApp();toast('ورود با Passkey موفق بود.')}
+  async function removePasskey(){const auth=JSON.parse(localStorage.getItem(AUTH_KEY)||'null');if(!auth?.biometric){toast('Passkey فعالی ثبت نشده است.');return}if(!confirm('اتصال Passkey این دستگاه از ذهن تریدر حذف شود؟'))return;delete auth.biometric;localStorage.setItem(AUTH_KEY,JSON.stringify(auth));refreshPasskeyUI();toast('اتصال Passkey از این برنامه حذف شد. خود Passkey ممکن است همچنان در تنظیمات دستگاه باقی بماند.')}
+  function persist(){if(!app.key||!app.data)return;const snapshot=JSON.stringify(app.data);app.saveChain=app.saveChain.then(async()=>{const encrypted=await encryptText(app.key,snapshot);localStorage.setItem(VAULT_KEY,JSON.stringify(encrypted))}).catch(e=>toast('ذخیره اطلاعات انجام نشد: '+e.message));return app.saveChain}
+  async function exportBackup(){await persist();const auth=JSON.parse(localStorage.getItem(AUTH_KEY));delete auth.biometric;const vault=JSON.parse(localStorage.getItem(VAULT_KEY));const file={app:'ZehnTrader',version:VERSION,createdAt:new Date().toISOString(),auth,vault};downloadBlob(JSON.stringify(file,null,2),'zehn-trader-backup-'+new Date().toISOString().slice(0,10)+'.json','application/json');toast('پشتیبان رمزگذاری‌شده آماده شد.')}
+  function downloadBlob(content,name,type){const blob=new Blob([content],{type});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+  async function restoreBackup(file,password){const parsed=JSON.parse(await file.text());if(parsed.app!=='ZehnTrader'||!parsed.auth||!parsed.vault)throw new Error('فایل پشتیبان معتبر نیست.');const key=await deriveKey(password,unb64(parsed.auth.salt));const v=await decryptText(key,parsed.auth.verifier);if(v!=='ZehnTrader-Verified-v1')throw new Error('رمز پشتیبان اشتباه است.');const data=JSON.parse(await decryptText(key,parsed.vault));localStorage.setItem(AUTH_KEY,JSON.stringify(parsed.auth));localStorage.setItem(VAULT_KEY,JSON.stringify(parsed.vault));app.key=key;app.data={...clone(DEFAULT_STATE),...data,settings:{...DEFAULT_STATE.settings,...(data.settings||{})},readiness:{...DEFAULT_STATE.readiness,...(data.readiness||{})}};}
+  async function showApp(options={}){if(options.remember!==false){if($('rememberSession')?.checked!==false)await rememberCurrentSession();else await startVolatileSession()}$('loginWrap').classList.add('hidden');$('appRoot').classList.remove('hidden');$('mobileNav').classList.remove('hidden');applyTheme();populateSettings();renderAll();refreshPasskeyUI();if(app.data.settings.autoSync&&app.data.settings.gasUrl)syncFromSheet(); }
+  async function lockApp(){if(app.breathTimer){clearInterval(app.breathTimer);app.breathTimer=null}if(app.tiltTimer){clearInterval(app.tiltTimer);app.tiltTimer=null}await clearRememberedSession();app.key=null;app.data=null;showLogin(false)}
+  function applyTheme(){const light=localStorage.getItem(THEME_KEY)==='light';document.body.classList.toggle('light',light);$('themeBtn').textContent=light?'☾':'☼'}
+  function switchView(view,navKey=view){app.currentView=view;document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id==='view-'+view));document.querySelectorAll('#sideNav [data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===view));document.querySelectorAll('#mobileNav [data-view]').forEach(b=>b.classList.toggle('active',b.dataset.navKey===navKey));const titles={dashboard:'داشبورد عملکرد',trades:'ژورنال معاملات',psychology:'مدیریت روان‌شناسی',reports:'گزارش‌ها و تحلیل',settings:'اتصال و تنظیمات',manual:'ثبت دستی معامله',mt5:'اتصال MT5 و Google Sheets'};$('pageTitle').textContent=titles[navKey]||titles[view]||'ذهن تریدر';if(view==='reports')renderReports();if(view==='psychology')renderPsychology();if(view==='trades')renderTrades()}
+  function isMistake(t){return !t.needsPsych&&(t.ruleStatus&&t.ruleStatus!=='کاملاً رعایت شد'||t.emotion&&t.emotion!=='آرام و منضبط'||t.afterLoss==='yes'||t.reason==='FOMO و ترس از جا ماندن'||t.reason==='جبران ضرر قبلی')}
+  function psychScore(t){if(t.needsPsych)return null;let s=100;if(t.emotion&&t.emotion!=='آرام و منضبط')s-=15;if(t.ruleStatus==='خطای جزئی')s-=20;if(t.ruleStatus==='نقض حد ضرر یا حجم'||t.ruleStatus==='ورود خارج از پلن')s-=45;if(Number(t.stress)>=4)s-=10;if(t.afterLoss==='yes')s-=15;return Math.max(0,s)}
+  function stats(trades){const n=trades.length,w=trades.filter(t=>Number(t.pnl)>0),l=trades.filter(t=>Number(t.pnl)<0),grossP=w.reduce((a,t)=>a+Number(t.pnl),0),grossL=Math.abs(l.reduce((a,t)=>a+Number(t.pnl),0)),net=grossP-grossL,ordered=[...trades].sort((a,b)=>(safeDate(a.date)?.getTime()||0)-(safeDate(b.date)?.getTime()||0));let cum=0,peak=0,dd=0;ordered.forEach(t=>{cum+=Number(t.pnl)||0;peak=Math.max(peak,cum);dd=Math.max(dd,peak-cum)});return {n,w:w.length,l:l.length,winRate:w.length+l.length?100*w.length/(w.length+l.length):0,grossP,grossL,net,pf:grossL?grossP/grossL:(grossP?Infinity:0),expectancy:n?net/n:0,dd,avg:n?net/n:0}}
+  function renderAll(){renderDashboard();renderTrades();renderPsychology();renderReports();renderRiskOverview();updateSyncUI()}
+  function renderDashboard(){const s=stats(app.data.trades);$('sWin').textContent=s.winRate.toFixed(1)+'%';$('sWinSub').textContent=faNum(s.w)+' برد / '+faNum(s.l)+' باخت';$('sNet').textContent=fmtMoney(s.net);$('sNet').className='value '+(s.net>0?'positive':s.net<0?'negative':'');$('sPf').textContent=Number.isFinite(s.pf)?s.pf.toFixed(2):(s.pf===Infinity?'∞':'0.00');$('sExp').textContent=fmtMoney(s.expectancy);$('sDd').textContent=fmtMoney(s.dd);drawChart();renderRecent();renderPsychProgress();updateReadinessUI();renderRiskOverview()}
+  function drawChart(){const c=$('equityChart');if(!c)return;const rect=c.getBoundingClientRect();const dpr=Math.min(window.devicePixelRatio||1,2);c.width=Math.max(300,rect.width*dpr);c.height=Math.max(180,rect.height*dpr);const ctx=c.getContext('2d');ctx.scale(dpr,dpr);const w=c.width/dpr,h=c.height/dpr;ctx.clearRect(0,0,w,h);const trades=[...app.data.trades].sort((a,b)=>(safeDate(a.date)?.getTime()||0)-(safeDate(b.date)?.getTime()||0));if(!trades.length){ctx.fillStyle=getComputedStyle(document.body).getPropertyValue('--muted');ctx.font='12px Tahoma';ctx.textAlign='center';ctx.fillText('پس از ثبت یا دریافت معامله، نمودار نمایش داده می‌شود',w/2,h/2);return}let cum=0;const vals=[0,...trades.map(t=>cum+=Number(t.pnl)||0)];const min=Math.min(0,...vals),max=Math.max(0,...vals),span=max-min||1,pad=24;const x=i=>pad+(w-pad*2)*i/(vals.length-1||1),y=v=>h-pad-(v-min)/span*(h-pad*2);ctx.strokeStyle=getComputedStyle(document.body).getPropertyValue('--line');ctx.lineWidth=1;for(let i=0;i<4;i++){const yy=pad+i*(h-pad*2)/3;ctx.beginPath();ctx.moveTo(pad,yy);ctx.lineTo(w-pad,yy);ctx.stroke()}ctx.beginPath();vals.forEach((v,i)=>i?ctx.lineTo(x(i),y(v)):ctx.moveTo(x(i),y(v)));ctx.strokeStyle=getComputedStyle(document.body).getPropertyValue('--green');ctx.lineWidth=2.5;ctx.stroke();ctx.lineTo(x(vals.length-1),h-pad);ctx.lineTo(x(0),h-pad);ctx.closePath();ctx.fillStyle='rgba(22,199,132,.10)';ctx.fill();ctx.fillStyle=getComputedStyle(document.body).getPropertyValue('--muted');ctx.font='10px Tahoma';ctx.textAlign='left';ctx.fillText(fmtMoney(max),4,13);ctx.fillText(fmtMoney(min),4,h-5)}
+  function tradeCard(t){const pnl=Number(t.pnl)||0;const badge=t.source==='mt5'?'MT5':'دستی';const psych=t.needsPsych?'<span class="pill warn">نیازمند روان‌شناسی</span>':`<span class="pill ${isMistake(t)?'bad':'good'}">${esc(t.emotion||'تکمیل‌شده')}</span>`;const strategy=t.strategy&&t.strategy!=='نامشخص'?`<span class="pill">${esc(t.strategy)}</span>`:'';const rTag=Number(t.riskAmount)>0?`<span class="pill">${(pnl/Number(t.riskAmount)).toFixed(2)}R</span>`:'';return `<article class="trade"><div class="trade-top"><div><strong>${esc(t.symbol||'—')}</strong> <span class="small muted">${esc(t.side||'')} · ${esc(String(t.lots||0))} Lot</span></div><b class="${pnl>0?'positive':pnl<0?'negative':''} ltr">${fmtMoney(pnl)}</b></div><div class="trade-meta"><span class="pill">${badge}</span>${psych}${strategy}${rTag}<span class="pill">${esc(fmtDate(t.date))}</span>${t.ticket?`<span class="pill ltr">#${esc(t.ticket)}</span>`:''}</div><div class="trade-bottom"><span class="muted">${esc(t.notes||t.reason||'بدون یادداشت')}</span><div class="trade-actions"><button class="btn warn" data-psych="${esc(t.id)}">${t.needsPsych?'تکمیل روان':'ویرایش روان'}</button><button class="btn danger" data-delete="${esc(t.id)}">حذف</button></div></div></article>`}
+  function renderRecent(){$('recentTrades').innerHTML=app.data.trades.length?[...app.data.trades].sort((a,b)=>(safeDate(b.date)?.getTime()||0)-(safeDate(a.date)?.getTime()||0)).slice(0,4).map(tradeCard).join(''):'<div class="empty">هنوز معامله‌ای ثبت نشده است.</div>';bindTradeActions($('recentTrades'))}
+  function renderPsychProgress(){const total=app.data.trades.length,pending=app.data.trades.filter(t=>t.needsPsych).length,done=total-pending;$('pendingPill').textContent=faNum(pending)+' معامله منتظر';$('psychProgress').innerHTML=`<div class="metric-row"><span>معاملات تکمیل‌شده</span><b>${faNum(done)} از ${faNum(total)}</b></div><div class="bar"><i style="width:${total?done/total*100:0}%"></i></div><div class="metric-row"><span>معاملات نیازمند بررسی</span><b class="warning">${faNum(pending)}</b></div><div class="metric-row"><span>درصد تکمیل</span><b>${total?Math.round(done/total*100):0}%</b></div>`;$('openPendingBtn').disabled=!pending}
+  function renderTrades(){const q=($('tradeSearch')?.value||'').trim().toLowerCase(),sort=$('tradeSort')?.value||'new';let arr=app.data.trades.filter(t=>{const str=[t.symbol,t.ticket,t.id].join(' ').toLowerCase();if(q&&!str.includes(q))return false;switch(app.currentFilter){case'pending':return !!t.needsPsych;case'win':return Number(t.pnl)>0;case'loss':return Number(t.pnl)<0;case'mistake':return isMistake(t);case'mt5':return t.source==='mt5';default:return true}});arr.sort((a,b)=>sort==='profit'?Number(b.pnl)-Number(a.pnl):sort==='loss'?Number(a.pnl)-Number(b.pnl):sort==='old'?(safeDate(a.date)?.getTime()||0)-(safeDate(b.date)?.getTime()||0):(safeDate(b.date)?.getTime()||0)-(safeDate(a.date)?.getTime()||0));$('tradeCountPill').textContent=faNum(arr.length)+' معامله';$('tradeList').innerHTML=arr.length?arr.map(tradeCard).join(''):'<div class="empty">معامله‌ای با این فیلتر پیدا نشد.</div>';bindTradeActions($('tradeList'))}
+  function bindTradeActions(root){root.querySelectorAll('[data-psych]').forEach(b=>b.addEventListener('click',()=>openPsych(b.dataset.psych)));root.querySelectorAll('[data-delete]').forEach(b=>b.addEventListener('click',()=>deleteTrade(b.dataset.delete)))}
+  function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+  function openPsych(id){const t=app.data.trades.find(x=>x.id===id);if(!t)return;app.editingId=id;$('psychSummary').textContent=`${t.symbol} · ${fmtMoney(t.pnl)} · ${fmtDate(t.date)}`;$('pEmotion').value=t.emotion||'آرام و منضبط';$('pRule').value=t.ruleStatus||'کاملاً رعایت شد';$('pStress').value=t.stress||2;$('stressValue').textContent=($('pStress').value)+'/5';$('pAfterLoss').value=t.afterLoss||'no';$('pReason').value=t.reason||'ستاپ مطابق پلن';$('pNotes').value=t.notes||'';$('psychModal').classList.add('open')}
+  function closePsych(){$('psychModal').classList.remove('open');app.editingId=null}
+  async function savePsych(e){e.preventDefault();const t=app.data.trades.find(x=>x.id===app.editingId);if(!t)return;t.emotion=$('pEmotion').value;t.ruleStatus=$('pRule').value;t.stress=Number($('pStress').value);t.afterLoss=$('pAfterLoss').value;t.reason=$('pReason').value;t.notes=$('pNotes').value.trim();t.needsPsych=false;t.psychUpdatedAt=new Date().toISOString();closePsych();await persist();renderAll();toast('وضعیت روان‌شناسی ذخیره شد.')}
+  async function deleteTrade(id){if(!confirm('این معامله از ژورنال همین دستگاه حذف شود؟'))return;const target=app.data.trades.find(t=>t.id===id);if(target?.source==='mt5'&&target.sourceKey){app.data.ignoredSourceKeys=app.data.ignoredSourceKeys||[];if(!app.data.ignoredSourceKeys.includes(target.sourceKey))app.data.ignoredSourceKeys.push(target.sourceKey)}app.data.trades=app.data.trades.filter(t=>t.id!==id);await persist();renderAll();toast('معامله حذف شد.')}
+  function updateReadinessUI(){const r=app.data.readiness;[['sleep','sleepRange','sleepVal'],['focus','focusRange','focusVal'],['plan','planRange','planVal']].forEach(([k,i,v])=>{$(i).value=r[k];$(v).textContent=r[k]+'/5'});const score=Math.round((r.sleep+r.focus+r.plan)/15*100);$('readyBadge').textContent='آمادگی '+score+'%';$('readyBadge').className='pill '+(score>=75?'good':score>=50?'warn':'bad');$('readyAdvice').textContent=score>=75?'آمادگی مناسب؛ پیش از ورود، حد ضرر و ریسک را دوباره بررسی کن.':score>=50?'آمادگی متوسط؛ حجم و تعداد معاملات را کاهش بده.':'آمادگی پایین؛ بهتر است فعلاً معامله نکنی.'}
+  function renderPsychology(){const completed=app.data.trades.filter(t=>!t.needsPsych),clean=completed.filter(t=>!isMistake(t)),mistakes=completed.filter(isMistake),avg=a=>a.length?a.reduce((s,t)=>s+(Number(t.pnl)||0),0)/a.length:0;const revenge=completed.filter(t=>t.afterLoss==='yes').length;const emotional=completed.filter(t=>t.emotion&&t.emotion!=='آرام و منضبط').length;$('behaviorSummary').innerHTML=`<div class="metric-row"><span>معاملات منضبط</span><b class="positive">${faNum(clean.length)}</b></div><div class="metric-row"><span>معاملات دارای خطا</span><b class="negative">${faNum(mistakes.length)}</b></div><div class="metric-row"><span>میانگین P/L منضبط</span><b class="${avg(clean)>=0?'positive':'negative'}">${fmtMoney(avg(clean))}</b></div><div class="metric-row"><span>میانگین P/L دارای خطا</span><b class="${avg(mistakes)>=0?'positive':'negative'}">${fmtMoney(avg(mistakes))}</b></div><div class="metric-row"><span>ورود بعد از ضرر قبلی</span><b>${faNum(revenge)}</b></div><div class="metric-row"><span>معاملات با هیجان غیرآرام</span><b>${faNum(emotional)}</b></div>`;$('rulesList').innerHTML=app.data.rules.length?app.data.rules.map((r,i)=>`<div class="rule"><span>${esc(r)}</span><button class="btn danger" data-rule-del="${i}">حذف</button></div>`).join(''):'<div class="empty">هنوز قانونی ثبت نشده است.</div>';$('rulesList').querySelectorAll('[data-rule-del]').forEach(b=>b.onclick=async()=>{app.data.rules.splice(Number(b.dataset.ruleDel),1);await persist();renderPsychology()});renderInsights()}
+  function renderInsights(){const done=app.data.trades.filter(t=>!t.needsPsych);const avg=a=>a.length?a.reduce((s,t)=>s+(Number(t.pnl)||0),0)/a.length:0;const insights=[];if(done.length<5)insights.push('برای تحلیل قابل‌اتکاتر، حداقل ۵ معامله را با اطلاعات روان‌شناسی کامل ثبت کن.');else{const after=done.filter(t=>t.afterLoss==='yes'),notAfter=done.filter(t=>t.afterLoss!=='yes');if(after.length>=2&&notAfter.length>=2){const delta=avg(after)-avg(notAfter);insights.push(delta<0?`معاملات بعد از ضرر قبلی به‌طور میانگین ${fmtMoney(Math.abs(delta))} ضعیف‌تر از سایر معاملات بوده‌اند؛ پیش از ورود بعدی وقفه را جدی بگیر.`:`در داده‌های فعلی، عملکرد معاملات بعد از ضرر قبلی بدتر از سایر معاملات نیست؛ همچنان تعداد نمونه را زیر نظر داشته باش.`)}const fomo=done.filter(t=>(t.emotion||'').includes('FOMO')||t.reason==='FOMO و ترس از جا ماندن'),other=done.filter(t=>!fomo.includes(t));if(fomo.length>=2&&other.length>=2){const delta=avg(fomo)-avg(other);insights.push(delta<0?`معاملات دارای FOMO به‌طور میانگین ${fmtMoney(Math.abs(delta))} نتیجه ضعیف‌تری داشته‌اند؛ کیفیت تأیید ستاپ را قبل از ورود بررسی کن.`:`در نمونه فعلی، گروه FOMO افت میانگین مشخصی نسبت به سایر معاملات ندارد.`)}const broken=done.filter(t=>t.ruleStatus&&t.ruleStatus!=='کاملاً رعایت شد'),followed=done.filter(t=>t.ruleStatus==='کاملاً رعایت شد');if(broken.length>=2&&followed.length>=2){insights.push(avg(broken)<avg(followed)?`معاملات با نقض یا خطای پلن، میانگین P/L پایین‌تری از معاملات منطبق با پلن دارند؛ اجرای پلن اولویت اصلاحی مناسبی است.`:`در داده فعلی تفاوت منفی روشنی میان این دو گروه دیده نمی‌شود.`)}const mistakeRate=done.length?done.filter(isMistake).length/done.length:0;if(mistakeRate>.4)insights.push(`حدود ${Math.round(mistakeRate*100)}٪ معاملات تکمیل‌شده برچسب خطای رفتاری دارند؛ روی یک خطای پرتکرار تمرکز کن، نه چند تغییر هم‌زمان.`);const s=stats(done);if(s.dd>0&&s.dd>Math.max(50,Math.abs(s.net)*.75))insights.push('افت تجمعی نسبت به سود/زیان خالص قابل‌توجه است؛ توالی معاملات زیان‌ده و اندازه ریسک را جداگانه بررسی کن.')}if(!insights.length)insights.push('هنوز الگوی رفتاری مشخصی از داده‌ها استخراج نشده است. پس از تکمیل چند معامله دیگر دوباره بررسی کن.');$('smartInsights').innerHTML=insights.map((x,i)=>`<div class="metric-row"><span><b>${faNum(i+1)}.</b> ${esc(x)}</span></div>`).join('')}
+  function renderReports(){const range=$('reportRange').value||'30',rangeLabel=({7:'۷ روز اخیر',30:'۳۰ روز اخیر',90:'۹۰ روز اخیر',all:'تمام دوره'})[range]||'۳۰ روز اخیر',cut=range==='all'?0:Date.now()-Number(range)*86400000;const arr=app.data.trades.filter(t=>{const d=safeDate(t.date);return !cut||(d&&d.getTime()>=cut)});const s=stats(arr),done=arr.filter(t=>!t.needsPsych),clean=done.filter(t=>!isMistake(t)),bad=done.filter(isMistake);$('rCount').textContent=faNum(s.n);$('rNet').textContent=fmtMoney(s.net);$('rAvg').textContent=fmtMoney(s.avg);$('rDiscipline').textContent=(done.length?Math.round(clean.length/done.length*100):0)+'%';const mean=a=>a.length?a.reduce((x,t)=>x+Number(t.pnl||0),0)/a.length:0;$('disciplineCompare').innerHTML=`<div class="metric-row"><span>منضبط · تعداد ${faNum(clean.length)}</span><b class="${mean(clean)>=0?'positive':'negative'}">${fmtMoney(mean(clean))} میانگین</b></div><div class="metric-row"><span>دارای خطا · تعداد ${faNum(bad.length)}</span><b class="${mean(bad)>=0?'positive':'negative'}">${fmtMoney(mean(bad))} میانگین</b></div><div class="notice">این مقایسه توصیفی است و به‌تنهایی رابطه علت و معلولی را اثبات نمی‌کند.</div>`;const emo={};done.forEach(t=>{const k=t.emotion||'نامشخص';emo[k]??={n:0,pnl:0};emo[k].n++;emo[k].pnl+=Number(t.pnl)||0});$('emotionBreakdown').innerHTML=Object.entries(emo).length?Object.entries(emo).sort((a,b)=>b[1].n-a[1].n).map(([k,v])=>`<div class="metric-row"><span>${esc(k)} · ${faNum(v.n)}</span><b class="${v.pnl>=0?'positive':'negative'}">${fmtMoney(v.pnl)}</b></div>`).join(''):'<div class="empty">برای تحلیل، ابتدا وضعیت روان‌شناسی معاملات را تکمیل کن.</div>';const syms={};arr.forEach(t=>{const k=t.symbol||'نامشخص';syms[k]??={n:0,w:0,pnl:0};syms[k].n++;if(Number(t.pnl)>0)syms[k].w++;syms[k].pnl+=Number(t.pnl)||0});$('symbolTable').innerHTML=Object.entries(syms).sort((a,b)=>b[1].pnl-a[1].pnl).map(([k,v])=>`<tr><td>${esc(k)}</td><td>${faNum(v.n)}</td><td>${faNum(v.w)}</td><td>${(v.n?v.w/v.n*100:0).toFixed(1)}%</td><td class="${v.pnl>=0?'positive':'negative'}">${fmtMoney(v.pnl)}</td><td>${fmtMoney(v.pnl/v.n)}</td></tr>`).join('')||'<tr><td colspan="6">داده‌ای وجود ندارد.</td></tr>';if($('reportRangeChip'))$('reportRangeChip').textContent=rangeLabel;if($('reportGeneratedChip'))$('reportGeneratedChip').textContent='تهیه: '+new Intl.DateTimeFormat('fa-IR',{dateStyle:'medium',timeStyle:'short'}).format(new Date());if($('reportTradeCountChip'))$('reportTradeCountChip').textContent=faNum(s.n)+' معامله';renderAdvancedReports(arr);renderCalendar()}
+
+  function localDayKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+  function getTodayTrades(){const key=localDayKey(new Date());return app.data.trades.filter(t=>{const d=safeDate(t.date);return d&&localDayKey(d)===key})}
+  function consecutiveLosses(){const ordered=[...app.data.trades].sort((a,b)=>(safeDate(b.date)?.getTime()||0)-(safeDate(a.date)?.getTime()||0));let n=0;for(const t of ordered){if(Number(t.pnl)<0)n++;else if(Number(t.pnl)>0)break;else continue}return n}
+  function renderRiskOverview(){if(!app.data||!$('dailyRiskContent'))return;const today=getTodayTrades(),net=today.reduce((a,t)=>a+(Number(t.pnl)||0),0),limit=Math.max(0,Number(app.data.settings.dailyLossLimit)||0),streak=consecutiveLosses(),streakLimit=Math.max(2,Number(app.data.settings.lossStreakLimit)||3),remaining=limit?Math.max(0,limit+Math.min(0,net)):null,readiness=Math.round((app.data.readiness.sleep+app.data.readiness.focus+app.data.readiness.plan)/15*100);const warnings=[];let level='safe';if(limit&&net<=-limit){level='danger';warnings.push({c:'bad',t:`حد زیان روزانه رد شده است: ${fmtMoney(net)} در برابر حد ${fmtMoney(-limit)}. ادامه معامله را متوقف و شرایط را بازبینی کن.`})}else if(limit&&net<0){level='warn';warnings.push({c:'warn',t:`از حد زیان روزانه ${fmtMoney(-limit)}، مقدار ${fmtMoney(Math.abs(net))} مصرف شده؛ مانده فاصله تا حد: ${fmtMoney(remaining)}.`})}else warnings.push({c:'good',t:limit?`زیان خالص امروز از حد تعیین‌شده عبور نکرده است؛ P/L امروز: ${fmtMoney(net)}.`:`P/L امروز: ${fmtMoney(net)}؛ برای فعال شدن هشدار حد زیان، مقدار آن را در تنظیمات تعیین کن.`});if(streak>=streakLimit){level='danger';warnings.push({c:'bad',t:`${faNum(streak)} زیان متوالی ثبت شده؛ هشدار توقف و بازبینی پلن فعال است.`})}if(readiness<50){level=level==='danger'?'danger':'warn';warnings.push({c:'warn',t:`آمادگی ذهنی امروز ${faNum(readiness)}٪ است؛ بهتر است تا بهبود تمرکز و انرژی معامله نکنی.`})}const pending=app.data.trades.filter(t=>t.needsPsych).length;if(pending)warnings.push({c:'warn',t:`${faNum(pending)} معامله هنوز فرم روان‌شناسی تکمیل‌نشده دارد.`});$('dailyRiskCard').className='card risk-banner '+level;$('dailyRiskBadge').textContent=level==='danger'?'هشدار جدی':level==='warn'?'نیازمند توجه':'وضعیت عادی';$('dailyRiskContent').innerHTML=warnings.map(w=>`<div class="alert-item ${w.c}">${esc(w.t)}</div>`).join('')}
+  function persianDateParts(date){const parts=new Intl.DateTimeFormat('en-US-u-ca-persian-nu-latn',{year:'numeric',month:'numeric',day:'numeric'}).formatToParts(date);const out={};parts.forEach(p=>{if(p.type==='year'||p.type==='month'||p.type==='day')out[p.type]=Number(p.value)});return out}
+  function renderCalendar(){const root=$('tradeCalendar');if(!root)return;const cursor=app.calendarCursor||new Date(),target=persianDateParts(cursor),scanStart=new Date(cursor.getFullYear(),cursor.getMonth(),cursor.getDate()-4),dates=[];for(let i=0;i<45;i++){const d=new Date(scanStart.getFullYear(),scanStart.getMonth(),scanStart.getDate()+i),p=persianDateParts(d);if(p.year===target.year&&p.month===target.month)dates.push({date:d,day:p.day})}if(!dates.length){root.innerHTML='<div class="empty">تقویم در دسترس نیست.</div>';return}const first=dates[0].date;$('calendarMonthLabel').textContent=first.toLocaleDateString('fa-IR-u-ca-persian',{year:'numeric',month:'long'});const totals={};app.data.trades.forEach(t=>{const d=safeDate(t.date);if(!d)return;const p=persianDateParts(d);if(p.year!==target.year||p.month!==target.month)return;const key=localDayKey(d);totals[key]??={pnl:0,n:0};totals[key].pnl+=Number(t.pnl)||0;totals[key].n++});const names=['ش','ی','د','س','چ','پ','ج'];let html=names.map(x=>`<div class="calendar-cell weekday">${x}</div>`).join('');const offset=(first.getDay()+1)%7;for(let i=0;i<offset;i++)html+='<div class="calendar-cell empty"></div>';dates.forEach(({date,day})=>{const v=totals[localDayKey(date)],cls=v?(v.pnl>0?'has-profit':v.pnl<0?'has-loss':''):'';html+=`<div class="calendar-cell ${cls}" title="${v?faNum(v.n)+' معامله · '+fmtMoney(v.pnl):'بدون معامله'}"><span class="day">${faNum(day)}</span>${v?`<span class="day-pnl ${v.pnl>=0?'positive':'negative'}">${v.pnl>=0?'+':''}${fmtMoney(v.pnl)}</span><span class="muted" style="font-size:8px">${faNum(v.n)} معامله</span>`:''}</div>`});root.innerHTML=html}
+  function tradeHourDate(t){const open=String(t.openTime||'').trim();const timeOnly=open.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);if(timeOnly){const base=safeDate(t.date)||new Date();const d=new Date(base);d.setHours(Number(timeOnly[1]),Number(timeOnly[2]),Number(timeOnly[3]||0),0);return d}return safeDate(t.openTime)||safeDate(t.date)}
+  function renderAdvancedReports(arr){const eligible=arr.filter(t=>Number(t.riskAmount)>0),rvals=eligible.map(t=>Number(t.pnl)/Number(t.riskAmount)),ravg=rvals.length?rvals.reduce((a,b)=>a+b,0)/rvals.length:0,rtotal=rvals.reduce((a,b)=>a+b,0);$('rMultipleSummary').innerHTML=eligible.length?`<div class="metric-row"><span>تعداد معاملات دارای ریسک ثبت‌شده</span><b>${faNum(eligible.length)}</b></div><div class="metric-row"><span>میانگین R واقعی</span><b class="${ravg>=0?'positive':'negative'}">${ravg.toFixed(2)}R</b></div><div class="metric-row"><span>مجموع R واقعی</span><b class="${rtotal>=0?'positive':'negative'}">${rtotal.toFixed(2)}R</b></div>`:'<div class="empty">برای محاسبه R، ریسک اولیه دلاری معامله را در ثبت دستی یا ستون ریسک شیت وارد کن.</div>';
+    const hours={};arr.forEach(t=>{const d=tradeHourDate(t);if(!d)return;const h=String(d.getHours()).padStart(2,'0')+':00';hours[h]??={n:0,w:0,pnl:0};hours[h].n++;if(Number(t.pnl)>0)hours[h].w++;hours[h].pnl+=Number(t.pnl)||0});$('hourTable').innerHTML=Object.keys(hours).length?`<table class="analysis-table"><thead><tr><th>ساعت</th><th>تعداد</th><th>نرخ برد</th><th>خالص</th></tr></thead><tbody>${Object.entries(hours).sort((a,b)=>a[0].localeCompare(b[0])).map(([h,v])=>`<tr><td dir="ltr">${h}</td><td>${faNum(v.n)}</td><td>${(v.w/v.n*100).toFixed(0)}٪</td><td class="${v.pnl>=0?'positive':'negative'}">${fmtMoney(v.pnl)}</td></tr>`).join('')}</tbody></table>`:'<div class="empty">زمان معامله در داده‌ها موجود نیست.</div>';
+    const strategies={};arr.forEach(t=>{const k=String(t.strategy||'نامشخص').trim()||'نامشخص';strategies[k]??={n:0,w:0,pnl:0};strategies[k].n++;if(Number(t.pnl)>0)strategies[k].w++;strategies[k].pnl+=Number(t.pnl)||0});$('strategyTable').innerHTML=Object.keys(strategies).length?`<table class="analysis-table"><thead><tr><th>استراتژی</th><th>تعداد</th><th>نرخ برد</th><th>خالص</th></tr></thead><tbody>${Object.entries(strategies).sort((a,b)=>b[1].pnl-a[1].pnl).map(([k,v])=>`<tr><td>${esc(k)}</td><td>${faNum(v.n)}</td><td>${(v.w/v.n*100).toFixed(0)}٪</td><td class="${v.pnl>=0?'positive':'negative'}">${fmtMoney(v.pnl)}</td></tr>`).join('')}</tbody></table>`:'<div class="empty">هنوز داده‌ای برای مقایسه وجود ندارد.</div>'}
+  function exportPDF(){const previous=app.currentView;switchView('reports');setTimeout(()=>window.print(),80)}
+  function populateSettings(){$('gasUrl').value=app.data.settings.gasUrl||'';$('apiToken').value=app.data.settings.apiToken||'';$('autoSync').checked=!!app.data.settings.autoSync;$('sheetName').value=app.data.settings.sheetName||'Journal';$('dailyLossLimit').value=app.data.settings.dailyLossLimit??0;$('lossStreakLimit').value=String(app.data.settings.lossStreakLimit??3);$('connectionState').textContent=app.data.settings.gasUrl?'آماده اتصال':'تنظیم نشده';$('lastSyncText').textContent=app.data.lastSync?fmtDate(app.data.lastSync):'—'}
+  function updateSyncUI(){const synced=!!app.data.lastSync;$('syncDot').classList.toggle('off',!synced);$('syncStatus').textContent=synced?'آخرین دریافت: '+fmtDate(app.data.lastSync):'همگام‌سازی انجام نشده';$('lastSyncText').textContent=synced?fmtDate(app.data.lastSync):'—';$('connectionState').textContent=app.data.settings.gasUrl?'آماده اتصال':'تنظیم نشده'}
+  function getByAliases(row,aliases){const entries=Object.entries(row||{});for(const alias of aliases){const k=normalize(alias);const hit=entries.find(([h])=>normalize(h)===k);if(hit&&hit[1]!==''&&hit[1]!==null&&hit[1]!==undefined)return hit[1]}return null}
+  function toNumber(v){if(typeof v==='number')return v;let s=String(v??'').trim().replace(/,/g,'').replace(/[$€£¥\s]/g,'').replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d));const n=Number(s);return Number.isFinite(n)?n:0}
+  function sideValue(v){const s=String(v??'').toLowerCase();if(['buy','0','شراء','خرید','long','شراء'].includes(s)||s.includes('buy'))return 'Buy';if(['sell','1','فروش','short'].includes(s)||s.includes('sell'))return 'Sell';return String(v||'—')}
+  function hashKey(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return (h>>>0).toString(16)}
+  function normalizeSheetTrade(row){const ticket=getByAliases(row,['ticket','ticket_id','deal','deal_id','trade_id','id','position_id','position','شناسه','تیکت','شماره معامله']);const account=getByAliases(row,['account','login','account_login','شماره حساب'])||'';const symbol=getByAliases(row,['symbol','sym','نماد','جفت ارز','جفت‌ارز'])||'UNKNOWN';const side=sideValue(getByAliases(row,['type','side','direction','deal_type','نوع','جهت']));const lots=toNumber(getByAliases(row,['volume','lots','lot','size','حجم']));const profit=getByAliases(row,['net_profit','net pnl','net_pnl','pnl','profit_net','سود خالص']);let pnl=profit!==null?toNumber(profit):toNumber(getByAliases(row,['profit','سود','profit_usd']))+toNumber(getByAliases(row,['commission','کمیسیون']))+toNumber(getByAliases(row,['swap','سواپ']));const date=getByAliases(row,['close_time','close time','close_date','closed_at','time','date','تاریخ بسته شدن','تاریخ','زمان'])||getByAliases(row,['open_time','open time','زمان ورود']);const openTime=getByAliases(row,['open_time','open time','وقت ورود']);const entry=getByAliases(row,['open_price','entry','entry_price','price_open','قیمت ورود']);const close=getByAliases(row,['close_price','exit','exit_price','price_close','قیمت خروج']);const stable= ticket!==null?String(ticket):[symbol,side,lots,String(openTime||date||''),String(entry??'')].join('|');const sourceKey='mt5:'+String(account)+':'+stable;const strategy=getByAliases(row,['strategy','setup','استراتژی','ستاپ معاملاتی']);const riskRaw=getByAliases(row,['risk_amount','initial_risk','risk_usd','risk','ریسک اولیه','مبلغ ریسک']);return {id:'mt5_'+hashKey(sourceKey),source:'mt5',sourceKey,account:String(account),ticket:ticket===null?'':String(ticket),symbol:String(symbol).toUpperCase(),side,lots,pnl,date:date instanceof Date?date.toISOString():String(date||new Date().toISOString()),openTime:openTime?String(openTime):'',entryPrice:entry===null?'':toNumber(entry),closePrice:close===null?'':toNumber(close),commission:toNumber(getByAliases(row,['commission','کمیسیون'])),swap:toNumber(getByAliases(row,['swap','سواپ'])),strategy:String(strategy||'نامشخص'),riskAmount:riskRaw!==null&&toNumber(riskRaw)>0?toNumber(riskRaw):null,needsPsych:true,raw:row}}
+  function mergeTrades(rows){const map=new Map(app.data.trades.map(t=>[t.sourceKey||t.id,t]));let added=0,updated=0;for(const row of rows){const t=normalizeSheetTrade(row);if((app.data.ignoredSourceKeys||[]).includes(t.sourceKey))continue;const old=map.get(t.sourceKey);if(old){Object.assign(old,{symbol:t.symbol,side:t.side,lots:t.lots,pnl:t.pnl,date:t.date,openTime:t.openTime,entryPrice:t.entryPrice,closePrice:t.closePrice,commission:t.commission,swap:t.swap,ticket:t.ticket,strategy:t.strategy||old.strategy||'نامشخص',riskAmount:t.riskAmount??old.riskAmount??null,raw:t.raw});updated++}else{map.set(t.sourceKey,t);added++}}app.data.trades=[...map.values()].sort((a,b)=>(safeDate(b.date)?.getTime()||0)-(safeDate(a.date)?.getTime()||0));return {added,updated,total:rows.length}}
+  function jsonp(url,timeout=25000){return new Promise((resolve,reject)=>{const cb='__ztSheetCallback';let done=false;const script=document.createElement('script');const timer=setTimeout(()=>finish(new Error('زمان دریافت اطلاعات تمام شد.')),timeout);function finish(err,data){if(done)return;done=true;clearTimeout(timer);delete window[cb];script.remove();err?reject(err):resolve(data)}window[cb]=data=>finish(null,data);script.onerror=()=>finish(new Error('دریافت از Google Apps Script ناموفق بود. آدرس، دسترسی و کلید API را بررسی کن.'));script.src=url+(url.includes('?')?'&':'?')+'callback='+cb+'&_='+Date.now();document.head.appendChild(script)})}
+  async function syncFromSheet(){if(app.syncing)return;const url=String(app.data.settings.gasUrl||'').trim(),token=String(app.data.settings.apiToken||'').trim();if(!url){toast('ابتدا آدرس Apps Script را در تنظیمات وارد کن.');switchView('settings');return}if(!/^https:\/\/script\.google\.com\/macros\/s\/.+\/exec(?:\?.*)?$/.test(url)){toast('آدرس وب‌اپ باید با https://script.google.com/macros/s/.../exec شروع شود.');return}app.syncing=true;$('syncStatus').textContent='در حال دریافت…';$('syncBtn').disabled=true;try{const endpoint=new URL(url);endpoint.searchParams.set('action','journal');if(token)endpoint.searchParams.set('token',token);endpoint.searchParams.set('sheet',app.data.settings.sheetName||'Journal');const data=await jsonp(endpoint.toString());if(!data||data.status!=='success'||!Array.isArray(data.trades))throw new Error(data?.message||'ساختار پاسخ شیت معتبر نیست.');const result=mergeTrades(data.trades);app.data.lastSync=new Date().toISOString();app.data.lastSyncCount=data.trades.length;await persist();renderAll();toast(`همگام‌سازی انجام شد؛ ${faNum(result.added)} جدید، ${faNum(result.updated)} به‌روزرسانی.`)}catch(e){$('syncStatus').textContent='خطا در همگام‌سازی';toast('خطای اتصال: '+e.message)}finally{app.syncing=false;$('syncBtn').disabled=false}}
+  function exportCSV(){const headers=['id','source','ticket','symbol','side','lots','pnl','date','strategy','riskAmount','emotion','ruleStatus','stress','afterLoss','reason','notes'];const lines=[headers.join(',')];app.data.trades.forEach(t=>lines.push(headers.map(k=>'"'+String(t[k]??'').replace(/"/g,'""')+'"').join(',')));downloadBlob('\ufeff'+lines.join('\r\n'),'zehn-trader-trades.csv','text/csv;charset=utf-8');toast('فایل CSV ساخته شد. توجه: CSV رمزگذاری‌شده نیست.')}
+  async function addManualTrade(e){e.preventDefault();const symbol=$('fSymbol').value.trim().toUpperCase();const lots=Number($('fLots').value),pnl=Number($('fPnl').value);if(!symbol||!Number.isFinite(lots)||lots<=0||!Number.isFinite(pnl)){toast('نماد، حجم و سود/زیان را بررسی کن.');return}const riskAmount=Number($('fRiskAmount').value||0);const t={id:'manual_'+crypto.randomUUID(),source:'manual',sourceKey:'manual_'+crypto.randomUUID(),ticket:'',symbol,side:$('fSide').value,lots,pnl,date:$('fDate').value?new Date($('fDate').value).toISOString():new Date().toISOString(),entryPrice:$('fEntry').value?Number($('fEntry').value):'',strategy:$('fStrategy').value.trim()||'نامشخص',riskAmount:riskAmount>0?riskAmount:null,notes:$('fNotes').value.trim(),needsPsych:true};app.data.trades.unshift(t);$('fPnl').value='';$('fNotes').value='';$('fStrategy').value='';$('fRiskAmount').value='';await persist();renderAll();toast('معامله ثبت شد؛ وضعیت روان‌شناسی آن را هم تکمیل کن.')}
+  function startBreathing(){if(app.breathTimer)return;const phases=[['دم',true],['نگه‌دار',false],['بازدم',false],['مکث',false]];let phase=0,sec=4;const paint=()=>{$('breathPhase').textContent=phases[phase][0];$('breathSeconds').textContent=sec+'s';$('breathCircle').classList.toggle('expand',phase===0);$('breathCircle').classList.toggle('contract',phase===2)};paint();app.breathTimer=setInterval(()=>{sec--;if(sec<=0){phase=(phase+1)%4;sec=4}paint()},1000);$('breathStart').disabled=true}
+  function stopBreathing(){clearInterval(app.breathTimer);app.breathTimer=null;$('breathPhase').textContent='آماده';$('breathSeconds').textContent='4s';$('breathCircle').classList.remove('expand','contract');$('breathStart').disabled=false}
+  async function startTilt(minutes){app.data.tiltEnd=Date.now()+minutes*60000;await persist();runTiltTimer();toast('وقفه معاملاتی فعال شد.')}
+  async function stopTilt(){app.data.tiltEnd=0;await persist();runTiltTimer()}
+  function runTiltTimer(){clearInterval(app.tiltTimer);const tick=()=>{const left=Math.max(0,(app.data?.tiltEnd||0)-Date.now());if(!left){$('tiltDisplay').textContent='00:00';clearInterval(app.tiltTimer);app.tiltTimer=null;return}const sec=Math.ceil(left/1000);$('tiltDisplay').textContent=String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0')};tick();if(app.data.tiltEnd>Date.now())app.tiltTimer=setInterval(tick,1000)}
+  async function addRule(){const v=$('newRule').value.trim();if(!v)return;app.data.rules.push(v);$('newRule').value='';await persist();renderPsychology();toast('قانون اضافه شد.')}
+  function bindEvents(){
+    $('loginForm').addEventListener('submit',async e=>{e.preventDefault();$('loginError').textContent='';const p=$('password').value;try{if(!localStorage.getItem(AUTH_KEY)){if(p.length<8)throw new Error('رمز عبور باید حداقل ۸ کاراکتر باشد.');if(p!==$('confirmPassword').value)throw new Error('تکرار رمز عبور یکسان نیست.');await setupVault(p)}else await unlockVault(p);await showApp()}catch(err){$('loginError').textContent=err.message}});
+    $('passkeyLogin').onclick=async()=>{ $('loginError').textContent='';try{await unlockWithPasskey()}catch(err){$('loginError').textContent=err.message||'ورود با Passkey انجام نشد.'}};
+    $('restoreFile').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;const p=prompt('رمز عبور فایل پشتیبان را وارد کن:');if(!p)return;try{await restoreBackup(f,p);await showApp();toast('پشتیبان با موفقیت بازیابی شد.')}catch(err){$('loginError').textContent=err.message}e.target.value=''});
+    $('settingsRestore').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;const p=prompt('رمز عبور فایل پشتیبان را وارد کن:');if(!p)return;try{await restoreBackup(f,p);await showApp();toast('پشتیبان بازیابی شد.')}catch(err){toast(err.message)}e.target.value=''});
+    $('sideNav').addEventListener('click',e=>{const b=e.target.closest('[data-view]');if(b)switchView(b.dataset.view)});$('mobileNav').addEventListener('click',e=>{const b=e.target.closest('[data-view]');if(!b)return;switchView(b.dataset.view,b.dataset.navKey||b.dataset.view);if(b.dataset.jump)setTimeout(()=>$(b.dataset.jump)?.scrollIntoView({behavior:'smooth',block:'center'}),140)});document.querySelectorAll('[data-goto]').forEach(b=>b.addEventListener('click',()=>switchView(b.dataset.goto)));
+    $('themeBtn').onclick=()=>{const light=!document.body.classList.contains('light');localStorage.setItem(THEME_KEY,light?'light':'dark');applyTheme();drawChart()};$('settingsBtn').onclick=()=>switchView('settings');$('lockBtn').onclick=async()=>{await persist();await lockApp()};$('syncBtn').onclick=syncFromSheet;$('syncNow').onclick=syncFromSheet;$('backupBtn').onclick=exportBackup;$('settingsBackup').onclick=exportBackup;$('csvBtn').onclick=exportCSV;
+    $('saveSettings').onclick=async()=>{app.data.settings={...app.data.settings,gasUrl:$('gasUrl').value.trim(),apiToken:$('apiToken').value.trim(),autoSync:$('autoSync').checked,sheetName:$('sheetName').value.trim()||'Journal'};await persist();populateSettings();toast('تنظیمات ذخیره شد.')};
+    $('registerPasskey').onclick=async()=>{try{await registerPasskey()}catch(err){toast(err.message||'فعال‌سازی Passkey ناموفق بود.')}};
+    $('removePasskey').onclick=removePasskey;
+    $('tradeForm').addEventListener('submit',addManualTrade);$('tradeSearch').addEventListener('input',renderTrades);$('tradeSort').addEventListener('change',renderTrades);$('tradeFilters').addEventListener('click',e=>{const b=e.target.closest('[data-filter]');if(!b)return;app.currentFilter=b.dataset.filter;$('tradeFilters').querySelectorAll('.filter').forEach(x=>x.classList.toggle('active',x===b));renderTrades()});
+    $('psychForm').addEventListener('submit',savePsych);$('closePsych').onclick=closePsych;$('cancelPsych').onclick=closePsych;$('psychModal').addEventListener('click',e=>{if(e.target===$('psychModal'))closePsych()});$('pStress').oninput=()=> $('stressValue').textContent=$('pStress').value+'/5';
+    [['sleepRange','sleep'],['focusRange','focus'],['planRange','plan']].forEach(([id,k])=>$(id).addEventListener('input',async()=>{app.data.readiness[k]=Number($(id).value);updateReadinessUI();await persist()}));$('openPendingBtn').onclick=()=>{const t=app.data.trades.find(x=>x.needsPsych);if(t)openPsych(t.id)};
+    $('breathStart').onclick=startBreathing;$('breathStop').onclick=stopBreathing;document.querySelectorAll('[data-tilt]').forEach(b=>b.onclick=()=>startTilt(Number(b.dataset.tilt)));$('tiltStop').onclick=stopTilt;$('addRule').onclick=addRule;$('newRule').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addRule()}});$('reportRange').onchange=renderReports;$('calendarPrev').onclick=()=>{app.calendarCursor.setDate(app.calendarCursor.getDate()-35);renderCalendar()};$('calendarNext').onclick=()=>{app.calendarCursor.setDate(app.calendarCursor.getDate()+35);renderCalendar()};$('pdfBtn').onclick=exportPDF;$('saveRiskSettings').onclick=async()=>{app.data.settings.dailyLossLimit=Math.max(0,Number($('dailyLossLimit').value)||0);app.data.settings.lossStreakLimit=Number($('lossStreakLimit').value)||3;await persist();renderRiskOverview();toast('قوانین ریسک ذخیره شد.')};
+    $('wipeData').onclick=async()=>{if(!confirm('تمام معاملات، قوانین و تنظیمات محلی این دستگاه پاک شوند؟ این کار برگشت‌ناپذیر است.'))return;if(!confirm('برای تأیید نهایی، مطمئنی که پشتیبان لازم را گرفته‌ای؟'))return;localStorage.removeItem(AUTH_KEY);localStorage.removeItem(VAULT_KEY);await clearRememberedSession();app.key=null;app.data=null;showLogin(true)};
+    window.addEventListener('resize',()=>{clearTimeout(app.chartResize);app.chartResize=setTimeout(drawChart,120)});
+  }
+  function initActivityTracking(){['pointerdown','keydown','touchstart','click'].forEach(evt=>document.addEventListener(evt,()=>touchSession(),{passive:true}));document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&app.key){if(sessionExpired())lockForInactivity();else touchSession(true)}})}
+  async function init(){bindEvents();initActivityTracking();if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});if(localStorage.getItem(AUTH_KEY)){const resumed=await resumeRememberedSession();if(resumed)await showApp({remember:false});else showLogin(false)}else showLogin(true)}
+  init().catch(err=>{console.error(err);showLogin(Boolean(!localStorage.getItem(AUTH_KEY))) });
+})();
+</script>
+</body>
+</html>
