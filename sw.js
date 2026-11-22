@@ -1,5 +1,5 @@
 'use strict';
-const CACHE_NAME = 'zehn-trader-2.5.3';
+const CACHE_NAME = 'zehn-trader-2.5.4';
 const APP_SHELL = [
   './',
   './index.html',
