@@ -13,8 +13,8 @@
     "minimal-ui"
   ],
   "orientation": "portrait-primary",
-  "background_color": "#050c14",
-  "theme_color": "#050c14",
+  "background_color": "#050d14",
+  "theme_color": "#050d14",
   "categories": [
     "finance",
     "productivity"

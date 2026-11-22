@@ -1,26 +1,25 @@
-# راهنمای انتشار ذهن تریدر 2.5.0 روی GitHub Pages
+# راهنمای انتشار ذهن تریدر 2.5.1 روی GitHub Pages
 
 مخزن هدف: `behnam67rr/journalnew1`
 
-1. پیش از انتشار، از برنامه پشتیبان رمزگذاری‌شده تهیه کن.
+1. در نسخه فعلی برنامه از بخش تنظیمات، پشتیبان رمزگذاری‌شده بگیر و فایل را خارج از دستگاه نگهداری کن.
 2. ZIP را استخراج کن.
-3. این هفت فایل را در ریشه مخزن GitHub جایگزین کن: `index.html`, `manifest.webmanifest`, `sw.js`, `icon.svg`, `icon-192.png`, `icon-512.png`, `apple-touch-icon.png`.
-4. پوشه `google-apps-script` را به مخزن عمومی آپلود نکن. کد آن فقط در Google Apps Script استفاده می‌شود.
-5. Commit changes را بزن و در تب Actions منتظر تیک سبز اجرای `pages-build-deployment` بمان.
-6. پس از موفقیت، این مسیرها را بازبینی کن:
-   - `https://behnam67rr.github.io/journalnew1/`
-   - `https://behnam67rr.github.io/journalnew1/manifest.webmanifest`
-   - `https://behnam67rr.github.io/journalnew1/icon-192.png`
-   - `https://behnam67rr.github.io/journalnew1/icon-512.png`
-   - `https://behnam67rr.github.io/journalnew1/sw.js`
-7. در Chrome گوشی سایت را Refresh کن. کش جدید با نام `zehn-trader-2.5.0` جایگزین کش نسخه قبل می‌شود.
-8. اگر Passkey قبلاً ثبت نشده، ابتدا با رمز عبور وارد شو و از «اتصال و تنظیمات» آن را فعال کن. در ورود بعدی Passkey گزینه اصلی خواهد بود.
-9. در گزارش‌ها دکمه «پیش‌نمایش / PDF» را بزن؛ پس از بازبینی، «چاپ / ذخیره PDF» را انتخاب کن.
+3. فقط این هفت فایل را در ریشه مخزن GitHub Pages آپلود و جایگزین کن: `index.html`, `manifest.webmanifest`, `sw.js`, `icon.svg`, `icon-192.png`, `icon-512.png`, `apple-touch-icon.png`.
+4. پوشه `google-apps-script` را در مخزن عمومی قرار نده. فایل `Code.gs` فقط در پروژه خصوصی Google Apps Script قرار می‌گیرد. فایل‌های Markdown، `VERSION.txt` و `app.js` برای مستندسازی/توسعه‌اند و برای انتشار Pages لازم نیستند.
+5. Commit changes را بزن و منتظر انتشار GitHub Pages بمان.
+6. این مسیرها را باز کن و مطمئن شو پاسخ موفق می‌گیرند: `/journalnew1/`, `/journalnew1/manifest.webmanifest`, `/journalnew1/icon-192.png`, `/journalnew1/icon-512.png`, `/journalnew1/sw.js`.
+7. سایت را در Chrome باز کن. اگر نسخه قبلی دیده شد، یک بار Refresh کن؛ کش نسخه `zehn-trader-2.5.1` باید جایگزین کش قبلی شود.
+8. برای نصب PWA، منوی Chrome را باز کن و گزینه Install app را بررسی کن.
+9. در اولین ورود پس از انتشار، با رمز اصلی وارد شو و معاملات، گزارش‌ها و تنظیمات را کنترل کن. سپس همگام‌سازی Google Sheets را جداگانه آزمایش کن.
 
 ## نکات امنیتی
 
-- اطلاعات محلی را پاک نکن؛ ممکن است ژورنال و تنظیمات حذف شوند.
-- قبل از انتشار پشتیبان بگیر.
-- آدرس Apps Script و API Token را در مخزن عمومی قرار نده.
-- Passkey به احرازگر دستگاه و پشتیبانی WebAuthn/PRF وابسته است؛ در صورت عدم پشتیبانی، رمز عبور همچنان روش جایگزین است.
-- هشدارهای ریسک برنامه مانع اجرای سفارش در MT5 نیستند.
+- اطلاعات محلی را پاک نکن؛ ممکن است ژورنال و تنظیمات ذخیره‌شده حذف شوند.
+- URL Apps Script و API Token را در مخزن عمومی، اسکرین‌شات یا پیام عمومی منتشر نکن.
+- فایل `Code.gs` حاوی شناسه Spreadsheet است؛ آن را عمومی نکن.
+- API Token را در Properties پروژه Apps Script نگهداری کن و فقط در تنظیمات محلی برنامه وارد کن.
+- JSONP توکن را در query string درخواست قرار می‌دهد؛ از وب‌اپ HTTPS متعلق به خودت استفاده کن و URL کامل درخواست را به اشتراک نگذار.
+- حد زیان روزانه صفر یعنی هشدار حد زیان غیرفعال است.
+- هشدارهای ژورنال مانع اجرای سفارش در MT5 نیستند.
+- Passkey را بعد از انتشار روی دامنه نهایی ثبت کن؛ Passkey به دامنه وابسته است.
+- برای PDF به گزارش‌ها برو و «چاپ / ذخیره PDF» را انتخاب کن.
