@@ -180,7 +180,7 @@
 
 
   
-    /* Zehn Trader 2.7.0: expanded analytics, local assistant and sync diagnostics */
+    /* Zehn Trader 2.8.4: Cloudflare command safety and D1 bridge */
     .report-quality-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:12px 0}
     .report-quality-grid .stat{min-width:0;padding:13px;border-radius:16px}
     .report-quality-grid .label{font-size:10px;line-height:1.6}
@@ -837,7 +837,7 @@
 
   <div id="appRoot" class="app hidden">
     <aside class="sidebar">
-      <div class="brand"><div class="logo" aria-hidden="true"></div><div><b>ذهن تریدر</b><span>نسخه 2.8.3 · ژورنال هوشمند</span></div></div>
+      <div class="brand"><div class="logo" aria-hidden="true"></div><div><b>ذهن تریدر</b><span>نسخه 2.8.4 · ژورنال هوشمند</span></div></div>
       <nav class="nav" id="sideNav">
         <button class="active" data-view="dashboard"><span class="ico">▦</span>داشبورد</button>
         <button data-view="trades"><span class="ico">⇄</span>ژورنال معاملات</button>
@@ -1069,7 +1069,14 @@
 
 <section class="view" id="view-settings">
         <div class="grid two">
-          <div class="card"><div class="card-head"><h3>اتصال Google Sheets</h3><span class="pill">MT5 → Sheets → ذهن تریدر</span></div>
+          <div class="card"><div class="card-head"><h3>اتصال Cloudflare Worker</h3><span class="pill good">MT5 Live · D1</span></div>
+            <div class="field"><label>آدرس Worker (بدون مسیر API)</label><input id="workerUrl" type="url" placeholder="https://wall-street-fx-api.<account>.workers.dev" dir="ltr" autocomplete="url"></div>
+            <div class="field"><label>کلید دسترسی PWA (ZT_PWA_TOKEN)</label><input id="workerToken" type="password" placeholder="Secret تنظیم‌شده در Cloudflare" dir="ltr" autocomplete="off"></div>
+            <div class="form-actions"><button class="btn primary" id="cloudflareSyncNow" type="button">دریافت ژورنال از D1</button><button class="btn" id="cloudflareTest" type="button">آزمایش اتصال</button></div>
+            <div class="notice">این اتصال برای وضعیت زنده MT5، صف فرمان‌ها و ژورنال جدید استفاده می‌شود. کلید در فضای رمزگذاری‌شده همین PWA ذخیره می‌شود و نباید آن را در کد Worker قرار بدهی.</div>
+            <div id="cloudflareDiagnostics" class="sync-diagnostics" aria-live="polite">پس از تنظیم آدرس و کلید، اتصال Cloudflare را آزمایش کن.</div>
+          </div>
+          <div class="card"><div class="card-head"><h3>اتصال قدیمی Google Sheets</h3><span class="pill">Legacy / Import</span></div>
             <div class="field"><label>آدرس وب‌اپ Apps Script با انتهای /exec</label><input id="gasUrl" type="url" placeholder="https://script.google.com/macros/s/.../exec" dir="ltr"></div>
             <div class="field"><label>کلید دسترسی API</label><input id="apiToken" type="password" placeholder="کلید تنظیم‌شده در Script Properties" dir="ltr"></div>
             <div class="field"><label style="display:flex;align-items:center;gap:8px"><input id="autoSync" type="checkbox" style="width:auto"> همگام‌سازی خودکار هنگام ورود</label></div>
@@ -1101,7 +1108,7 @@
         </div>
         <div class="grid two" style="margin-top:14px">
           <div class="card"><h3>امنیت فضای محلی</h3><p class="small muted" style="line-height:2">داده‌های ذخیره‌شده در مرورگر با AES-GCM و کلید مشتق‌شده از رمز عبور رمزگذاری می‌شوند. رمز عبور پیش‌فرض وجود ندارد. قفل برنامه فقط دسترسی رابط را می‌بندد و رمزگذاری فضای داده، لایه محافظ اصلی در حالت ذخیره محلی است.</p><button class="btn danger" id="wipeData">پاک‌کردن کامل داده‌های این دستگاه</button></div>
-          <div class="card"><h3>وضعیت برنامه</h3><div class="metric-row"><span>نسخه</span><b>2.8.3</b></div><div class="metric-row"><span>حالت ذخیره‌سازی</span><b>رمزگذاری‌شده و محلی</b></div><div class="metric-row"><span>اتصال به Sheets</span><b id="connectionState">تنظیم نشده</b></div><div class="metric-row"><span>آخرین همگام‌سازی</span><b id="lastSyncText">—</b></div></div>
+          <div class="card"><h3>وضعیت برنامه</h3><div class="metric-row"><span>نسخه</span><b>2.8.4</b></div><div class="metric-row"><span>حالت ذخیره‌سازی</span><b>رمزگذاری‌شده و محلی</b></div><div class="metric-row"><span>اتصال به Sheets</span><b id="connectionState">تنظیم نشده</b></div><div class="metric-row"><span>آخرین همگام‌سازی</span><b id="lastSyncText">—</b></div></div>
         </div>
       </section>
     </main>
@@ -1131,7 +1138,7 @@
 
 (() => {
   'use strict';
-  const VERSION = '2.7.0';
+  const VERSION = '2.8.4';
   const AUTH_KEY = 'zt2_auth_v1';
   const VAULT_KEY = 'zt2_vault_v1';
   const THEME_KEY = 'zt2_theme_v1';
@@ -1147,7 +1154,7 @@
       'پس از ضرر برای جبران سریع، حجم را افزایش نمی‌دهم.',
       'حد ضرر را جابه‌جا نمی‌کنم و بدون پلن وارد نمی‌شوم.'
     ],
-    settings: {gasUrl:'', apiToken:'', autoSync:false, sheetName:'Journal', dailyLossLimit:0, lossStreakLimit:3},
+    settings: {workerUrl:'', workerToken:'', gasUrl:'', apiToken:'', autoSync:false, sheetName:'Journal', dailyLossLimit:0, lossStreakLimit:3},
     readiness: {sleep:4, focus:4, plan:5},
     tiltEnd: 0,
     lastSync: null,
@@ -1213,10 +1220,10 @@
   async function exportBackup(){try{if(!(await persist()))return;const authRaw=localStorage.getItem(AUTH_KEY),vaultRaw=localStorage.getItem(VAULT_KEY);if(!authRaw||!vaultRaw)throw new Error('اطلاعات احراز هویت یا مخزن رمزگذاری‌شده پیدا نشد.');const auth=JSON.parse(authRaw),vault=JSON.parse(vaultRaw);if(!vault.iv||!vault.data)throw new Error('مخزن ذخیره‌شده معتبر نیست.');delete auth.biometric;const file={app:'ZehnTrader',version:VERSION,createdAt:new Date().toISOString(),auth,vault};downloadBlob(JSON.stringify(file,null,2),'zehn-trader-backup-'+new Date().toISOString().slice(0,10)+'.json','application/json');toast('پشتیبان رمزگذاری‌شده آماده شد.')}catch(e){toast('ساخت پشتیبان ناموفق بود: '+(e?.message||e))}}
   function downloadBlob(content,name,type){const blob=new Blob([content],{type});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}
   async function restoreBackup(file,password){const parsed=JSON.parse(await file.text());if(parsed.app!=='ZehnTrader'||!parsed.auth||!parsed.vault||!parsed.auth.salt||!parsed.auth.verifier?.iv||!parsed.auth.verifier?.data||!parsed.vault.iv||!parsed.vault.data)throw new Error('فایل پشتیبان معتبر نیست یا ساختار رمزگذاری آن ناقص است.');const key=await deriveKey(password,unb64(parsed.auth.salt));const verified=await decryptText(key,parsed.auth.verifier);if(verified!=='ZehnTrader-Verified-v1')throw new Error('رمز پشتیبان اشتباه است.');const data=JSON.parse(await decryptText(key,parsed.vault));if(!data||typeof data!=='object'||Array.isArray(data)||(data.trades!==undefined&&!Array.isArray(data.trades))||(data.rules!==undefined&&!Array.isArray(data.rules)))throw new Error('ساختار داده‌های داخل پشتیبان معتبر نیست.');const nextData={...clone(DEFAULT_STATE),...data,schemaVersion:1,trades:Array.isArray(data.trades)?data.trades:[],rules:Array.isArray(data.rules)?data.rules:clone(DEFAULT_STATE.rules),ignoredSourceKeys:Array.isArray(data.ignoredSourceKeys)?data.ignoredSourceKeys:[],settings:{...DEFAULT_STATE.settings,...(data.settings||{})},readiness:{...DEFAULT_STATE.readiness,...(data.readiness||{})}};const oldAuth=localStorage.getItem(AUTH_KEY),oldVault=localStorage.getItem(VAULT_KEY);try{const authText=JSON.stringify(parsed.auth),vaultText=JSON.stringify(parsed.vault);localStorage.setItem(AUTH_KEY,authText);localStorage.setItem(VAULT_KEY,vaultText);if(localStorage.getItem(AUTH_KEY)!==authText||localStorage.getItem(VAULT_KEY)!==vaultText)throw new Error('تأیید نوشتن فایل پشتیبان در حافظه ناموفق بود.')}catch(error){try{if(oldAuth===null)localStorage.removeItem(AUTH_KEY);else localStorage.setItem(AUTH_KEY,oldAuth);if(oldVault===null)localStorage.removeItem(VAULT_KEY);else localStorage.setItem(VAULT_KEY,oldVault)}catch(rollbackError){console.error('Backup restore rollback failed',rollbackError)}throw error}app.key=key;app.data=nextData;app.saveChain=Promise.resolve();}
-  async function showApp(options={}){if(options.remember!==false){if($('rememberSession')?.checked!==false)await rememberCurrentSession();else await startVolatileSession()}$('loginWrap').classList.add('hidden');$('appRoot').classList.remove('hidden');$('mobileNav').classList.remove('hidden');applyTheme();populateSettings();renderAll();refreshPasskeyUI();if(app.data.settings.autoSync&&app.data.settings.gasUrl)syncFromSheet(); }
+  async function showApp(options={}){if(options.remember!==false){if($('rememberSession')?.checked!==false)await rememberCurrentSession();else await startVolatileSession()}$('loginWrap').classList.add('hidden');$('appRoot').classList.remove('hidden');$('mobileNav').classList.remove('hidden');applyTheme();populateSettings();renderAll();refreshPasskeyUI();if(app.data.settings.autoSync){if(app.data.settings.workerUrl&&app.data.settings.workerToken)syncFromCloudflare();else if(app.data.settings.gasUrl)syncFromSheet();} }
   async function lockApp(){if(app.breathTimer){clearInterval(app.breathTimer);app.breathTimer=null}if(app.tiltTimer){clearInterval(app.tiltTimer);app.tiltTimer=null}await clearRememberedSession();app.key=null;app.data=null;showLogin(false)}
   function applyTheme(){const light=localStorage.getItem(THEME_KEY)==='light';document.body.classList.toggle('light',light);$('themeBtn').textContent=light?'☾':'☼'}
-  function switchView(view,navKey=view){app.currentView=view;document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id==='view-'+view));document.querySelectorAll('#sideNav [data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===view));document.querySelectorAll('#mobileNav [data-view]').forEach(b=>b.classList.toggle('active',b.dataset.navKey===navKey));const titles={dashboard:'داشبورد عملکرد',trades:'ژورنال معاملات',psychology:'مدیریت روان‌شناسی',reports:'گزارش‌ها و تحلیل',settings:'اتصال و تنظیمات',manual:'ثبت دستی معامله',mt5:'اتصال MT5 و Google Sheets'};$('pageTitle').textContent=titles[navKey]||titles[view]||'ذهن تریدر';if(view==='reports')renderReports();if(view==='psychology')renderPsychology();if(view==='trades')renderTrades();if(view==='mt5control')refreshMt5Control()}
+  function switchView(view,navKey=view){app.currentView=view;document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id==='view-'+view));document.querySelectorAll('#sideNav [data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===view));document.querySelectorAll('#mobileNav [data-view]').forEach(b=>b.classList.toggle('active',b.dataset.navKey===navKey));const titles={dashboard:'داشبورد عملکرد',trades:'ژورنال معاملات',psychology:'مدیریت روان‌شناسی',reports:'گزارش‌ها و تحلیل',settings:'اتصال و تنظیمات',manual:'ثبت دستی معامله',mt5:'اتصال زنده MT5 و Cloudflare'};$('pageTitle').textContent=titles[navKey]||titles[view]||'ذهن تریدر';if(view==='reports')renderReports();if(view==='psychology')renderPsychology();if(view==='trades')renderTrades();if(view==='mt5control')refreshMt5Control()}
   function isMistake(t){return !t.needsPsych&&(t.ruleStatus&&t.ruleStatus!=='کاملاً رعایت شد'||t.emotion&&t.emotion!=='آرام و منضبط'||t.afterLoss==='yes'||t.reason==='FOMO و ترس از جا ماندن'||t.reason==='جبران ضرر قبلی')}
   function psychScore(t){if(t.needsPsych)return null;let s=100;if(t.emotion&&t.emotion!=='آرام و منضبط')s-=15;if(t.ruleStatus==='خطای جزئی')s-=20;if(t.ruleStatus==='نقض حد ضرر یا حجم'||t.ruleStatus==='ورود خارج از پلن')s-=45;if(Number(t.stress)>=4)s-=10;if(t.afterLoss==='yes')s-=15;return Math.max(0,s)}
   function tradePnlValue(trade){const n=Number(trade?.pnl);return Number.isFinite(n)?n:0}
@@ -1495,7 +1502,7 @@
     $('pdf-report-root').innerHTML=buildPdfReport(arr,range);
     setTimeout(()=>window.print(),120);
   }
-  function populateSettings(){$('gasUrl').value=app.data.settings.gasUrl||'';$('apiToken').value=app.data.settings.apiToken||'';$('autoSync').checked=!!app.data.settings.autoSync;$('sheetName').value=app.data.settings.sheetName||'Journal';$('dailyLossLimit').value=app.data.settings.dailyLossLimit??0;$('lossStreakLimit').value=String(app.data.settings.lossStreakLimit??3);$('connectionState').textContent=app.data.settings.gasUrl?'آماده اتصال':'تنظیم نشده';$('lastSyncText').textContent=app.data.lastSync?fmtDate(app.data.lastSync):'—'}
+  function populateSettings(){$('workerUrl').value=app.data.settings.workerUrl||'';$('workerToken').value=app.data.settings.workerToken||'';$('gasUrl').value=app.data.settings.gasUrl||'';$('apiToken').value=app.data.settings.apiToken||'';$('autoSync').checked=!!app.data.settings.autoSync;$('sheetName').value=app.data.settings.sheetName||'Journal';$('dailyLossLimit').value=app.data.settings.dailyLossLimit??0;$('lossStreakLimit').value=String(app.data.settings.lossStreakLimit??3);$('connectionState').textContent=app.data.settings.gasUrl?'آماده اتصال':'تنظیم نشده';$('lastSyncText').textContent=app.data.lastSync?fmtDate(app.data.lastSync):'—'}
   function updateSyncUI(){
     const synced=!!app.data.lastSync;$('syncDot').classList.toggle('off',!synced);$('syncStatus').textContent=synced?'آخرین دریافت: '+fmtDate(app.data.lastSync):'همگام‌سازی انجام نشده';$('lastSyncText').textContent=synced?fmtDate(app.data.lastSync):'—';$('connectionState').textContent=app.data.settings.gasUrl?'آماده اتصال':'تنظیم نشده';
     const root=$('syncDiagnostics');if(!root)return;const r=app.syncReport;
@@ -1594,6 +1601,49 @@
     }catch(e){app.data=before;app.syncReport={status:'error',message:e?.message||String(e),invalidDetails:e?.details||[],headers:e?.headers||[]};$('syncStatus').textContent='خطا در همگام‌سازی';updateSyncUI();toast('خطا در همگام‌سازی: '+(e?.message||e))}
     finally{app.syncing=false;$('syncBtn').disabled=false}
   }
+  function cloudflareConfigured(){return !!(String(app?.data?.settings?.workerUrl||'').trim()&&String(app?.data?.settings?.workerToken||'').trim())}
+  function cloudflareBase(){return String(app?.data?.settings?.workerUrl||'').trim().replace(/\/+$/,'')}
+  async function cloudflareApi(path,options={}){
+    if(!cloudflareConfigured())throw new Error('آدرس Worker و کلید PWA را در تنظیمات Cloudflare وارد کن.');
+    const headers={...(options.headers||{}),'Authorization':'Bearer '+String(app.data.settings.workerToken).trim()};
+    if(options.body!==undefined)headers['Content-Type']='application/json';
+    const response=await fetch(cloudflareBase()+path,{...options,headers,cache:'no-store'});
+    let payload=null;try{payload=await response.json()}catch(e){throw new Error('پاسخ Worker JSON معتبر نیست؛ HTTP '+response.status)}
+    if(!response.ok||payload?.status==='error')throw new Error(payload?.message||('خطای Worker؛ HTTP '+response.status));
+    return payload;
+  }
+  async function testCloudflareConnection(){
+    const diag=$('cloudflareDiagnostics');if(diag)diag.textContent='در حال آزمایش اتصال…';
+    try{
+      const base=String($('workerUrl')?.value||app.data.settings.workerUrl||'').trim().replace(/\/+$/,'');
+      const token=String($('workerToken')?.value||app.data.settings.workerToken||'').trim();
+      if(!base||!token)throw new Error('ابتدا آدرس Worker و کلید PWA را وارد و ذخیره کن.');
+      const r=await fetch(base+'/api/health',{cache:'no-store'});const h=await r.json();
+      if(!r.ok||h.status!=='success'||!h.database)throw new Error(h.message||'Worker یا اتصال D1 آماده نیست.');
+      const authResponse=await fetch(base+'/api/mt5/state',{headers:{'Authorization':'Bearer '+token},cache:'no-store'});
+      const authPayload=await authResponse.json();
+      if(!authResponse.ok||authPayload.status!=='success')throw new Error(authPayload.message||'کلید PWA معتبر نیست یا دسترسی API رد شد.');
+      if(diag)diag.textContent='اتصال Worker و D1 موفق است؛ احراز هویت PWA نیز تأیید شد.';
+      toast('اتصال Cloudflare موفق است.');return true;
+    }catch(e){if(diag)diag.textContent='خطا: '+(e?.message||String(e));toast('آزمایش Cloudflare ناموفق بود: '+(e?.message||e));return false}
+  }
+  async function syncFromCloudflare(){
+    if(app.syncing)return;
+    const before=clone(app.data);app.syncing=true;
+    if($('syncStatus'))$('syncStatus').textContent='دریافت از Cloudflare…';
+    try{
+      const data=await cloudflareApi('/api/journal?limit=2000');
+      if(!Array.isArray(data.trades))throw new Error('ساختار پاسخ ژورنال D1 معتبر نیست.');
+      const result=mergeTrades(data.trades,data.headers||[]);
+      app.data.lastSync=new Date().toISOString();app.data.lastSyncCount=result.valid;
+      if(!(await persist()))throw new Error('ذخیره محلی ناموفق بود؛ داده‌ها به حالت قبلی بازگردانده شدند.');
+      app.syncReport={status:data.trades.length?'success':'empty',total:result.total,valid:result.valid,added:result.added,updated:result.updated,skipped:result.skipped,unknownSide:result.unknownSide||0,invalidDetails:result.invalidDetails||[],headers:data.headers||[]};
+      renderAll();updateSyncUI();
+      if($('cloudflareDiagnostics'))$('cloudflareDiagnostics').textContent=`اتصال موفق؛ ${enNum(result.valid)} معامله معتبر از D1 دریافت شد.`;
+      toast(`دریافت از D1 انجام شد؛ ${enNum(result.added)} جدید و ${enNum(result.updated)} به‌روزرسانی.`);
+    }catch(e){app.data=before;app.syncReport={status:'error',message:e?.message||String(e)};updateSyncUI();if($('cloudflareDiagnostics'))$('cloudflareDiagnostics').textContent='خطا در دریافت ژورنال: '+(e?.message||String(e));toast('خطا در دریافت ژورنال Cloudflare: '+(e?.message||e));}
+    finally{app.syncing=false}
+  }
   function exportCSV(){const headers=['id','source','ticket','symbol','side','lots','pnl','date','strategy','riskAmount','entryPrice','stopLoss','takeProfit','emotion','ruleStatus','stress','afterLoss','reason','notes'];const numeric=new Set(['lots','pnl','riskAmount','entryPrice','stopLoss','takeProfit','stress']);const cell=(key,value)=>{let raw=String(value??'');if(!numeric.has(key)&&/^\s*[=+\-@]/.test(raw))raw="'"+raw;return '"'+raw.replace(/"/g,'""')+'"'};const lines=[headers.join(',')];app.data.trades.forEach(t=>lines.push(headers.map(k=>cell(k,t[k])).join(',')));downloadBlob('\ufeff'+lines.join('\r\n'),'zehn-trader-trades.csv','text/csv;charset=utf-8');toast('فایل CSV ساخته شد. توجه: CSV رمزگذاری‌شده نیست.')}
   async function addManualTrade(e){e.preventDefault();const symbol=$('fSymbol').value.trim().toUpperCase();const lots=Number($('fLots').value),pnl=Number($('fPnl').value);if(!symbol||!Number.isFinite(lots)||lots<=0||!Number.isFinite(pnl)){toast('نماد، حجم و سود/زیان را بررسی کن.');return}const riskAmount=Number($('fRiskAmount').value||0);const tradeId='manual_'+crypto.randomUUID();const t={id:tradeId,source:'manual',sourceKey:tradeId,ticket:'',symbol,side:$('fSide').value,lots,pnl,date:$('fDate').value?new Date($('fDate').value).toISOString():new Date().toISOString(),entryPrice:$('fEntry').value?Number($('fEntry').value):'',stopLoss:$('fSL').value?Number($('fSL').value):null,takeProfit:$('fTP').value?Number($('fTP').value):null,strategy:$('fStrategy').value.trim()||'نامشخص',riskAmount:riskAmount>0?riskAmount:null,notes:$('fNotes').value.trim(),needsPsych:true};app.data.trades.unshift(t);if(!(await persist())){app.data.trades=app.data.trades.filter(x=>x.id!==tradeId);return}$('fPnl').value='';$('fNotes').value='';$('fStrategy').value='';$('fRiskAmount').value='';$('fSL').value='';$('fTP').value='';$('fEntry').value='';renderAll();toast('معامله ثبت شد؛ وضعیت روان‌شناسی آن را هم تکمیل کن.')}
   function startBreathing(){if(app.breathTimer)return;const phases=[['دم',true],['نگه‌دار',false],['بازدم',false],['مکث',false]];let phase=0,sec=4;const paint=()=>{$('breathPhase').textContent=phases[phase][0];$('breathSeconds').textContent=sec+'s';$('breathCircle').classList.toggle('expand',phase===0);$('breathCircle').classList.toggle('contract',phase===2)};paint();app.breathTimer=setInterval(()=>{sec--;if(sec<=0){phase=(phase+1)%4;sec=4}paint()},1000);$('breathStart').disabled=true}
@@ -1605,6 +1655,7 @@
 
   let mt5PollTimer = null;
   function hasMt5Config(){
+    if(cloudflareConfigured())return true;
     const url=String(app?.data?.settings?.gasUrl||'').trim();
     const token=String(app?.data?.settings?.apiToken||'').trim();
     return /^https:\/\/script\.google\.com\/macros\/s\/.+\/exec(?:\?.*)?$/.test(url) && token.length>0;
@@ -1617,7 +1668,36 @@
   }
   async function sendMt5Command(cmd, params={}){
     if(mt5CommandInFlight){toast('یک فرمان در حال ارسال است؛ لطفاً تا دریافت پاسخ صبر کن.');return}
-    if(!hasMt5Config()){toast('ابتدا آدرس Apps Script و API Token را در تنظیمات وارد کن.');switchView('settings');return}
+    if(!hasMt5Config()){toast('ابتدا آدرس Cloudflare Worker و کلید PWA را در تنظیمات وارد کن.');switchView('settings');return}
+    if(cloudflareConfigured()){
+      const cleanParams={...(params||{})};
+      const requestKey=String(cmd)+'|'+JSON.stringify(cleanParams);
+      const storageKey='ztPendingMt5:'+hashKey(requestKey);
+      if(!mt5CommandRequestIds.has(requestKey)){
+        let recovered='';try{const saved=JSON.parse(sessionStorage.getItem(storageKey)||'null');if(saved&&saved.id&&Date.now()-Number(saved.ts||0)<5*60*1000)recovered=String(saved.id)}catch(e){}
+        const requestId=recovered||mt5ClientRequestId();mt5CommandRequestIds.set(requestKey,requestId);
+        try{sessionStorage.setItem(storageKey,JSON.stringify({id:requestId,ts:Date.now()}))}catch(e){}
+      }
+      cleanParams.clientRequestId=mt5CommandRequestIds.get(requestKey);mt5CommandInFlight=true;
+      try{
+        const res=await cloudflareApi('/api/mt5/commands',{method:'POST',body:JSON.stringify({cmd,params:cleanParams,accountLogin:window.__ztMt5AccountLogin||''})});
+        mt5CommandRequestIds.delete(requestKey);try{sessionStorage.removeItem(storageKey)}catch(e){}
+        const queueStatus=String(res.queueStatus||'');
+        const queueResult=String(res.result||'');
+        if(res.manualReviewRequired||queueResult.startsWith('ACK_TIMEOUT_UNKNOWN:')){
+          toast('⚠️ نتیجه اجرای فرمان قبلی نامشخص است. ممکن است در MT5 اجرا شده باشد؛ قبل از ارسال مجدد، پوزیشن‌ها و سفارش‌ها را بررسی کن.');
+        }else if(res.requeued){
+          toast('فرمان قبلی که هرگز به MT5 تحویل نشده بود، دوباره در صف قرار گرفت: '+cmd);
+        }else if(queueStatus==='EXPIRED'&&queueResult.startsWith('EXPIRED_UNSENT:')){
+          toast('فرمان قبلی منقضی شده و اجرا نشده است. MT5 را آنلاین کن و دوباره تلاش کن.');
+        }else{
+          toast((res.duplicate?'این درخواست قبلاً ثبت شده است؛ ':'فرمان در صف Cloudflare ثبت شد: ')+cmd);
+        }
+        setTimeout(()=>refreshMt5Control(true),900);
+      }catch(err){toast('ثبت فرمان ناموفق بود یا پاسخ نرسید؛ شناسه درخواست برای جلوگیری از تکرار حفظ شد. '+(err?.message||err))}
+      finally{mt5CommandInFlight=false}
+      return;
+    }
     const url=String(app.data.settings.gasUrl).trim();
     const token=String(app.data.settings.apiToken).trim();
     const cleanParams={...(params||{})};
@@ -1657,6 +1737,7 @@
   function renderMt5LiveState(payload){
     const st=payload?.state;
     const cmds=Array.isArray(payload?.recentCommands)?payload.recentCommands:[];
+    window.__ztMt5AccountLogin=st?.account?String(st.account):'';
     if(!st){
       if($('mt5LiveBadge')){$('mt5LiveBadge').textContent='بدون داده زنده';$('mt5LiveBadge').className='pill warn'}
     }else{
@@ -1695,17 +1776,17 @@
       if(!silent && $('mt5LiveBadge')){$('mt5LiveBadge').textContent='نیاز به تنظیم URL و Token';$('mt5LiveBadge').className='pill warn'}
       return;
     }
-    const url=String(app.data.settings.gasUrl).trim();
-    const token=String(app.data.settings.apiToken).trim();
-    const endpoint=new URL(url);
-    endpoint.searchParams.set('action','mt5_state');
-    endpoint.searchParams.set('token',token);
     try{
-      const res=await jsonp(endpoint.toString(),15000);
-      if(res && res.status==='success')renderMt5LiveState(res);
-    }catch(err){
-      if(!silent)toast('خطا در دریافت وضعیت زنده MT5: '+(err?.message||err));
-    }
+      if(cloudflareConfigured()){
+        const res=await cloudflareApi('/api/mt5/state');
+        if(res&&res.status==='success')renderMt5LiveState(res);
+      }else{
+        const url=String(app.data.settings.gasUrl).trim();
+        const token=String(app.data.settings.apiToken).trim();
+        const endpoint=new URL(url);endpoint.searchParams.set('action','mt5_state');endpoint.searchParams.set('token',token);
+        const res=await jsonp(endpoint.toString(),15000);if(res&&res.status==='success')renderMt5LiveState(res);
+      }
+    }catch(err){if(!silent)toast('خطا در دریافت وضعیت زنده MT5: '+(err?.message||err));}
   }
   window.__ztMt5Cmd=(cmd,params)=>sendMt5Command(cmd,params);
 
@@ -1716,8 +1797,8 @@
     $('restoreFile').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;const p=prompt('رمز عبور فایل پشتیبان را وارد کن:');if(!p)return;try{await restoreBackup(f,p);await showApp();toast('پشتیبان با موفقیت بازیابی شد.')}catch(err){$('loginError').textContent=err.message}e.target.value=''});
     $('settingsRestore').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;const p=prompt('رمز عبور فایل پشتیبان را وارد کن:');if(!p)return;try{await restoreBackup(f,p);await showApp();toast('پشتیبان بازیابی شد.')}catch(err){toast(err.message)}e.target.value=''});
     $('sideNav').addEventListener('click',e=>{const b=e.target.closest('[data-view]');if(b)switchView(b.dataset.view)});$('mobileNav').addEventListener('click',e=>{const b=e.target.closest('[data-view]');if(!b)return;switchView(b.dataset.view,b.dataset.navKey||b.dataset.view);if(b.dataset.jump)setTimeout(()=>$(b.dataset.jump)?.scrollIntoView({behavior:'smooth',block:'center'}),140)});document.querySelectorAll('[data-goto]').forEach(b=>b.addEventListener('click',()=>switchView(b.dataset.goto)));
-    $('themeBtn').onclick=()=>{const light=!document.body.classList.contains('light');localStorage.setItem(THEME_KEY,light?'light':'dark');applyTheme();drawChart()};$('settingsBtn').onclick=()=>switchView('settings');$('lockBtn').onclick=async()=>{if(!(await persist()))return;await lockApp()};$('syncBtn').onclick=syncFromSheet;$('syncNow').onclick=syncFromSheet;$('backupBtn').onclick=exportBackup;$('settingsBackup').onclick=exportBackup;$('csvBtn').onclick=exportCSV;
-    $('saveSettings').onclick=async()=>{const before=clone(app.data.settings);app.data.settings={...app.data.settings,gasUrl:$('gasUrl').value.trim(),apiToken:$('apiToken').value.trim(),autoSync:$('autoSync').checked,sheetName:$('sheetName').value.trim()||'Journal'};if(!(await persist())){app.data.settings=before;populateSettings();return}populateSettings();toast('تنظیمات ذخیره شد.')};
+    $('themeBtn').onclick=()=>{const light=!document.body.classList.contains('light');localStorage.setItem(THEME_KEY,light?'light':'dark');applyTheme();drawChart()};$('settingsBtn').onclick=()=>switchView('settings');$('lockBtn').onclick=async()=>{if(!(await persist()))return;await lockApp()};$('syncBtn').onclick=()=>cloudflareConfigured()?syncFromCloudflare():syncFromSheet();$('syncNow').onclick=syncFromSheet;$('backupBtn').onclick=exportBackup;$('settingsBackup').onclick=exportBackup;$('csvBtn').onclick=exportCSV;
+    $('saveSettings').onclick=async()=>{const before=clone(app.data.settings);app.data.settings={...app.data.settings,workerUrl:$('workerUrl').value.trim().replace(/\/+$/,''),workerToken:$('workerToken').value.trim(),gasUrl:$('gasUrl').value.trim(),apiToken:$('apiToken').value.trim(),autoSync:$('autoSync').checked,sheetName:$('sheetName').value.trim()||'Journal'};if(!(await persist())){app.data.settings=before;populateSettings();return}populateSettings();toast('تنظیمات ذخیره شد.')};
     $('registerPasskey').onclick=async()=>{try{await registerPasskey()}catch(err){toast(err.message||'فعال‌سازی Passkey ناموفق بود.')}};
     $('removePasskey').onclick=removePasskey;
     $('sideBuyBtn').onclick=()=>{ $('fSide').value='Buy'; $('sideBuyBtn').classList.add('active'); $('sideSellBtn').classList.remove('active'); $('sideBuyBtn').setAttribute('aria-pressed','true'); $('sideSellBtn').setAttribute('aria-pressed','false')};$('sideSellBtn').onclick=()=>{ $('fSide').value='Sell'; $('sideSellBtn').classList.add('active'); $('sideBuyBtn').classList.remove('active'); $('sideSellBtn').setAttribute('aria-pressed','true'); $('sideBuyBtn').setAttribute('aria-pressed','false')};$('tradeForm').addEventListener('submit',addManualTrade);$('tradeSearch').addEventListener('input',renderTrades);$('tradeSort').addEventListener('change',renderTrades);$('tradeFilters').addEventListener('click',e=>{const b=e.target.closest('[data-filter]');if(!b)return;app.currentFilter=b.dataset.filter;$('tradeFilters').querySelectorAll('.filter').forEach(x=>x.classList.toggle('active',x===b));renderTrades()});
@@ -1726,6 +1807,8 @@
     $('breathStart').onclick=startBreathing;$('breathStop').onclick=stopBreathing;document.querySelectorAll('[data-tilt]').forEach(b=>b.onclick=()=>startTilt(Number(b.dataset.tilt)));$('tiltStop').onclick=stopTilt;$('addRule').onclick=addRule;$('newRule').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addRule()}});$('reportRange').onchange=renderReports;['reportSymbolFilter','reportStrategyFilter','reportSideFilter'].forEach(id=>{if($(id))$(id).onchange=renderReports});$('assistantForm').addEventListener('submit',e=>{e.preventDefault();const input=$('assistantQuestion'),q=input.value.trim();if(!q)return;askAssistant(q);input.value=''});$('assistantClear').onclick=clearAssistant;document.querySelectorAll('[data-assistant-prompt]').forEach(b=>b.addEventListener('click',()=>askAssistant(b.dataset.assistantPrompt)));$('calendarPrev').onclick=()=>shiftPersianCalendarMonth(-1);$('calendarNext').onclick=()=>shiftPersianCalendarMonth(1);$('pdfBtn').onclick=exportPDF;$('saveRiskSettings').onclick=async()=>{const before={dailyLossLimit:app.data.settings.dailyLossLimit,lossStreakLimit:app.data.settings.lossStreakLimit};app.data.settings.dailyLossLimit=Math.max(0,Number($('dailyLossLimit').value)||0);app.data.settings.lossStreakLimit=Number($('lossStreakLimit').value)||3;if(!(await persist())){Object.assign(app.data.settings,before);$('dailyLossLimit').value=before.dailyLossLimit??0;$('lossStreakLimit').value=String(before.lossStreakLimit??3);return}renderRiskOverview();toast('قوانین ریسک ذخیره شد.')};
     $('wipeData').onclick=async()=>{if(!confirm('تمام معاملات، قوانین و تنظیمات محلی این دستگاه پاک شوند؟ این کار برگشت‌ناپذیر است.'))return;if(!confirm('برای تأیید نهایی، مطمئنی که پشتیبان لازم را گرفته‌ای؟'))return;localStorage.removeItem(AUTH_KEY);localStorage.removeItem(VAULT_KEY);await clearRememberedSession();app.key=null;app.data=null;showLogin(true)};
 
+    if($('cloudflareSyncNow'))$('cloudflareSyncNow').onclick=syncFromCloudflare;
+    if($('cloudflareTest'))$('cloudflareTest').onclick=testCloudflareConnection;
     if($('mt5RefreshBtn'))$('mt5RefreshBtn').onclick=()=>refreshMt5Control(false);
     document.querySelectorAll('[data-mt5-cmd]').forEach(btn=>btn.addEventListener('click',()=>sendMt5Command(btn.dataset.mt5Cmd,{})));
     if($('mt5ApplyRiskBtn'))$('mt5ApplyRiskBtn').onclick=()=>sendMt5Command('SET_RISK',{mode:$('mt5RiskModeInput')?.value||'PERCENT',value:Number($('mt5RiskValInput')?.value||0)});
