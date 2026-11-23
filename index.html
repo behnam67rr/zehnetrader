@@ -180,7 +180,7 @@
 
 
   
-    /* Zehn Trader 2.8.4: Cloudflare command safety and D1 bridge */
+    /* Zehn Trader 2.8.5: Cloudflare settings persistence fix */
     .report-quality-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:12px 0}
     .report-quality-grid .stat{min-width:0;padding:13px;border-radius:16px}
     .report-quality-grid .label{font-size:10px;line-height:1.6}
@@ -837,7 +837,7 @@
 
   <div id="appRoot" class="app hidden">
     <aside class="sidebar">
-      <div class="brand"><div class="logo" aria-hidden="true"></div><div><b>ذهن تریدر</b><span>نسخه 2.8.4 · ژورنال هوشمند</span></div></div>
+      <div class="brand"><div class="logo" aria-hidden="true"></div><div><b>ذهن تریدر</b><span>نسخه 2.8.5 · ژورنال هوشمند</span></div></div>
       <nav class="nav" id="sideNav">
         <button class="active" data-view="dashboard"><span class="ico">▦</span>داشبورد</button>
         <button data-view="trades"><span class="ico">⇄</span>ژورنال معاملات</button>
@@ -1072,7 +1072,7 @@
           <div class="card"><div class="card-head"><h3>اتصال Cloudflare Worker</h3><span class="pill good">MT5 Live · D1</span></div>
             <div class="field"><label>آدرس Worker (بدون مسیر API)</label><input id="workerUrl" type="url" placeholder="https://wall-street-fx-api.<account>.workers.dev" dir="ltr" autocomplete="url"></div>
             <div class="field"><label>کلید دسترسی PWA (ZT_PWA_TOKEN)</label><input id="workerToken" type="password" placeholder="Secret تنظیم‌شده در Cloudflare" dir="ltr" autocomplete="off"></div>
-            <div class="form-actions"><button class="btn primary" id="cloudflareSyncNow" type="button">دریافت ژورنال از D1</button><button class="btn" id="cloudflareTest" type="button">آزمایش اتصال</button></div>
+            <div class="form-actions"><button class="btn primary" id="cloudflareSave" type="button">ذخیره تنظیمات اتصال</button><button class="btn" id="cloudflareTest" type="button">آزمایش اتصال</button><button class="btn" id="cloudflareSyncNow" type="button">دریافت ژورنال از D1</button></div>
             <div class="notice">این اتصال برای وضعیت زنده MT5، صف فرمان‌ها و ژورنال جدید استفاده می‌شود. کلید در فضای رمزگذاری‌شده همین PWA ذخیره می‌شود و نباید آن را در کد Worker قرار بدهی.</div>
             <div id="cloudflareDiagnostics" class="sync-diagnostics" aria-live="polite">پس از تنظیم آدرس و کلید، اتصال Cloudflare را آزمایش کن.</div>
           </div>
@@ -1108,7 +1108,7 @@
         </div>
         <div class="grid two" style="margin-top:14px">
           <div class="card"><h3>امنیت فضای محلی</h3><p class="small muted" style="line-height:2">داده‌های ذخیره‌شده در مرورگر با AES-GCM و کلید مشتق‌شده از رمز عبور رمزگذاری می‌شوند. رمز عبور پیش‌فرض وجود ندارد. قفل برنامه فقط دسترسی رابط را می‌بندد و رمزگذاری فضای داده، لایه محافظ اصلی در حالت ذخیره محلی است.</p><button class="btn danger" id="wipeData">پاک‌کردن کامل داده‌های این دستگاه</button></div>
-          <div class="card"><h3>وضعیت برنامه</h3><div class="metric-row"><span>نسخه</span><b>2.8.4</b></div><div class="metric-row"><span>حالت ذخیره‌سازی</span><b>رمزگذاری‌شده و محلی</b></div><div class="metric-row"><span>اتصال به Sheets</span><b id="connectionState">تنظیم نشده</b></div><div class="metric-row"><span>آخرین همگام‌سازی</span><b id="lastSyncText">—</b></div></div>
+          <div class="card"><h3>وضعیت برنامه</h3><div class="metric-row"><span>نسخه</span><b>2.8.5</b></div><div class="metric-row"><span>حالت ذخیره‌سازی</span><b>رمزگذاری‌شده و محلی</b></div><div class="metric-row"><span>اتصال به Sheets</span><b id="connectionState">تنظیم نشده</b></div><div class="metric-row"><span>آخرین همگام‌سازی</span><b id="lastSyncText">—</b></div></div>
         </div>
       </section>
     </main>
@@ -1138,7 +1138,7 @@
 
 (() => {
   'use strict';
-  const VERSION = '2.8.4';
+  const VERSION = '2.8.5';
   const AUTH_KEY = 'zt2_auth_v1';
   const VAULT_KEY = 'zt2_vault_v1';
   const THEME_KEY = 'zt2_theme_v1';
@@ -1602,9 +1602,36 @@
     finally{app.syncing=false;$('syncBtn').disabled=false}
   }
   function cloudflareConfigured(){return !!(String(app?.data?.settings?.workerUrl||'').trim()&&String(app?.data?.settings?.workerToken||'').trim())}
+  function readCloudflareDraft(){
+    const rawBase=String($('workerUrl')?.value||app?.data?.settings?.workerUrl||'').trim().replace(/\/+$/,'');
+    const token=String($('workerToken')?.value||app?.data?.settings?.workerToken||'').trim();
+    if(!rawBase||!token)throw new Error('آدرس Worker و کلید PWA را وارد کن؛ سپس «ذخیره تنظیمات اتصال» را بزن.');
+    let parsed;try{parsed=new URL(rawBase)}catch(e){throw new Error('آدرس Worker معتبر نیست؛ آدرس کامل https:// را وارد کن.')}
+    if(parsed.protocol!=='https:'||parsed.username||parsed.password||parsed.search||parsed.hash||parsed.pathname!=='/')
+      throw new Error('آدرس Worker باید فقط دامنه HTTPS باشد و در انتها مسیر /api نداشته باشد.');
+    return {workerUrl:parsed.origin,workerToken:token};
+  }
+  async function saveCloudflareSettings(options={}){
+    const quiet=!!options.quiet,diag=$('cloudflareDiagnostics'),before=clone(app.data.settings);
+    try{
+      const draft=readCloudflareDraft();
+      app.data.settings={...app.data.settings,...draft};
+      if(!(await persist()))throw new Error('ذخیره رمزگذاری‌شده تنظیمات در این دستگاه انجام نشد؛ نشست امن و حافظه مرورگر را بررسی کن.');
+      if($('workerUrl'))$('workerUrl').value=draft.workerUrl;
+      if($('workerToken'))$('workerToken').value=draft.workerToken;
+      if(diag)diag.textContent='تنظیمات اتصال Cloudflare با موفقیت در فضای رمزگذاری‌شده این دستگاه ذخیره شد.';
+      if(!quiet)toast('تنظیمات اتصال Cloudflare ذخیره شد.');
+      return true;
+    }catch(e){
+      app.data.settings=before;
+      if(diag)diag.textContent='ذخیره تنظیمات ناموفق بود: '+(e?.message||String(e));
+      if(!quiet)toast('ذخیره اتصال Cloudflare ناموفق بود: '+(e?.message||e));
+      return false;
+    }
+  }
   function cloudflareBase(){return String(app?.data?.settings?.workerUrl||'').trim().replace(/\/+$/,'')}
   async function cloudflareApi(path,options={}){
-    if(!cloudflareConfigured())throw new Error('آدرس Worker و کلید PWA را در تنظیمات Cloudflare وارد کن.');
+    if(!cloudflareConfigured())throw new Error('تنظیمات اتصال Cloudflare ذخیره نشده‌اند. آدرس و کلید را وارد و «ذخیره تنظیمات اتصال» را بزن.');
     const headers={...(options.headers||{}),'Authorization':'Bearer '+String(app.data.settings.workerToken).trim()};
     if(options.body!==undefined)headers['Content-Type']='application/json';
     const response=await fetch(cloudflareBase()+path,{...options,headers,cache:'no-store'});
@@ -1615,23 +1642,32 @@
   async function testCloudflareConnection(){
     const diag=$('cloudflareDiagnostics');if(diag)diag.textContent='در حال آزمایش اتصال…';
     try{
-      const base=String($('workerUrl')?.value||app.data.settings.workerUrl||'').trim().replace(/\/+$/,'');
-      const token=String($('workerToken')?.value||app.data.settings.workerToken||'').trim();
-      if(!base||!token)throw new Error('ابتدا آدرس Worker و کلید PWA را وارد و ذخیره کن.');
-      const r=await fetch(base+'/api/health',{cache:'no-store'});const h=await r.json();
+      const draft=readCloudflareDraft(),base=draft.workerUrl,token=draft.workerToken;
+      const r=await fetch(base+'/api/health',{cache:'no-store'});
+      let h;try{h=await r.json()}catch(e){throw new Error('پاسخ Health از Worker معتبر نیست؛ HTTP '+r.status)}
       if(!r.ok||h.status!=='success'||!h.database)throw new Error(h.message||'Worker یا اتصال D1 آماده نیست.');
       const authResponse=await fetch(base+'/api/mt5/state',{headers:{'Authorization':'Bearer '+token},cache:'no-store'});
-      const authPayload=await authResponse.json();
+      let authPayload;try{authPayload=await authResponse.json()}catch(e){throw new Error('پاسخ احراز هویت Worker معتبر نیست؛ HTTP '+authResponse.status)}
       if(!authResponse.ok||authPayload.status!=='success')throw new Error(authPayload.message||'کلید PWA معتبر نیست یا دسترسی API رد شد.');
-      if(diag)diag.textContent='اتصال Worker و D1 موفق است؛ احراز هویت PWA نیز تأیید شد.';
-      toast('اتصال Cloudflare موفق است.');return true;
+      // Persist the exact credentials that passed the live authentication check.
+      if(!(await saveCloudflareSettings({quiet:true})))throw new Error('اتصال تأیید شد، اما ذخیره تنظیمات محلی ناموفق بود.');
+      if(diag)diag.textContent='اتصال Worker و D1 موفق است؛ احراز هویت تأیید و تنظیمات در حافظه رمزگذاری‌شده ذخیره شد. اکنون می‌توانی ژورنال را دریافت کنی.';
+      toast('اتصال Cloudflare تأیید و تنظیمات ذخیره شد.');return true;
     }catch(e){if(diag)diag.textContent='خطا: '+(e?.message||String(e));toast('آزمایش Cloudflare ناموفق بود: '+(e?.message||e));return false}
   }
   async function syncFromCloudflare(){
     if(app.syncing)return;
-    const before=clone(app.data);app.syncing=true;
+    app.syncing=true;
     if($('syncStatus'))$('syncStatus').textContent='دریافت از Cloudflare…';
+    let before=clone(app.data);
     try{
+      // If the credentials are present in the form but not persisted yet, save them first.
+      const draft=readCloudflareDraft();
+      if(!cloudflareConfigured()||draft.workerUrl!==app.data.settings.workerUrl||draft.workerToken!==app.data.settings.workerToken){
+        if(!(await saveCloudflareSettings({quiet:true})))throw new Error('تنظیمات اتصال ذخیره نشد؛ ابتدا آن‌ها را ذخیره کن.');
+      }
+      // Keep successfully saved connection settings even if the journal request later fails.
+      before=clone(app.data);
       const data=await cloudflareApi('/api/journal?limit=2000');
       if(!Array.isArray(data.trades))throw new Error('ساختار پاسخ ژورنال D1 معتبر نیست.');
       const result=mergeTrades(data.trades,data.headers||[]);
@@ -1807,6 +1843,7 @@
     $('breathStart').onclick=startBreathing;$('breathStop').onclick=stopBreathing;document.querySelectorAll('[data-tilt]').forEach(b=>b.onclick=()=>startTilt(Number(b.dataset.tilt)));$('tiltStop').onclick=stopTilt;$('addRule').onclick=addRule;$('newRule').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addRule()}});$('reportRange').onchange=renderReports;['reportSymbolFilter','reportStrategyFilter','reportSideFilter'].forEach(id=>{if($(id))$(id).onchange=renderReports});$('assistantForm').addEventListener('submit',e=>{e.preventDefault();const input=$('assistantQuestion'),q=input.value.trim();if(!q)return;askAssistant(q);input.value=''});$('assistantClear').onclick=clearAssistant;document.querySelectorAll('[data-assistant-prompt]').forEach(b=>b.addEventListener('click',()=>askAssistant(b.dataset.assistantPrompt)));$('calendarPrev').onclick=()=>shiftPersianCalendarMonth(-1);$('calendarNext').onclick=()=>shiftPersianCalendarMonth(1);$('pdfBtn').onclick=exportPDF;$('saveRiskSettings').onclick=async()=>{const before={dailyLossLimit:app.data.settings.dailyLossLimit,lossStreakLimit:app.data.settings.lossStreakLimit};app.data.settings.dailyLossLimit=Math.max(0,Number($('dailyLossLimit').value)||0);app.data.settings.lossStreakLimit=Number($('lossStreakLimit').value)||3;if(!(await persist())){Object.assign(app.data.settings,before);$('dailyLossLimit').value=before.dailyLossLimit??0;$('lossStreakLimit').value=String(before.lossStreakLimit??3);return}renderRiskOverview();toast('قوانین ریسک ذخیره شد.')};
     $('wipeData').onclick=async()=>{if(!confirm('تمام معاملات، قوانین و تنظیمات محلی این دستگاه پاک شوند؟ این کار برگشت‌ناپذیر است.'))return;if(!confirm('برای تأیید نهایی، مطمئنی که پشتیبان لازم را گرفته‌ای؟'))return;localStorage.removeItem(AUTH_KEY);localStorage.removeItem(VAULT_KEY);await clearRememberedSession();app.key=null;app.data=null;showLogin(true)};
 
+    if($('cloudflareSave'))$('cloudflareSave').onclick=()=>saveCloudflareSettings();
     if($('cloudflareSyncNow'))$('cloudflareSyncNow').onclick=syncFromCloudflare;
     if($('cloudflareTest'))$('cloudflareTest').onclick=testCloudflareConnection;
     if($('mt5RefreshBtn'))$('mt5RefreshBtn').onclick=()=>refreshMt5Control(false);
