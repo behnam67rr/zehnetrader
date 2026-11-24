@@ -839,6 +839,52 @@
 }
 
 @media(max-width:640px){#view-mt5control .mt5-chart-controls{grid-template-columns:1fr 1fr}#view-mt5control .mt5-chart-controls button{grid-column:1/-1;width:100%}#view-mt5control .mt5-chart-frame-wrap{height:62vh;min-height:420px}}
+
+
+/* v2.9.0 hotfix: header mark proportions + truthful mobile-nav active state */
+@media(max-width:760px){
+  .topbar-brand .app-orbit{
+    width:40px!important;height:40px!important;min-width:40px!important;
+    flex:0 0 40px!important;aspect-ratio:1/1!important;
+    border-radius:13px!important;overflow:hidden!important;
+    position:relative!important;box-sizing:border-box!important;
+  }
+  .topbar-brand .app-orbit:before{
+    content:""!important;position:absolute!important;
+    inset:8px!important;width:auto!important;height:auto!important;
+    border:2.5px solid #eafff8!important;border-radius:50%!important;
+    box-shadow:inset 0 0 0 3px #00a981!important;
+  }
+  .topbar-brand .app-orbit:after{
+    content:""!important;position:absolute!important;
+    inset:15px!important;width:auto!important;height:auto!important;
+    border:2px solid #eafff8!important;border-radius:50%!important;
+  }
+  .topbar-brand-copy{min-width:0!important}
+  .topbar-brand-copy strong,.topbar-brand-copy small{
+    display:block!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;
+  }
+  #mobileNav button[data-nav-key="manual"]{
+    color:var(--muted,#91a3bd)!important;background:transparent!important;
+    border:0!important;box-shadow:none!important;outline:0!important;
+  }
+  #mobileNav button[data-nav-key="manual"] b{
+    width:25px!important;height:25px!important;min-width:25px!important;
+    margin:0!important;padding:0!important;border:0!important;
+    border-radius:0!important;background:transparent!important;
+    box-shadow:none!important;outline:0!important;
+  }
+  #mobileNav button[data-nav-key="manual"] svg{
+    width:23px!important;height:23px!important;stroke:currentColor!important;
+  }
+  #mobileNav button[data-nav-key="manual"].active{
+    color:var(--green,#16c784)!important;font-weight:800!important;
+  }
+  #mobileNav button[data-nav-key="manual"].active:before{
+    display:block!important;
+  }
+}
+
 </style>
 
 </head>

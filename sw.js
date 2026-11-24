@@ -1,5 +1,5 @@
 'use strict';
-const CACHE_NAME = 'mindtrader-2.9.0-mt5-live-chart';
+const CACHE_NAME = 'mindtrader-2.9.0-mt5-live-chart-hotfix1';
 const CACHE_PREFIX = 'zehn-trader-';
 const APP_SHELL = [
   './',
