@@ -801,36 +801,34 @@
 #view-mt5control .mt5-chart-frame-wrap{width:100%;height:min(68vh,680px);min-height:390px;overflow:hidden;border-radius:14px;background:#0b1724}
 #view-mt5control #mt5TradingChart{width:100%;height:100%;border:0;display:block}
 #view-mt5control .mt5-chart-note{line-height:1.9;margin-top:10px}
+/* Mind Trader 2.8.9 mobile refinements */
+@media(max-width:760px){
+  .topbar{display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:space-between!important;gap:8px!important;padding:7px 9px!important;margin-bottom:7px!important;min-height:0!important}
+  .topbar-brand{gap:7px!important;min-height:39px;flex:1 1 auto;min-width:0}
+  .topbar-brand .app-orbit{width:40px!important;height:40px!important;flex:0 0 40px!important}
+  .topbar-brand-copy strong{font-size:17px!important;line-height:1.35}
+  .topbar-brand-copy small{font-size:10px!important;line-height:1.35}
+  .topbar-brand .sync-pill{font-size:9px!important;padding:4px 7px!important}
+  .actions{width:auto!important;display:flex!important;flex:0 0 auto;gap:6px!important}
+  .actions .icon-btn{width:37px!important;min-width:37px!important;height:37px!important;min-height:37px!important;border-radius:11px!important;padding:0!important}
+  .actions .icon-btn svg{width:18px!important;height:18px!important}
+  .mobile-nav{grid-template-columns:repeat(6,minmax(0,1fr))!important;padding:7px 4px calc(7px + env(safe-area-inset-bottom))!important;min-height:70px}
+  .mobile-nav button{font-size:11px!important;gap:4px!important;padding:4px 0!important;min-width:0}
+  .mobile-nav button span{font-size:11px!important;line-height:1.35;white-space:nowrap}
+  .mobile-nav button b{width:25px;height:25px;display:grid;place-items:center;font-size:22px!important}
+  .mobile-nav button b svg{width:23px!important;height:23px!important}
+  .mobile-nav button[data-nav-key="manual"] b{width:25px!important;height:25px!important;margin:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
+  #view-mt5control .mt5-inner-tabs{position:sticky!important;top:104px!important;z-index:75!important;margin:0 0 9px!important;padding:4px!important;gap:5px!important;border-radius:13px!important}
+  #view-mt5control .mt5-inner-tab{min-height:39px!important;padding:7px 6px!important;font-size:12px!important}
+}
+@media(max-width:380px){
+  .mobile-nav button span{font-size:10px!important}
+  #view-mt5control .mt5-inner-tabs{top:100px!important}
+}
+.mt5-chart-positions-overlay{position:absolute;left:8px;top:8px;z-index:3;display:flex;flex-direction:column;gap:5px;max-width:min(78%,330px);pointer-events:none}.mt5-chart-position-chip{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:5px 8px;border:1px solid #ffffff30;border-radius:8px;background:#071522df;color:#eaf4f8;font-size:10px;line-height:1.35;backdrop-filter:blur(7px);direction:ltr}.mt5-chart-position-chip.buy{border-inline-start:3px solid #16c784}.mt5-chart-position-chip.sell{border-inline-start:3px solid #ff6577}.mt5-chart-position-chip .pnl{font-weight:900}.mt5-chart-position-chip .pnl.positive{color:#16c784}.mt5-chart-position-chip .pnl.negative{color:#ff6577}.mt5-chart-positions-overlay:empty{display:none}
 @media(max-width:640px){#view-mt5control .mt5-chart-controls{grid-template-columns:1fr 1fr}#view-mt5control .mt5-chart-controls button{grid-column:1/-1;width:100%}#view-mt5control .mt5-chart-frame-wrap{height:62vh;min-height:420px}}
 </style>
 
-
-
-<style id="zt-mt5-terminal-2-8-9">
-@media(max-width:760px){
-  #view-mt5control:has(#mt5PaneChart:not([hidden])){position:fixed!important;z-index:30;top:calc(env(safe-area-inset-top,0px) + 70px);left:0;right:0;bottom:calc(73px + env(safe-area-inset-bottom,0px));margin:0!important;padding:0!important;overflow:hidden!important;background:#07121d}
-  #view-mt5control .mt5-inner-tabs{position:absolute;top:5px;right:8px;left:8px;z-index:4;display:flex;justify-content:flex-end;gap:4px;padding:0;margin:0;background:transparent;border:0;pointer-events:none}
-  #view-mt5control .mt5-inner-tab{pointer-events:auto;min-height:27px;padding:4px 9px;font-size:10px;border-radius:8px;background:rgba(9,25,38,.88);border:1px solid rgba(90,140,170,.25)}
-  #view-mt5control .mt5-inner-tab.active{background:#0a7967;color:#fff;box-shadow:none}
-  #view-mt5control .mt5-fullscreen-pane{height:100%;width:100%;overflow:hidden}
-  #view-mt5control .mt5-terminal{height:100%;display:flex;flex-direction:column;gap:4px;padding:36px 5px 3px;box-sizing:border-box;background:#07121d}
-  #view-mt5control .mt5-terminal-toolbar{height:34px;min-height:34px;display:flex;gap:5px;align-items:center}
-  #view-mt5control .mt5-terminal-toolbar select{height:30px;min-height:30px;padding:3px 7px;border-radius:8px;background:#102337;color:#eef5ff;border:1px solid #24445c;font-size:11px;flex:1;min-width:0}
-  #view-mt5control .mt5-mini-action{height:30px;min-width:32px;padding:0 8px;border:1px solid #24445c;border-radius:8px;background:#102337;color:#dceaf4;font-size:16px}
-  #view-mt5control .mt5-chart-frame-wrap-full{height:auto;min-height:0;flex:1;width:100%;border-radius:7px;overflow:hidden;background:#050b12}
-  #view-mt5control #mt5TradingChart{width:100%;height:100%;border:0;display:block}
-  #view-mt5control .mt5-live-strip{height:34px;min-height:34px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:center;gap:3px;padding:0 7px;border:1px solid #24445c;border-radius:8px;background:#0c1d2c;color:#a9bacb;font-size:9px;direction:ltr}
-  #view-mt5control .mt5-live-strip span{display:flex;justify-content:center;gap:3px;white-space:nowrap}
-  #view-mt5control .mt5-live-strip b{color:#eaf3fa;font-weight:700}
-  #view-mt5control .mt5-live-strip b.positive{color:#16c784}
-  #view-mt5control .mt5-live-strip b.negative{color:#ff6577}
-  #view-mt5control .mt5-chart-disclaimer{display:none}
-  .mobile-nav button[data-nav-key="manual"] b{width:24px!important;height:22px!important;margin-top:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;color:var(--green)!important}
-  .mobile-nav button[data-nav-key="manual"] svg{width:19px!important;height:19px!important}
-  .mobile-nav button[data-nav-key="manual"] span{color:var(--green)!important}
-  .mobile-nav{padding-top:6px!important}
-}
-</style>
 </head>
 <body>
   <div id="loginWrap" class="login-wrap">
@@ -880,7 +878,7 @@
 
   <div id="appRoot" class="app hidden">
     <aside class="sidebar">
-      <div class="brand"><div class="logo" aria-hidden="true"></div><div><b>ذهن تریدر</b><span>نسخه 2.8.6 · ژورنال هوشمند</span></div></div>
+      <div class="brand"><div class="logo" aria-hidden="true"></div><div><b>ذهن تریدر</b><span>نسخه 2.8.9 · ژورنال هوشمند</span></div></div>
       <nav class="nav" id="sideNav">
         <button class="active" data-view="dashboard"><span class="ico">▦</span>داشبورد</button>
         <button data-view="trades"><span class="ico">⇄</span>ژورنال معاملات</button>
@@ -1048,35 +1046,35 @@
     <button type="button" class="mt5-inner-tab active" id="mt5TabChart" role="tab" aria-selected="true" aria-controls="mt5PaneChart">نمودار</button>
     <button type="button" class="mt5-inner-tab" id="mt5TabTrade" role="tab" aria-selected="false" aria-controls="mt5PaneTrade">معاملات و کنترل حساب</button>
   </div>
-  <div id="mt5PaneChart" class="mt5-inner-pane mt5-fullscreen-pane" role="tabpanel" aria-labelledby="mt5TabChart">
-    <div class="mt5-terminal">
-      <div class="mt5-terminal-toolbar">
-        <select id="mt5ChartSymbol" aria-label="نماد نمودار">
-          <option value="OANDA:XAUUSD">XAUUSD</option>
-          <option value="OANDA:EURUSD">EURUSD</option>
-          <option value="OANDA:GBPUSD">GBPUSD</option>
-          <option value="OANDA:USDJPY">USDJPY</option>
-          <option value="BINANCE:BTCUSDT">BTCUSDT</option>
-          <option value="BINANCE:ETHUSDT">ETHUSDT</option>
-        </select>
-        <select id="mt5ChartInterval" aria-label="تایم‌فریم">
-          <option value="1">M1</option><option value="5" selected>M5</option>
-          <option value="15">M15</option><option value="30">M30</option>
-          <option value="60">H1</option><option value="240">H4</option>
-          <option value="D">D1</option><option value="W">W1</option>
-        </select>
-        <button type="button" class="mt5-mini-action" id="mt5ChartReload" title="بارگذاری مجدد نمودار">↻</button>
-        <button type="button" class="mt5-mini-action" id="mt5OpenAccountPane" title="معاملات و کنترل حساب">☷</button>
+  <div id="mt5PaneChart" class="mt5-inner-pane" role="tabpanel" aria-labelledby="mt5TabChart">
+    <div class="card mt5-chart-card">
+      <div class="card-head"><h3>نمودار بازار</h3><span class="pill">نمای نمودار مستقل</span></div>
+      <div class="mt5-chart-controls">
+        <label>نماد
+          <select id="mt5ChartSymbol">
+            <option value="OANDA:XAUUSD">طلا · XAUUSD</option>
+            <option value="OANDA:EURUSD">EURUSD</option>
+            <option value="OANDA:GBPUSD">GBPUSD</option>
+            <option value="OANDA:USDJPY">USDJPY</option>
+            <option value="BINANCE:BTCUSDT">BTCUSDT</option>
+            <option value="BINANCE:ETHUSDT">ETHUSDT</option>
+          </select>
+        </label>
+        <label>تایم‌فریم
+          <select id="mt5ChartInterval">
+            <option value="1">۱ دقیقه</option><option value="5" selected>۵ دقیقه</option>
+            <option value="15">۱۵ دقیقه</option><option value="30">۳۰ دقیقه</option>
+            <option value="60">۱ ساعت</option><option value="240">۴ ساعت</option>
+            <option value="D">روزانه</option><option value="W">هفتگی</option>
+          </select>
+        </label>
+        <button type="button" class="btn primary" id="mt5ChartReload">بارگذاری نمودار</button>
       </div>
-      <div class="mt5-chart-frame-wrap mt5-chart-frame-wrap-full">
-        <iframe id="mt5TradingChart" title="نمودار بازار" loading="eager" referrerpolicy="no-referrer" allowfullscreen></iframe>
+      <div class="mt5-chart-frame-wrap" style="position:relative">
+        <iframe id="mt5TradingChart" title="نمودار بازار" loading="lazy" referrerpolicy="no-referrer" allowfullscreen></iframe>
+        <div id="mt5ChartPositionsOverlay" class="mt5-chart-positions-overlay" aria-live="polite"><span>در انتظار اطلاعات پوزیشن‌های MT5…</span></div>
       </div>
-      <div class="mt5-live-strip" aria-live="polite">
-        <span>P/L <b id="mt5ChartFloating" dir="ltr">—</b></span>
-        <span>Equity <b id="mt5ChartEquity" dir="ltr">—</b></span>
-        <span>Balance <b id="mt5ChartBalance" dir="ltr">—</b></span>
-      </div>
-      <p class="mt5-chart-disclaimer">قیمت نمودار TradingView ممکن است با فید LiteFinance متفاوت باشد؛ مبنای اجرای سفارش، قیمت MT5 است.</p>
+      <p class="hint mt5-chart-note">توجه: این نمودار از TradingView بارگذاری می‌شود و فید قیمت آن ممکن است با قیمت بروکر LiteFinance در MT5 تفاوت جزئی داشته باشد. برای اجرای معامله، قیمت و اسپرد را در خود MT5 بررسی کن.</p>
     </div>
   </div>
   <div id="mt5PaneTrade" class="mt5-inner-pane" role="tabpanel" aria-labelledby="mt5TabTrade" hidden>
@@ -1219,7 +1217,7 @@
 
 (() => {
   'use strict';
-  const VERSION = '2.8.6';
+  const VERSION = '2.8.9';
   const AUTH_KEY = 'zt2_auth_v1';
   const VAULT_KEY = 'zt2_vault_v1';
   const THEME_KEY = 'zt2_theme_v1';
@@ -1868,9 +1866,6 @@
       if($('mt5TodayPL')){$('mt5TodayPL').textContent=fmtMoney(st.todayPL);$('mt5TodayPL').className='value '+(Number(st.todayPL)>=0?'positive':'negative')}
       if($('mt5AccHint'))$('mt5AccHint').textContent='حساب: '+(st.account||'—')+' ('+(st.currency||'USD')+')';
       if($('mt5MarginHint'))$('mt5MarginHint').textContent='مارجین آزاد: '+fmtMoney(st.freeMargin);
-      if($('mt5ChartFloating')){$('mt5ChartFloating').textContent=fmtMoney(st.floating);$('mt5ChartFloating').className=Number(st.floating)>=0?'positive':'negative'}
-      if($('mt5ChartEquity'))$('mt5ChartEquity').textContent=fmtMoney(st.equity);
-      if($('mt5ChartBalance'))$('mt5ChartBalance').textContent=fmtMoney(st.balance);
       if($('mt5RiskSummary'))$('mt5RiskSummary').textContent='1:'+Number(st.rr||1).toFixed(2);
       if($('mt5RiskDetail'))$('mt5RiskDetail').textContent='ریسک: '+(st.riskMode==='CASH'?fmtMoney(st.riskValue):(Number(st.riskValue||0).toFixed(2)+'%'))+' | سقف روزانه: '+Number(st.dailyLimitPct||0).toFixed(2)+'%';
       if($('mt5BtnAuto')){$('mt5BtnAuto').textContent='AUTO: '+(st.autoEnabled?'روشن 🟢':'خاموش 🔴');$('mt5BtnAuto').className='btn '+(st.autoEnabled?'primary':'danger')}
@@ -1878,6 +1873,15 @@
       if($('mt5BtnSignal')){$('mt5BtnSignal').textContent='سیگنال: '+(st.signalEnabled?'روشن 🟢':'خاموش 🔴');$('mt5BtnSignal').className='btn '+(st.signalEnabled?'primary':'')}
       if($('mt5BtnDaily')){$('mt5BtnDaily').textContent='حد ضرر روزانه: '+(st.dailyLimitEnabled?'روشن 🟢':'خاموش 🔴');$('mt5BtnDaily').className='btn '+(st.dailyLimitEnabled?'warn':'')}
       const pos=Array.isArray(st.positions)?st.positions:[];
+      const chartOverlay=$('mt5ChartPositionsOverlay');
+      if(chartOverlay){
+        chartOverlay.innerHTML=pos.length?pos.slice(0,5).map(p=>{
+          const side=String(p.side||'').toUpperCase();
+          const cls=side.includes('SELL')||side.includes('SHORT')?'sell':'buy';
+          const pnl=Number(p.profit||0);
+          return `<div class="mt5-chart-position-chip ${cls}"><b>#${esc(p.ticket)}</b><b>${esc(p.symbol)}</b><span>${esc(side)}</span><span>Entry ${esc(p.open)}</span><span>SL ${esc(p.sl||'—')}</span><span>TP ${esc(p.tp||'—')}</span><span class="pnl ${pnl>=0?'positive':'negative'}">${fmtMoney(pnl)}</span></div>`;
+        }).join(''):'<div class="mt5-chart-position-chip">بدون پوزیشن باز · MT5</div>';
+      }
       if($('mt5PosCount'))$('mt5PosCount').textContent=enNum(pos.length)+' پوزیشن';
       if($('mt5PositionsWrap')){
         $('mt5PositionsWrap').innerHTML=pos.length?`<table><thead><tr><th>تیکت</th><th>نماد</th><th>جهت</th><th>حجم</th><th>ورود</th><th>SL</th><th>TP</th><th>سود</th><th>عملیات</th></tr></thead><tbody>${pos.map(p=>`<tr><td dir="ltr">#${esc(p.ticket)}</td><td>${esc(p.symbol)}</td><td>${esc(p.side)}</td><td dir="ltr">${esc(p.lots)}</td><td dir="ltr">${esc(p.open)}</td><td dir="ltr">${esc(p.sl)}</td><td dir="ltr">${esc(p.tp)}</td><td dir="ltr" class="${Number(p.profit)>=0?'positive':'negative'}">${fmtMoney(p.profit)}</td><td><button type="button" class="btn warn" style="padding:4px 8px;font-size:10px" onclick="window.__ztMt5Cmd('BREAKEVEN_POS',{ticket:${Number(p.ticket)}})">BE</button> <button type="button" class="btn danger" style="padding:4px 8px;font-size:10px" onclick="window.__ztMt5Cmd('CLOSE_POS',{ticket:${Number(p.ticket)}})">بستن</button></td></tr>`).join('')}</tbody></table>`:'<div class="empty">پوزیشن بازی وجود ندارد.</div>';
@@ -1973,13 +1977,12 @@
   const chartPane=document.getElementById('mt5PaneChart'), tradePane=document.getElementById('mt5PaneTrade');
   function setPane(which){const chart=which==='chart'; chartPane.hidden=!chart;tradePane.hidden=chart;chartTab.classList.toggle('active',chart);tradeTab.classList.toggle('active',!chart);chartTab.setAttribute('aria-selected',String(chart));tradeTab.setAttribute('aria-selected',String(!chart));if(chart)loadChart();}
   chartTab?.addEventListener('click',()=>setPane('chart'));tradeTab?.addEventListener('click',()=>setPane('trade'));
-  document.getElementById('mt5OpenAccountPane')?.addEventListener('click',()=>setPane('trade'));
   const symbol=document.getElementById('mt5ChartSymbol'), interval=document.getElementById('mt5ChartInterval'), frame=document.getElementById('mt5TradingChart');
   function loadChart(){if(!symbol||!interval||!frame)return;const src='https://www.tradingview.com/widgetembed/?symbol='+encodeURIComponent(symbol.value)+'&interval='+encodeURIComponent(interval.value)+'&hidesidetoolbar=0&symboledit=1&saveimage=0&toolbarbg=0B1724&theme=dark&style=1&timezone=Etc%2FUTC&withdateranges=1&hideideas=1&studies=[]&locale=fa';if(frame.dataset.src!==src){frame.src=src;frame.dataset.src=src;}}
   document.getElementById('mt5ChartReload')?.addEventListener('click',loadChart);
   symbol?.addEventListener('change',loadChart);interval?.addEventListener('change',loadChart);
   // Keep the existing MT5 monitor as the second view; no account/API/command behavior is altered.
-  setPane('chart');
+  setPane('trade');
 })();
 </script>
 

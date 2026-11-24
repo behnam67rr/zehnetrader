@@ -1,6 +1,6 @@
 'use strict';
-const CACHE_NAME = 'mindtrader-2.8.9-mt5-terminal';
-const CACHE_PREFIXES = ['zehn-trader-','mindtrader-'];
+const CACHE_NAME = 'mindtrader-2.8.9-mt5-ui-refine';
+const CACHE_PREFIX = 'zehn-trader-';
 const APP_SHELL = [
   './',
   './index.html',
@@ -27,7 +27,7 @@ self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys()
       .then(keys => Promise.all(
-        keys.filter(key => CACHE_PREFIXES.some(prefix => key.startsWith(prefix)) && key !== CACHE_NAME)
+        keys.filter(key => key.startsWith(CACHE_PREFIX) && key !== CACHE_NAME)
           .map(key => caches.delete(key))
       ))
       .then(() => self.clients.claim())
