@@ -180,7 +180,7 @@
 
 
   
-    /* Zehn Trader 2.8.7: dashboard period filter and mobile navigation polish */
+    /* Zehn Trader 2.8.6: faster MT5 live refresh */
     .report-quality-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:12px 0}
     .report-quality-grid .stat{min-width:0;padding:13px;border-radius:16px}
     .report-quality-grid .label{font-size:10px;line-height:1.6}
@@ -789,28 +789,19 @@
 </style>
 
 
-<style id="mindtrader-dashboard-period-nav-v287">
-  .period-picker-wrap{position:relative;cursor:pointer;min-width:0!important;width:100%;padding:0 13px!important}
-  .period-picker-wrap select{appearance:none;-webkit-appearance:none;border:0!important;background:transparent!important;color:#e7f3ff!important;padding:11px 0!important;width:100%;font-weight:800;font-size:13px;outline:none;cursor:pointer;direction:rtl}
-  .period-picker-wrap select option{background:#102036;color:#f2f8ff}
-  .period-picker-wrap svg{flex:0 0 18px;pointer-events:none}
-  @media(max-width:760px){
-    html,body{min-height:100%;overscroll-behavior-y:contain}
-    body{padding-bottom:calc(82px + env(safe-area-inset-bottom,0px))!important}
-    .app{padding-bottom:calc(100px + env(safe-area-inset-bottom,0px))!important}
-    .mobile-nav{position:fixed!important;left:0!important;right:0!important;bottom:0!important;z-index:100!important;display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;align-items:end!important;gap:0!important;min-height:68px!important;padding:7px 5px calc(7px + env(safe-area-inset-bottom,0px))!important;background:rgba(6,12,22,.98)!important;border-top:1px solid #1b3850!important;box-shadow:0 -8px 24px rgba(0,0,0,.22)!important;backdrop-filter:blur(18px)!important}
-    .mobile-nav button{position:relative!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:flex-end!important;justify-self:stretch!important;gap:4px!important;min-width:0!important;min-height:51px!important;padding:2px 0 1px!important;margin:0!important;border:0!important;background:transparent!important;color:#8fa2b9!important;line-height:1.15!important}
-    .mobile-nav button b{display:grid!important;place-items:center!important;width:25px!important;height:24px!important;margin:0!important;font-size:0!important;line-height:1!important}
-    .mobile-nav button svg{display:block!important;width:21px!important;height:21px!important;max-width:100%!important;stroke:currentColor!important}
-    .mobile-nav button span{display:block!important;width:100%!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;text-align:center!important;font-size:9px!important;letter-spacing:0!important;line-height:1.25!important}
-    .mobile-nav button.active{color:#19dfad!important;font-weight:900!important}
-    .mobile-nav button.active:before{content:"";position:absolute;top:-7px;left:50%;transform:translateX(-50%);width:26px;height:2px;border-radius:3px;background:#19dfad}
-    .mobile-nav button[data-nav-key="manual"]{justify-content:flex-end!important;gap:3px!important}
-    .mobile-nav button[data-nav-key="manual"] b{width:48px!important;height:48px!important;margin-top:-22px!important;border-radius:16px!important;background:linear-gradient(145deg,#10d9a5,#00a981)!important;box-shadow:0 7px 18px rgba(0,210,160,.32)!important}
-    .mobile-nav button[data-nav-key="manual"] svg{width:25px!important;height:25px!important;stroke:#04251d!important}
-    .mobile-nav button[data-nav-key="manual"] span{color:#1bdcae!important;font-weight:800!important}
-  }
-  @media(max-width:360px){.mobile-nav button span{font-size:8px!important}.mobile-nav{padding-left:2px!important;padding-right:2px!important}}
+<style id="zt-mt5-dual-view">
+#view-mt5control .mt5-inner-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:6px;margin:0 0 14px;background:var(--panel2,rgba(15,35,55,.72));border:1px solid var(--line,rgba(120,160,190,.2));border-radius:17px;position:sticky;top:4px;z-index:8;backdrop-filter:blur(12px)}
+#view-mt5control .mt5-inner-tab{min-height:46px;border:1px solid transparent;border-radius:12px;background:transparent;color:var(--muted,#9aabba);font:inherit;font-weight:700;cursor:pointer;padding:10px 8px}
+#view-mt5control .mt5-inner-tab.active{background:linear-gradient(135deg,#00c99a,#079b83);color:#03251f;box-shadow:0 5px 18px rgba(0,201,154,.18)}
+#view-mt5control .mt5-inner-pane[hidden]{display:none!important}
+#view-mt5control .mt5-chart-card{overflow:hidden}
+#view-mt5control .mt5-chart-controls{display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end;margin:12px 0}
+#view-mt5control .mt5-chart-controls label{display:grid;gap:6px;color:var(--muted,#9aabba);font-size:13px}
+#view-mt5control .mt5-chart-controls select{width:100%;min-height:44px;border-radius:12px;padding:8px 10px;background:var(--input-bg,#0c1d2d);color:var(--text,#edf5fa);border:1px solid var(--line,rgba(120,160,190,.25));font:inherit}
+#view-mt5control .mt5-chart-frame-wrap{width:100%;height:min(68vh,680px);min-height:390px;overflow:hidden;border-radius:14px;background:#0b1724}
+#view-mt5control #mt5TradingChart{width:100%;height:100%;border:0;display:block}
+#view-mt5control .mt5-chart-note{line-height:1.9;margin-top:10px}
+@media(max-width:640px){#view-mt5control .mt5-chart-controls{grid-template-columns:1fr 1fr}#view-mt5control .mt5-chart-controls button{grid-column:1/-1;width:100%}#view-mt5control .mt5-chart-frame-wrap{height:62vh;min-height:420px}}
 </style>
 
 </head>
@@ -862,7 +853,7 @@
 
   <div id="appRoot" class="app hidden">
     <aside class="sidebar">
-      <div class="brand"><div class="logo" aria-hidden="true"></div><div><b>ذهن تریدر</b><span>نسخه 2.8.7 · ژورنال هوشمند</span></div></div>
+      <div class="brand"><div class="logo" aria-hidden="true"></div><div><b>ذهن تریدر</b><span>نسخه 2.8.6 · ژورنال هوشمند</span></div></div>
       <nav class="nav" id="sideNav">
         <button class="active" data-view="dashboard"><span class="ico">▦</span>داشبورد</button>
         <button data-view="trades"><span class="ico">⇄</span>ژورنال معاملات</button>
@@ -891,12 +882,12 @@
 
       <section class="view active" id="view-dashboard">
         <div class="dashboard-toolbar-ref">
-          <label class="toolbar-pill period-picker-wrap" for="dashboardPeriod"><span class="sr-only">بازه داشبورد</span><select id="dashboardPeriod" aria-label="انتخاب دوره داشبورد"><option value="all">تمام دوره‌ها</option><option value="day">روزانه</option><option value="week">هفتگی</option><option value="month" selected>ماهانه</option><option value="year">سالانه</option></select><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></label>
+          <div class="toolbar-pill"><span>تمام دوره‌ها</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></div>
           <div class="toolbar-pill"><span>USD</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></div>
         </div>
         <div class="dashboard-summary-card">
           <div class="summary-graphic" aria-hidden="true"><svg viewBox="0 0 96 96"><path d="M14 78h68"/><rect x="18" y="48" width="12" height="24" rx="3"/><rect x="40" y="35" width="12" height="37" rx="3"/><rect x="62" y="22" width="12" height="50" rx="3"/><path d="M22 42 40 28l14 8 18-20"/></svg></div>
-          <div class="summary-copy"><div class="summary-label">سود خالص</div><div class="summary-value" id="sNet">$0.00</div><div class="summary-badge" id="dashboardGrowthTag">بدون تغییر</div><div class="summary-sub" id="dashboardPeriodHint">بر اساس معاملات این ماه</div></div>
+          <div class="summary-copy"><div class="summary-label">سود خالص</div><div class="summary-value" id="sNet">$0.00</div><div class="summary-badge" id="dashboardGrowthTag">بدون تغییر</div><div class="summary-sub">بر اساس معاملات واردشده</div></div>
         </div>
         <div class="dashboard-kpis dashboard-kpis-ref">
           <div class="stat mini"><div class="stat-top"><span class="stat-icon icon-blue">◎</span><span class="label">تعداد معاملات</span></div><div class="value" id="sCount">0</div><div class="hint">معاملات ثبت‌شده</div></div>
@@ -904,7 +895,7 @@
           <div class="stat mini"><div class="stat-top"><span class="stat-icon icon-teal">$</span><span class="label">میانگین سود</span></div><div class="value" id="sExp">$0.00</div><div class="hint">میانگین سود/زیان هر معامله</div></div>
           <div class="stat mini"><div class="stat-top"><span class="stat-icon icon-violet">▥</span><span class="label">Profit Factor</span></div><div class="value" id="sPf">0.00</div><div class="hint">سود ناخالص ÷ زیان ناخالص</div></div>
         </div>
-        <div class="card dashboard-chart-card-ref"><div class="card-head"><h3>روند سود و زیان تجمعی</h3><span class="pill good" id="dashboardChartPeriod">ماهانه</span></div><div class="chart-wrap"><canvas id="equityChart"></canvas></div><div class="dashboard-hidden-metric" id="sDd">$0.00</div></div>
+        <div class="card dashboard-chart-card-ref"><div class="card-head"><h3>روند سود و زیان تجمعی</h3><span class="pill good">گزارش زنده</span></div><div class="chart-wrap"><canvas id="equityChart"></canvas></div><div class="dashboard-hidden-metric" id="sDd">$0.00</div></div>
         <div class="card risk-banner safe" id="dailyRiskCard" style="margin-bottom:14px">
           <div class="card-head"><h3>مدیریت ریسک و هشدارهای امروز</h3><span class="pill" id="dailyRiskBadge">در حال محاسبه</span></div>
           <div id="dailyRiskContent" class="alert-list"><div class="muted small">پس از بارگذاری داده‌ها، وضعیت ریسک روزانه نمایش داده می‌شود.</div></div>
@@ -1026,6 +1017,42 @@
       </section>
 
             <section class="view" id="view-mt5control">
+  <div class="mt5-inner-tabs" id="mt5InnerTabs" role="tablist" aria-label="نمای متاتریدر">
+    <button type="button" class="mt5-inner-tab active" id="mt5TabChart" role="tab" aria-selected="true" aria-controls="mt5PaneChart">نمودار</button>
+    <button type="button" class="mt5-inner-tab" id="mt5TabTrade" role="tab" aria-selected="false" aria-controls="mt5PaneTrade">معاملات و کنترل حساب</button>
+  </div>
+  <div id="mt5PaneChart" class="mt5-inner-pane" role="tabpanel" aria-labelledby="mt5TabChart">
+    <div class="card mt5-chart-card">
+      <div class="card-head"><h3>نمودار بازار</h3><span class="pill">نمای نمودار مستقل</span></div>
+      <div class="mt5-chart-controls">
+        <label>نماد
+          <select id="mt5ChartSymbol">
+            <option value="OANDA:XAUUSD">طلا · XAUUSD</option>
+            <option value="OANDA:EURUSD">EURUSD</option>
+            <option value="OANDA:GBPUSD">GBPUSD</option>
+            <option value="OANDA:USDJPY">USDJPY</option>
+            <option value="BINANCE:BTCUSDT">BTCUSDT</option>
+            <option value="BINANCE:ETHUSDT">ETHUSDT</option>
+          </select>
+        </label>
+        <label>تایم‌فریم
+          <select id="mt5ChartInterval">
+            <option value="1">۱ دقیقه</option><option value="5" selected>۵ دقیقه</option>
+            <option value="15">۱۵ دقیقه</option><option value="30">۳۰ دقیقه</option>
+            <option value="60">۱ ساعت</option><option value="240">۴ ساعت</option>
+            <option value="D">روزانه</option><option value="W">هفتگی</option>
+          </select>
+        </label>
+        <button type="button" class="btn primary" id="mt5ChartReload">بارگذاری نمودار</button>
+      </div>
+      <div class="mt5-chart-frame-wrap">
+        <iframe id="mt5TradingChart" title="نمودار بازار" loading="lazy" referrerpolicy="no-referrer" allowfullscreen></iframe>
+      </div>
+      <p class="hint mt5-chart-note">توجه: این نمودار از TradingView بارگذاری می‌شود و فید قیمت آن ممکن است با قیمت بروکر LiteFinance در MT5 تفاوت جزئی داشته باشد. برای اجرای معامله، قیمت و اسپرد را در خود MT5 بررسی کن.</p>
+    </div>
+  </div>
+  <div id="mt5PaneTrade" class="mt5-inner-pane" role="tabpanel" aria-labelledby="mt5TabTrade" hidden>
+
         <div class="card" style="margin-bottom:14px">
           <div class="card-head">
             <h3>نظارت زنده متاتریدر ۵ (MT5 Live Monitor)</h3>
@@ -1090,7 +1117,8 @@
           <div class="card-head"><h3>آخرین دستورات ارسال‌شده به MT5</h3><span class="pill">Command Log</span></div>
           <div class="table-wrap" id="mt5CmdLogWrap"><div class="empty">هنوز دستوری ثبت نشده است.</div></div>
         </div>
-      </section>
+        </div>
+</section>
 
 <section class="view" id="view-settings">
         <div class="grid two">
@@ -1133,7 +1161,7 @@
         </div>
         <div class="grid two" style="margin-top:14px">
           <div class="card"><h3>امنیت فضای محلی</h3><p class="small muted" style="line-height:2">داده‌های ذخیره‌شده در مرورگر با AES-GCM و کلید مشتق‌شده از رمز عبور رمزگذاری می‌شوند. رمز عبور پیش‌فرض وجود ندارد. قفل برنامه فقط دسترسی رابط را می‌بندد و رمزگذاری فضای داده، لایه محافظ اصلی در حالت ذخیره محلی است.</p><button class="btn danger" id="wipeData">پاک‌کردن کامل داده‌های این دستگاه</button></div>
-          <div class="card"><h3>وضعیت برنامه</h3><div class="metric-row"><span>نسخه</span><b>2.8.7</b></div><div class="metric-row"><span>حالت ذخیره‌سازی</span><b>رمزگذاری‌شده و محلی</b></div><div class="metric-row"><span>اتصال به Sheets</span><b id="connectionState">تنظیم نشده</b></div><div class="metric-row"><span>آخرین همگام‌سازی</span><b id="lastSyncText">—</b></div></div>
+          <div class="card"><h3>وضعیت برنامه</h3><div class="metric-row"><span>نسخه</span><b>2.8.6</b></div><div class="metric-row"><span>حالت ذخیره‌سازی</span><b>رمزگذاری‌شده و محلی</b></div><div class="metric-row"><span>اتصال به Sheets</span><b id="connectionState">تنظیم نشده</b></div><div class="metric-row"><span>آخرین همگام‌سازی</span><b id="lastSyncText">—</b></div></div>
         </div>
       </section>
     </main>
@@ -1163,7 +1191,7 @@
 
 (() => {
   'use strict';
-  const VERSION = '2.8.7';
+  const VERSION = '2.8.6';
   const AUTH_KEY = 'zt2_auth_v1';
   const VAULT_KEY = 'zt2_vault_v1';
   const THEME_KEY = 'zt2_theme_v1';
@@ -1187,7 +1215,7 @@
     ignoredSourceKeys: []
   };
   const $ = id => document.getElementById(id);
-  let app = {data:null, key:null, currentView:'dashboard', dashboardRange:'month', currentFilter:'all', editingId:null, breathTimer:null, tiltTimer:null, toastTimer:null, saveChain:Promise.resolve(), syncing:false, chartResize:null,calendarCursor:new Date(),reportTrades:null,syncReport:null,assistantMessages:[]};
+  let app = {data:null, key:null, currentView:'dashboard', currentFilter:'all', editingId:null, breathTimer:null, tiltTimer:null, toastTimer:null, saveChain:Promise.resolve(), syncing:false, chartResize:null,calendarCursor:new Date(),reportTrades:null,syncReport:null,assistantMessages:[]};
   const enc = new TextEncoder(), dec = new TextDecoder();
   const b64 = buf => { const bytes=new Uint8Array(buf); let binary=''; for(let i=0;i<bytes.length;i+=0x8000) binary+=String.fromCharCode(...bytes.subarray(i,i+0x8000)); return btoa(binary); };
   const unb64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
@@ -1268,22 +1296,12 @@
   }
   function summarizeGroup(trades){const s=stats(trades);return {n:s.n,w:s.w,l:s.l,be:s.be,winRate:s.winRate,net:s.net,avg:s.avg,pf:s.pf,grossP:s.grossP,grossL:s.grossL,expectancy:s.expectancy}}
   function renderAll(){renderDashboard();renderTrades();renderPsychology();renderReports();renderRiskOverview();updateSyncUI()}
-  const DASHBOARD_PERIOD_LABELS={day:'روزانه',week:'هفتگی',month:'ماهانه',year:'سالانه',all:'تمام دوره‌ها'};
-  function dashboardPeriodStart(period,now=new Date()){
-    const d=new Date(now.getFullYear(),now.getMonth(),now.getDate());
-    if(period==='day')return d;
-    if(period==='week'){const weekday=(d.getDay()+6)%7;d.setDate(d.getDate()-weekday);return d;}
-    if(period==='month')return new Date(d.getFullYear(),d.getMonth(),1);
-    if(period==='year')return new Date(d.getFullYear(),0,1);
-    return null;
-  }
-  function getDashboardTrades(){const all=app.data?.trades||[],period=app.dashboardRange||'month',start=dashboardPeriodStart(period);if(!start)return all;const end=new Date();return all.filter(t=>{const dt=safeDate(t.date);return dt&&dt>=start&&dt<=end;});}
-  function renderDashboard(){const trades=getDashboardTrades(),s=stats(trades),period=app.dashboardRange||'month',label=DASHBOARD_PERIOD_LABELS[period]||'ماهانه';if($('sCount'))$('sCount').textContent=enNum(s.n);$('sWin').textContent=s.winRate.toFixed(1)+'%';$('sWinSub').textContent=enNum(s.w)+' برد / '+enNum(s.l)+' باخت / '+enNum(s.be)+' سربه‌سر';$('sNet').textContent=fmtMoney(s.net);$('sNet').className='summary-value '+(s.net>0?'positive':s.net<0?'negative':'');if($('dashboardGrowthTag')){$('dashboardGrowthTag').textContent=s.net>0?'سودده':s.net<0?'زیان‌ده':'بدون تغییر';$('dashboardGrowthTag').classList.toggle('negative',s.net<0);}$('sPf').textContent=Number.isFinite(s.pf)?s.pf.toFixed(2):(s.pf===Infinity?'∞':'0.00');$('sExp').textContent=fmtMoney(s.expectancy);$('sDd').textContent=fmtMoney(s.dd);if($('dashboardPeriodHint'))$('dashboardPeriodHint').textContent=period==='all'?'بر اساس تمام معاملات واردشده':`بر اساس معاملات ${label}`;if($('dashboardChartPeriod'))$('dashboardChartPeriod').textContent=label;drawChart(trades);renderRecent(trades);renderPsychProgress();updateReadinessUI();renderRiskOverview()}
-  function drawChart(sourceTrades=getDashboardTrades()){
+  function renderDashboard(){const s=stats(app.data.trades);if($('sCount'))$('sCount').textContent=enNum(s.n);$('sWin').textContent=s.winRate.toFixed(1)+'%';$('sWinSub').textContent=enNum(s.w)+' برد / '+enNum(s.l)+' باخت / '+enNum(s.be)+' سربه‌سر';$('sNet').textContent=fmtMoney(s.net);$('sNet').className='summary-value '+(s.net>0?'positive':s.net<0?'negative':'');if($('dashboardGrowthTag')){$('dashboardGrowthTag').textContent=s.net>0?'سودده':s.net<0?'زیان‌ده':'بدون تغییر';$('dashboardGrowthTag').classList.toggle('negative',s.net<0);}$('sPf').textContent=Number.isFinite(s.pf)?s.pf.toFixed(2):(s.pf===Infinity?'∞':'0.00');$('sExp').textContent=fmtMoney(s.expectancy);$('sDd').textContent=fmtMoney(s.dd);drawChart();renderRecent();renderPsychProgress();updateReadinessUI();renderRiskOverview()}
+  function drawChart(){
     const c=$('equityChart');if(!c)return;const rect=c.getBoundingClientRect();if(!rect.width||!rect.height)return;
     const dpr=Math.min(window.devicePixelRatio||1,2),w=rect.width,h=rect.height;c.width=Math.max(1,Math.round(w*dpr));c.height=Math.max(1,Math.round(h*dpr));
     const ctx=c.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
-    const trades=[...sourceTrades].sort((a,b)=>(safeDate(a.date)?.getTime()||0)-(safeDate(b.date)?.getTime()||0));
+    const trades=[...app.data.trades].sort((a,b)=>(safeDate(a.date)?.getTime()||0)-(safeDate(b.date)?.getTime()||0));
     if(!trades.length){ctx.fillStyle='#86a5b5';ctx.font='12px Tahoma';ctx.textAlign='center';ctx.fillText('پس از ثبت یا دریافت معامله، نمودار نمایش داده می‌شود',w/2,h/2);return}
     let cum=0;const vals=[0,...trades.map(t=>cum+=tradePnlValue(t))],min=Math.min(0,...vals),max=Math.max(0,...vals),span=max-min||1,pad=16;
     const x=i=>pad+(w-pad*2)*i/(vals.length-1||1),y=v=>h-pad-(v-min)/span*(h-pad*2);
@@ -1347,7 +1365,7 @@
     </article>`;
   }
 
-  function renderRecent(sourceTrades=app.data.trades){$('recentTrades').innerHTML=sourceTrades.length?[...sourceTrades].sort((a,b)=>(safeDate(b.date)?.getTime()||0)-(safeDate(a.date)?.getTime()||0)).slice(0,4).map(tradeCard).join(''):'<div class="empty">در این بازه معامله‌ای ثبت نشده است.</div>';bindTradeActions($('recentTrades'))}
+  function renderRecent(){$('recentTrades').innerHTML=app.data.trades.length?[...app.data.trades].sort((a,b)=>(safeDate(b.date)?.getTime()||0)-(safeDate(a.date)?.getTime()||0)).slice(0,4).map(tradeCard).join(''):'<div class="empty">هنوز معامله‌ای ثبت نشده است.</div>';bindTradeActions($('recentTrades'))}
   function renderPsychProgress(){const total=app.data.trades.length,pending=app.data.trades.filter(t=>t.needsPsych).length,done=total-pending;$('pendingPill').textContent=enNum(pending)+' معامله منتظر';$('psychProgress').innerHTML=`<div class="metric-row"><span>معاملات تکمیل‌شده</span><b>${enNum(done)} از ${enNum(total)}</b></div><div class="bar"><i style="width:${total?done/total*100:0}%"></i></div><div class="metric-row"><span>معاملات نیازمند بررسی</span><b class="warning">${enNum(pending)}</b></div><div class="metric-row"><span>درصد تکمیل</span><b>${total?Math.round(done/total*100):0}%</b></div>`;$('openPendingBtn').disabled=!pending}
   function renderTrades(){const q=($('tradeSearch')?.value||'').trim().toLowerCase(),sort=$('tradeSort')?.value||'new';let arr=app.data.trades.filter(t=>{const str=[t.symbol,t.ticket,t.id].join(' ').toLowerCase();if(q&&!str.includes(q))return false;switch(app.currentFilter){case'pending':return !!t.needsPsych;case'win':return tradePnlValue(t)>0;case'loss':return tradePnlValue(t)<0;case'mistake':return isMistake(t);case'mt5':return t.source==='mt5';default:return true}});arr.sort((a,b)=>sort==='profit'?Number(b.pnl)-Number(a.pnl):sort==='loss'?Number(a.pnl)-Number(b.pnl):sort==='old'?(safeDate(a.date)?.getTime()||0)-(safeDate(b.date)?.getTime()||0):(safeDate(b.date)?.getTime()||0)-(safeDate(a.date)?.getTime()||0));$('tradeCountPill').textContent=enNum(arr.length)+' معامله';$('tradeList').innerHTML=arr.length?arr.map(tradeCard).join(''):'<div class="empty">معامله‌ای با این فیلتر پیدا نشد.</div>';bindTradeActions($('tradeList'))}
   function bindTradeActions(root){root.querySelectorAll('[data-psych]').forEach(b=>b.addEventListener('click',()=>openPsych(b.dataset.psych)));root.querySelectorAll('[data-delete]').forEach(b=>b.addEventListener('click',()=>deleteTrade(b.dataset.delete)))}
@@ -1872,7 +1890,6 @@
     $('restoreFile').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;const p=prompt('رمز عبور فایل پشتیبان را وارد کن:');if(!p)return;try{await restoreBackup(f,p);await showApp();toast('پشتیبان با موفقیت بازیابی شد.')}catch(err){$('loginError').textContent=err.message}e.target.value=''});
     $('settingsRestore').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;const p=prompt('رمز عبور فایل پشتیبان را وارد کن:');if(!p)return;try{await restoreBackup(f,p);await showApp();toast('پشتیبان بازیابی شد.')}catch(err){toast(err.message)}e.target.value=''});
     $('sideNav').addEventListener('click',e=>{const b=e.target.closest('[data-view]');if(b)switchView(b.dataset.view)});$('mobileNav').addEventListener('click',e=>{const b=e.target.closest('[data-view]');if(!b)return;switchView(b.dataset.view,b.dataset.navKey||b.dataset.view);if(b.dataset.jump)setTimeout(()=>$(b.dataset.jump)?.scrollIntoView({behavior:'smooth',block:'center'}),140)});document.querySelectorAll('[data-goto]').forEach(b=>b.addEventListener('click',()=>switchView(b.dataset.goto)));
-    if($('dashboardPeriod'))$('dashboardPeriod').addEventListener('change',e=>{app.dashboardRange=e.target.value;renderDashboard()});
     $('themeBtn').onclick=()=>{const light=!document.body.classList.contains('light');localStorage.setItem(THEME_KEY,light?'light':'dark');applyTheme();drawChart()};$('settingsBtn').onclick=()=>switchView('settings');$('lockBtn').onclick=async()=>{if(!(await persist()))return;await lockApp()};$('syncBtn').onclick=()=>cloudflareConfigured()?syncFromCloudflare():syncFromSheet();$('syncNow').onclick=syncFromSheet;$('backupBtn').onclick=exportBackup;$('settingsBackup').onclick=exportBackup;$('csvBtn').onclick=exportCSV;
     $('saveSettings').onclick=async()=>{const before=clone(app.data.settings);app.data.settings={...app.data.settings,workerUrl:$('workerUrl').value.trim().replace(/\/+$/,''),workerToken:$('workerToken').value.trim(),gasUrl:$('gasUrl').value.trim(),apiToken:$('apiToken').value.trim(),autoSync:$('autoSync').checked,sheetName:$('sheetName').value.trim()||'Journal'};if(!(await persist())){app.data.settings=before;populateSettings();return}populateSettings();toast('تنظیمات ذخیره شد.')};
     $('registerPasskey').onclick=async()=>{try{await registerPasskey()}catch(err){toast(err.message||'فعال‌سازی Passkey ناموفق بود.')}};
@@ -1917,5 +1934,22 @@
 
 </script>
   <div id="pdf-report-root" aria-hidden="true"></div>
+
+<script id="zt-mt5-dual-view-js">
+(function(){
+  const root=document.getElementById('view-mt5control'); if(!root||root.dataset.dualViewReady==='1')return; root.dataset.dualViewReady='1';
+  const chartTab=document.getElementById('mt5TabChart'), tradeTab=document.getElementById('mt5TabTrade');
+  const chartPane=document.getElementById('mt5PaneChart'), tradePane=document.getElementById('mt5PaneTrade');
+  function setPane(which){const chart=which==='chart'; chartPane.hidden=!chart;tradePane.hidden=chart;chartTab.classList.toggle('active',chart);tradeTab.classList.toggle('active',!chart);chartTab.setAttribute('aria-selected',String(chart));tradeTab.setAttribute('aria-selected',String(!chart));if(chart)loadChart();}
+  chartTab?.addEventListener('click',()=>setPane('chart'));tradeTab?.addEventListener('click',()=>setPane('trade'));
+  const symbol=document.getElementById('mt5ChartSymbol'), interval=document.getElementById('mt5ChartInterval'), frame=document.getElementById('mt5TradingChart');
+  function loadChart(){if(!symbol||!interval||!frame)return;const src='https://www.tradingview.com/widgetembed/?symbol='+encodeURIComponent(symbol.value)+'&interval='+encodeURIComponent(interval.value)+'&hidesidetoolbar=0&symboledit=1&saveimage=0&toolbarbg=0B1724&theme=dark&style=1&timezone=Etc%2FUTC&withdateranges=1&hideideas=1&studies=[]&locale=fa';if(frame.dataset.src!==src){frame.src=src;frame.dataset.src=src;}}
+  document.getElementById('mt5ChartReload')?.addEventListener('click',loadChart);
+  symbol?.addEventListener('change',loadChart);interval?.addEventListener('change',loadChart);
+  // Keep the existing MT5 monitor as the second view; no account/API/command behavior is altered.
+  setPane('trade');
+})();
+</script>
+
 </body>
 </html>
