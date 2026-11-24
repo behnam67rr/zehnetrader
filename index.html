@@ -798,9 +798,21 @@
 #view-mt5control .mt5-chart-controls{display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end;margin:12px 0}
 #view-mt5control .mt5-chart-controls label{display:grid;gap:6px;color:var(--muted,#9aabba);font-size:13px}
 #view-mt5control .mt5-chart-controls select{width:100%;min-height:44px;border-radius:12px;padding:8px 10px;background:var(--input-bg,#0c1d2d);color:var(--text,#edf5fa);border:1px solid var(--line,rgba(120,160,190,.25));font:inherit}
-#view-mt5control .mt5-chart-frame-wrap{width:100%;height:min(68vh,680px);min-height:390px;overflow:hidden;border-radius:14px;background:#0b1724}
-#view-mt5control #mt5TradingChart{width:100%;height:100%;border:0;display:block}
-#view-mt5control .mt5-chart-note{line-height:1.9;margin-top:10px}
+#view-mt5control .mt5-chart-card{padding:8px!important;margin:0!important;border-radius:14px!important;background:transparent!important;border:0!important;box-shadow:none!important}
+#view-mt5control .mt5-chart-card .card-head{margin:0 2px 6px!important;min-height:28px}
+#view-mt5control .mt5-chart-card .card-head h3{font-size:12px!important;margin:0!important}
+#view-mt5control .mt5-chart-controls{display:flex!important;align-items:center;justify-content:space-between;gap:8px;margin:4px 2px 7px!important;font-size:10px}
+#view-mt5control .mt5-chart-frame-wrap{width:100%;height:calc(100dvh - 255px);min-height:430px;max-height:none;overflow:hidden;border-radius:10px;background:#050b12;position:relative}
+#view-mt5control #mt5TradingChart{width:100%;height:100%;display:block;touch-action:pan-y}
+#view-mt5control .mt5-chart-note{display:none!important}
+.mt5-chart-status{font-size:10px;color:#9fb5c8;display:flex;gap:8px;align-items:center;min-width:0}
+.mt5-chart-status .live-dot{width:6px;height:6px;border-radius:50%;background:#16c784;box-shadow:0 0 8px #16c784;display:inline-block}
+.mt5-chart-mini-btn{border:1px solid #29445c;background:#102238;color:#dce9f4;border-radius:8px;padding:5px 9px;font-size:10px;min-height:28px}
+.mt5-chart-tooltip{position:absolute;z-index:8;display:none;min-width:145px;max-width:210px;padding:8px 10px;border:1px solid #35536a;border-radius:9px;background:rgba(5,16,28,.96);box-shadow:0 8px 22px #0008;color:#eaf4fb;font-size:11px;line-height:1.7;direction:rtl;pointer-events:none}
+.mt5-chart-tooltip.show{display:block}.mt5-chart-tooltip .pnl{font-weight:900;direction:ltr;display:inline-block}.mt5-chart-tooltip .positive{color:#16c784}.mt5-chart-tooltip .negative{color:#ff6577}
+.mt5-chart-empty{height:100%;display:grid;place-items:center;text-align:center;color:#91a9bd;font-size:12px;padding:20px;line-height:2}
+@media(max-width:760px){#view-mt5control .mt5-chart-frame-wrap{height:calc(100dvh - 246px);min-height:430px;border-radius:8px}#view-mt5control .mt5-inner-tabs{margin-bottom:5px!important}#view-mt5control .mt5-chart-card{padding:4px 0!important}#view-mt5control .mt5-chart-card .card-head{margin:0 5px 3px!important}}
+@media(max-height:700px) and (max-width:760px){#view-mt5control .mt5-chart-frame-wrap{height:calc(100dvh - 218px);min-height:360px}}
 /* Mind Trader 2.8.9 mobile refinements */
 @media(max-width:760px){
   .topbar{display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:space-between!important;gap:8px!important;padding:7px 9px!important;margin-bottom:7px!important;min-height:0!important}
@@ -825,7 +837,7 @@
   .mobile-nav button span{font-size:10px!important}
   #view-mt5control .mt5-inner-tabs{top:100px!important}
 }
-.mt5-chart-positions-overlay{position:absolute;left:8px;top:8px;z-index:3;display:flex;flex-direction:column;gap:5px;max-width:min(78%,330px);pointer-events:none}.mt5-chart-position-chip{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:5px 8px;border:1px solid #ffffff30;border-radius:8px;background:#071522df;color:#eaf4f8;font-size:10px;line-height:1.35;backdrop-filter:blur(7px);direction:ltr}.mt5-chart-position-chip.buy{border-inline-start:3px solid #16c784}.mt5-chart-position-chip.sell{border-inline-start:3px solid #ff6577}.mt5-chart-position-chip .pnl{font-weight:900}.mt5-chart-position-chip .pnl.positive{color:#16c784}.mt5-chart-position-chip .pnl.negative{color:#ff6577}.mt5-chart-positions-overlay:empty{display:none}
+
 @media(max-width:640px){#view-mt5control .mt5-chart-controls{grid-template-columns:1fr 1fr}#view-mt5control .mt5-chart-controls button{grid-column:1/-1;width:100%}#view-mt5control .mt5-chart-frame-wrap{height:62vh;min-height:420px}}
 </style>
 
@@ -878,7 +890,7 @@
 
   <div id="appRoot" class="app hidden">
     <aside class="sidebar">
-      <div class="brand"><div class="logo" aria-hidden="true"></div><div><b>ذهن تریدر</b><span>نسخه 2.8.9 · ژورنال هوشمند</span></div></div>
+      <div class="brand"><div class="logo" aria-hidden="true"></div><div><b>ذهن تریدر</b><span>نسخه 2.9.0 · ژورنال هوشمند</span></div></div>
       <nav class="nav" id="sideNav">
         <button class="active" data-view="dashboard"><span class="ico">▦</span>داشبورد</button>
         <button data-view="trades"><span class="ico">⇄</span>ژورنال معاملات</button>
@@ -1048,33 +1060,15 @@
   </div>
   <div id="mt5PaneChart" class="mt5-inner-pane" role="tabpanel" aria-labelledby="mt5TabChart">
     <div class="card mt5-chart-card">
-      <div class="card-head"><h3>نمودار بازار</h3><span class="pill">نمای نمودار مستقل</span></div>
+      <div class="card-head"><h3 id="mt5ChartTitle">نمودار زنده MT5</h3><span class="pill" id="mt5ChartFeedBadge">در انتظار فید MT5</span></div>
       <div class="mt5-chart-controls">
-        <label>نماد
-          <select id="mt5ChartSymbol">
-            <option value="OANDA:XAUUSD">طلا · XAUUSD</option>
-            <option value="OANDA:EURUSD">EURUSD</option>
-            <option value="OANDA:GBPUSD">GBPUSD</option>
-            <option value="OANDA:USDJPY">USDJPY</option>
-            <option value="BINANCE:BTCUSDT">BTCUSDT</option>
-            <option value="BINANCE:ETHUSDT">ETHUSDT</option>
-          </select>
-        </label>
-        <label>تایم‌فریم
-          <select id="mt5ChartInterval">
-            <option value="1">۱ دقیقه</option><option value="5" selected>۵ دقیقه</option>
-            <option value="15">۱۵ دقیقه</option><option value="30">۳۰ دقیقه</option>
-            <option value="60">۱ ساعت</option><option value="240">۴ ساعت</option>
-            <option value="D">روزانه</option><option value="W">هفتگی</option>
-          </select>
-        </label>
-        <button type="button" class="btn primary" id="mt5ChartReload">بارگذاری نمودار</button>
+        <div class="mt5-chart-status"><i class="live-dot"></i><span id="mt5ChartMeta">نماد و تایم‌فریم از چارت متصل MT5</span></div>
+        <button type="button" class="mt5-chart-mini-btn" id="mt5ChartReload">↻ بروزرسانی</button>
       </div>
-      <div class="mt5-chart-frame-wrap" style="position:relative">
-        <iframe id="mt5TradingChart" title="نمودار بازار" loading="lazy" referrerpolicy="no-referrer" allowfullscreen></iframe>
-        <div id="mt5ChartPositionsOverlay" class="mt5-chart-positions-overlay" aria-live="polite"><span>در انتظار اطلاعات پوزیشن‌های MT5…</span></div>
+      <div class="mt5-chart-frame-wrap" id="mt5ChartFrameWrap">
+        <div id="mt5TradingChart" role="img" aria-label="نمودار کندلی زنده MT5"><div class="mt5-chart-empty">در انتظار دریافت کندل‌های واقعی از اکسپرت MT5…</div></div>
+        <div id="mt5ChartTooltip" class="mt5-chart-tooltip" aria-live="polite"></div>
       </div>
-      <p class="hint mt5-chart-note">توجه: این نمودار از TradingView بارگذاری می‌شود و فید قیمت آن ممکن است با قیمت بروکر LiteFinance در MT5 تفاوت جزئی داشته باشد. برای اجرای معامله، قیمت و اسپرد را در خود MT5 بررسی کن.</p>
     </div>
   </div>
   <div id="mt5PaneTrade" class="mt5-inner-pane" role="tabpanel" aria-labelledby="mt5TabTrade" hidden>
@@ -1873,15 +1867,7 @@
       if($('mt5BtnSignal')){$('mt5BtnSignal').textContent='سیگنال: '+(st.signalEnabled?'روشن 🟢':'خاموش 🔴');$('mt5BtnSignal').className='btn '+(st.signalEnabled?'primary':'')}
       if($('mt5BtnDaily')){$('mt5BtnDaily').textContent='حد ضرر روزانه: '+(st.dailyLimitEnabled?'روشن 🟢':'خاموش 🔴');$('mt5BtnDaily').className='btn '+(st.dailyLimitEnabled?'warn':'')}
       const pos=Array.isArray(st.positions)?st.positions:[];
-      const chartOverlay=$('mt5ChartPositionsOverlay');
-      if(chartOverlay){
-        chartOverlay.innerHTML=pos.length?pos.slice(0,5).map(p=>{
-          const side=String(p.side||'').toUpperCase();
-          const cls=side.includes('SELL')||side.includes('SHORT')?'sell':'buy';
-          const pnl=Number(p.profit||0);
-          return `<div class="mt5-chart-position-chip ${cls}"><b>#${esc(p.ticket)}</b><b>${esc(p.symbol)}</b><span>${esc(side)}</span><span>Entry ${esc(p.open)}</span><span>SL ${esc(p.sl||'—')}</span><span>TP ${esc(p.tp||'—')}</span><span class="pnl ${pnl>=0?'positive':'negative'}">${fmtMoney(pnl)}</span></div>`;
-        }).join(''):'<div class="mt5-chart-position-chip">بدون پوزیشن باز · MT5</div>';
-      }
+      if(window.__ztRenderMt5PriceChart) window.__ztRenderMt5PriceChart(st.chart||null,pos);
       if($('mt5PosCount'))$('mt5PosCount').textContent=enNum(pos.length)+' پوزیشن';
       if($('mt5PositionsWrap')){
         $('mt5PositionsWrap').innerHTML=pos.length?`<table><thead><tr><th>تیکت</th><th>نماد</th><th>جهت</th><th>حجم</th><th>ورود</th><th>SL</th><th>TP</th><th>سود</th><th>عملیات</th></tr></thead><tbody>${pos.map(p=>`<tr><td dir="ltr">#${esc(p.ticket)}</td><td>${esc(p.symbol)}</td><td>${esc(p.side)}</td><td dir="ltr">${esc(p.lots)}</td><td dir="ltr">${esc(p.open)}</td><td dir="ltr">${esc(p.sl)}</td><td dir="ltr">${esc(p.tp)}</td><td dir="ltr" class="${Number(p.profit)>=0?'positive':'negative'}">${fmtMoney(p.profit)}</td><td><button type="button" class="btn warn" style="padding:4px 8px;font-size:10px" onclick="window.__ztMt5Cmd('BREAKEVEN_POS',{ticket:${Number(p.ticket)}})">BE</button> <button type="button" class="btn danger" style="padding:4px 8px;font-size:10px" onclick="window.__ztMt5Cmd('CLOSE_POS',{ticket:${Number(p.ticket)}})">بستن</button></td></tr>`).join('')}</tbody></table>`:'<div class="empty">پوزیشن بازی وجود ندارد.</div>';
@@ -1917,6 +1903,7 @@
     finally{mt5RefreshInFlight=false;}
   }
   window.__ztMt5Cmd=(cmd,params)=>sendMt5Command(cmd,params);
+  window.__ztMt5RefreshNow=()=>refreshMt5Control(true);
 
   function bindEvents(){
     $('loginForm').addEventListener('submit',async e=>{e.preventDefault();$('loginError').textContent='';const p=$('password').value;try{if(!localStorage.getItem(AUTH_KEY)){if(p.length<8)throw new Error('رمز عبور باید حداقل ۸ کاراکتر باشد.');if(p!==$('confirmPassword').value)throw new Error('تکرار رمز عبور یکسان نیست.');await setupVault(p)}else await unlockVault(p);await showApp()}catch(err){$('loginError').textContent=err.message}});
@@ -1970,19 +1957,74 @@
 </script>
   <div id="pdf-report-root" aria-hidden="true"></div>
 
+<script src="https://unpkg.com/lightweight-charts@4.2.2/dist/lightweight-charts.standalone.production.js"></script>
 <script id="zt-mt5-dual-view-js">
 (function(){
   const root=document.getElementById('view-mt5control'); if(!root||root.dataset.dualViewReady==='1')return; root.dataset.dualViewReady='1';
   const chartTab=document.getElementById('mt5TabChart'), tradeTab=document.getElementById('mt5TabTrade');
   const chartPane=document.getElementById('mt5PaneChart'), tradePane=document.getElementById('mt5PaneTrade');
-  function setPane(which){const chart=which==='chart'; chartPane.hidden=!chart;tradePane.hidden=chart;chartTab.classList.toggle('active',chart);tradeTab.classList.toggle('active',!chart);chartTab.setAttribute('aria-selected',String(chart));tradeTab.setAttribute('aria-selected',String(!chart));if(chart)loadChart();}
+  function setPane(which){const chart=which==='chart'; chartPane.hidden=!chart;tradePane.hidden=chart;chartTab.classList.toggle('active',chart);tradeTab.classList.toggle('active',!chart);chartTab.setAttribute('aria-selected',String(chart));tradeTab.setAttribute('aria-selected',String(!chart));if(chart){if(window.__ztMt5ChartResize)window.__ztMt5ChartResize();if(window.__ztMt5RefreshNow)window.__ztMt5RefreshNow();}}
   chartTab?.addEventListener('click',()=>setPane('chart'));tradeTab?.addEventListener('click',()=>setPane('trade'));
-  const symbol=document.getElementById('mt5ChartSymbol'), interval=document.getElementById('mt5ChartInterval'), frame=document.getElementById('mt5TradingChart');
-  function loadChart(){if(!symbol||!interval||!frame)return;const src='https://www.tradingview.com/widgetembed/?symbol='+encodeURIComponent(symbol.value)+'&interval='+encodeURIComponent(interval.value)+'&hidesidetoolbar=0&symboledit=1&saveimage=0&toolbarbg=0B1724&theme=dark&style=1&timezone=Etc%2FUTC&withdateranges=1&hideideas=1&studies=[]&locale=fa';if(frame.dataset.src!==src){frame.src=src;frame.dataset.src=src;}}
-  document.getElementById('mt5ChartReload')?.addEventListener('click',loadChart);
-  symbol?.addEventListener('change',loadChart);interval?.addEventListener('change',loadChart);
-  // Keep the existing MT5 monitor as the second view; no account/API/command behavior is altered.
-  setPane('trade');
+  document.getElementById('mt5ChartReload')?.addEventListener('click',()=>window.__ztMt5RefreshNow&&window.__ztMt5RefreshNow());
+  setPane('chart');
+})();
+</script>
+<script id="zt-mt5-price-chart-js">
+(function(){
+  const host=document.getElementById('mt5TradingChart'); if(!host||host.dataset.chartReady==='1')return; host.dataset.chartReady='1';
+  let chart=null,candleSeries=null,volumeSeries=null,lastBarsKey='',positionLines=[],currentPositions=[],resizeObserver=null;
+  const tooltip=document.getElementById('mt5ChartTooltip'),badge=document.getElementById('mt5ChartFeedBadge'),meta=document.getElementById('mt5ChartMeta'),title=document.getElementById('mt5ChartTitle');
+  const money=v=>{const n=Number(v||0);return (n<0?'-':'')+'$'+Math.abs(n).toFixed(2)};
+  function ensureChart(){
+    if(chart)return true;
+    if(!window.LightweightCharts){host.innerHTML='<div class="mt5-chart-empty">کتابخانه نمودار بارگذاری نشد. اتصال اینترنت و دسترسی به CDN را بررسی کن.</div>';return false;}
+    const L=window.LightweightCharts;
+    chart=L.createChart(host,{width:host.clientWidth||320,height:host.clientHeight||480,layout:{background:{type:'solid',color:'#050b12'},textColor:'#a9bac9',fontFamily:'Tahoma,Arial',fontSize:11},grid:{vertLines:{color:'#172838'},horzLines:{color:'#172838'}},rightPriceScale:{borderColor:'#26394a',scaleMargins:{top:.08,bottom:.18}},timeScale:{borderColor:'#26394a',timeVisible:true,secondsVisible:false,rightOffset:3},crosshair:{mode:L.CrosshairMode?.Normal??0},handleScroll:{mouseWheel:true,pressedMouseMove:true,horzTouchDrag:true,vertTouchDrag:true},handleScale:{axisPressedMouseMove:true,mouseWheel:true,pinch:true}});
+    candleSeries=chart.addCandlestickSeries({upColor:'#13bd91',downColor:'#ef5366',borderUpColor:'#13bd91',borderDownColor:'#ef5366',wickUpColor:'#13bd91',wickDownColor:'#ef5366',priceLineVisible:true,lastValueVisible:true});
+    volumeSeries=chart.addHistogramSeries({priceFormat:{type:'volume'},priceScaleId:'volume',scaleMargins:{top:.82,bottom:0},lastValueVisible:false,priceLineVisible:false});
+    chart.priceScale('volume').applyOptions({scaleMargins:{top:.82,bottom:0},visible:false});
+    chart.subscribeClick(onChartClick);
+    if('ResizeObserver'in window){resizeObserver=new ResizeObserver(()=>resizeChart());resizeObserver.observe(host);}else window.addEventListener('resize',resizeChart);
+    return true;
+  }
+  function resizeChart(){if(chart&&host.clientWidth>0&&host.clientHeight>0)chart.applyOptions({width:host.clientWidth,height:host.clientHeight});}
+  function clearPositionLines(){for(const x of positionLines){try{candleSeries.removePriceLine(x.line)}catch(e){}}positionLines=[];}
+  function addPositionLines(positions,symbol){
+    clearPositionLines();currentPositions=Array.isArray(positions)?positions:[];
+    currentPositions.filter(p=>String(p.symbol||'').toUpperCase()===String(symbol||'').toUpperCase()).forEach(p=>{
+      const side=String(p.side||'').toUpperCase(),buy=side.includes('BUY'),color=buy?'#24c99a':'#ff6678';
+      const ticket=String(p.ticket||'');
+      const add=(price,label,lineColor,lineStyle)=>{const v=Number(price);if(!(v>0))return;const line=candleSeries.createPriceLine({price:v,color:lineColor,lineWidth:1,lineStyle,axisLabelVisible:true,title:label,axisLabelColor:lineColor,axisLabelTextColor:'#06131d'});positionLines.push({line,kind:label.split(' ')[1]||'ENTRY',ticket,price:v,position:p});};
+      add(p.open,`#${ticket} ENTRY`,color,0);add(p.sl,`#${ticket} SL`,'#f05b6d',2);add(p.tp,`#${ticket} TP`,'#22c995',2);
+    });
+  }
+  function onChartClick(param){
+    if(!param||!param.point||!candleSeries){hideTooltip();return;}
+    const y=param.point.y;let best=null,bestDist=15;
+    for(const p of currentPositions){
+      const symbol=p.symbol;const price=Number(p.open);if(!(price>0))continue;
+      const py=candleSeries.priceToCoordinate(price);if(py==null)continue;const d=Math.abs(py-y);
+      if(d<bestDist){bestDist=d;best=p;}
+    }
+    if(!best){hideTooltip();return;}
+    const pnl=Number(best.profit||0),side=String(best.side||'');
+    tooltip.innerHTML=`<b>#${String(best.ticket)}</b> · ${side} ${String(best.symbol||'')}<br>حجم: ${String(best.lots??'—')}<br><span class="pnl ${pnl>=0?'positive':'negative'}">${money(pnl)}</span> · سود/زیان شناور`;
+    const x=Math.max(6,Math.min(host.clientWidth-220,param.point.x+10));const top=Math.max(6,Math.min(host.clientHeight-90,y-46));tooltip.style.left=x+'px';tooltip.style.top=top+'px';tooltip.classList.add('show');
+  }
+  function hideTooltip(){tooltip?.classList.remove('show');}
+  function render(chartData,positions){
+    if(!chartData||!Array.isArray(chartData.bars)||!chartData.bars.length){if(badge)badge.textContent='در انتظار فید کندل MT5';if(meta)meta.textContent='اکسپرت باید نسخه دارای ارسال کندل باشد';return;}
+    if(!ensureChart())return;
+    const bars=chartData.bars.map(b=>({time:Number(b.time),open:Number(b.open),high:Number(b.high),low:Number(b.low),close:Number(b.close)})).filter(b=>b.time>0&&b.open>0&&b.high>0&&b.low>0&&b.close>0).sort((a,b)=>a.time-b.time);
+    if(!bars.length)return;
+    const key=bars.map(b=>b.time+':'+b.close).join('|');
+    if(key!==lastBarsKey){candleSeries.setData(bars);const volumes=chartData.bars.map(b=>({time:Number(b.time),value:Number(b.volume||0),color:Number(b.close)>=Number(b.open)?'rgba(19,189,145,.38)':'rgba(239,83,102,.38)'})).filter(v=>v.time>0);volumeSeries.setData(volumes);lastBarsKey=key;}
+    addPositionLines(positions,chartData.symbol);
+    const tf=String(chartData.timeframe||'MT5'),sym=String(chartData.symbol||'');if(meta)meta.textContent=`${sym} · ${tf} · فید مستقیم MT5`;if(title)title.textContent=`${sym} · ${tf}`;if(badge){badge.textContent='LIVE · MT5';badge.className='pill good';}
+    resizeChart();
+  }
+  window.__ztRenderMt5PriceChart=render;window.__ztMt5ChartResize=resizeChart;
+  window.addEventListener('pointerdown',e=>{if(!host.contains(e.target)&&!tooltip.contains(e.target))hideTooltip();},{passive:true});
 })();
 </script>
 
