@@ -804,6 +804,33 @@
 @media(max-width:640px){#view-mt5control .mt5-chart-controls{grid-template-columns:1fr 1fr}#view-mt5control .mt5-chart-controls button{grid-column:1/-1;width:100%}#view-mt5control .mt5-chart-frame-wrap{height:62vh;min-height:420px}}
 </style>
 
+
+
+<style id="zt-mt5-terminal-2-8-9">
+@media(max-width:760px){
+  #view-mt5control:has(#mt5PaneChart:not([hidden])){position:fixed!important;z-index:30;top:calc(env(safe-area-inset-top,0px) + 70px);left:0;right:0;bottom:calc(73px + env(safe-area-inset-bottom,0px));margin:0!important;padding:0!important;overflow:hidden!important;background:#07121d}
+  #view-mt5control .mt5-inner-tabs{position:absolute;top:5px;right:8px;left:8px;z-index:4;display:flex;justify-content:flex-end;gap:4px;padding:0;margin:0;background:transparent;border:0;pointer-events:none}
+  #view-mt5control .mt5-inner-tab{pointer-events:auto;min-height:27px;padding:4px 9px;font-size:10px;border-radius:8px;background:rgba(9,25,38,.88);border:1px solid rgba(90,140,170,.25)}
+  #view-mt5control .mt5-inner-tab.active{background:#0a7967;color:#fff;box-shadow:none}
+  #view-mt5control .mt5-fullscreen-pane{height:100%;width:100%;overflow:hidden}
+  #view-mt5control .mt5-terminal{height:100%;display:flex;flex-direction:column;gap:4px;padding:36px 5px 3px;box-sizing:border-box;background:#07121d}
+  #view-mt5control .mt5-terminal-toolbar{height:34px;min-height:34px;display:flex;gap:5px;align-items:center}
+  #view-mt5control .mt5-terminal-toolbar select{height:30px;min-height:30px;padding:3px 7px;border-radius:8px;background:#102337;color:#eef5ff;border:1px solid #24445c;font-size:11px;flex:1;min-width:0}
+  #view-mt5control .mt5-mini-action{height:30px;min-width:32px;padding:0 8px;border:1px solid #24445c;border-radius:8px;background:#102337;color:#dceaf4;font-size:16px}
+  #view-mt5control .mt5-chart-frame-wrap-full{height:auto;min-height:0;flex:1;width:100%;border-radius:7px;overflow:hidden;background:#050b12}
+  #view-mt5control #mt5TradingChart{width:100%;height:100%;border:0;display:block}
+  #view-mt5control .mt5-live-strip{height:34px;min-height:34px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:center;gap:3px;padding:0 7px;border:1px solid #24445c;border-radius:8px;background:#0c1d2c;color:#a9bacb;font-size:9px;direction:ltr}
+  #view-mt5control .mt5-live-strip span{display:flex;justify-content:center;gap:3px;white-space:nowrap}
+  #view-mt5control .mt5-live-strip b{color:#eaf3fa;font-weight:700}
+  #view-mt5control .mt5-live-strip b.positive{color:#16c784}
+  #view-mt5control .mt5-live-strip b.negative{color:#ff6577}
+  #view-mt5control .mt5-chart-disclaimer{display:none}
+  .mobile-nav button[data-nav-key="manual"] b{width:24px!important;height:22px!important;margin-top:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;color:var(--green)!important}
+  .mobile-nav button[data-nav-key="manual"] svg{width:19px!important;height:19px!important}
+  .mobile-nav button[data-nav-key="manual"] span{color:var(--green)!important}
+  .mobile-nav{padding-top:6px!important}
+}
+</style>
 </head>
 <body>
   <div id="loginWrap" class="login-wrap">
@@ -1021,34 +1048,35 @@
     <button type="button" class="mt5-inner-tab active" id="mt5TabChart" role="tab" aria-selected="true" aria-controls="mt5PaneChart">نمودار</button>
     <button type="button" class="mt5-inner-tab" id="mt5TabTrade" role="tab" aria-selected="false" aria-controls="mt5PaneTrade">معاملات و کنترل حساب</button>
   </div>
-  <div id="mt5PaneChart" class="mt5-inner-pane" role="tabpanel" aria-labelledby="mt5TabChart">
-    <div class="card mt5-chart-card">
-      <div class="card-head"><h3>نمودار بازار</h3><span class="pill">نمای نمودار مستقل</span></div>
-      <div class="mt5-chart-controls">
-        <label>نماد
-          <select id="mt5ChartSymbol">
-            <option value="OANDA:XAUUSD">طلا · XAUUSD</option>
-            <option value="OANDA:EURUSD">EURUSD</option>
-            <option value="OANDA:GBPUSD">GBPUSD</option>
-            <option value="OANDA:USDJPY">USDJPY</option>
-            <option value="BINANCE:BTCUSDT">BTCUSDT</option>
-            <option value="BINANCE:ETHUSDT">ETHUSDT</option>
-          </select>
-        </label>
-        <label>تایم‌فریم
-          <select id="mt5ChartInterval">
-            <option value="1">۱ دقیقه</option><option value="5" selected>۵ دقیقه</option>
-            <option value="15">۱۵ دقیقه</option><option value="30">۳۰ دقیقه</option>
-            <option value="60">۱ ساعت</option><option value="240">۴ ساعت</option>
-            <option value="D">روزانه</option><option value="W">هفتگی</option>
-          </select>
-        </label>
-        <button type="button" class="btn primary" id="mt5ChartReload">بارگذاری نمودار</button>
+  <div id="mt5PaneChart" class="mt5-inner-pane mt5-fullscreen-pane" role="tabpanel" aria-labelledby="mt5TabChart">
+    <div class="mt5-terminal">
+      <div class="mt5-terminal-toolbar">
+        <select id="mt5ChartSymbol" aria-label="نماد نمودار">
+          <option value="OANDA:XAUUSD">XAUUSD</option>
+          <option value="OANDA:EURUSD">EURUSD</option>
+          <option value="OANDA:GBPUSD">GBPUSD</option>
+          <option value="OANDA:USDJPY">USDJPY</option>
+          <option value="BINANCE:BTCUSDT">BTCUSDT</option>
+          <option value="BINANCE:ETHUSDT">ETHUSDT</option>
+        </select>
+        <select id="mt5ChartInterval" aria-label="تایم‌فریم">
+          <option value="1">M1</option><option value="5" selected>M5</option>
+          <option value="15">M15</option><option value="30">M30</option>
+          <option value="60">H1</option><option value="240">H4</option>
+          <option value="D">D1</option><option value="W">W1</option>
+        </select>
+        <button type="button" class="mt5-mini-action" id="mt5ChartReload" title="بارگذاری مجدد نمودار">↻</button>
+        <button type="button" class="mt5-mini-action" id="mt5OpenAccountPane" title="معاملات و کنترل حساب">☷</button>
       </div>
-      <div class="mt5-chart-frame-wrap">
-        <iframe id="mt5TradingChart" title="نمودار بازار" loading="lazy" referrerpolicy="no-referrer" allowfullscreen></iframe>
+      <div class="mt5-chart-frame-wrap mt5-chart-frame-wrap-full">
+        <iframe id="mt5TradingChart" title="نمودار بازار" loading="eager" referrerpolicy="no-referrer" allowfullscreen></iframe>
       </div>
-      <p class="hint mt5-chart-note">توجه: این نمودار از TradingView بارگذاری می‌شود و فید قیمت آن ممکن است با قیمت بروکر LiteFinance در MT5 تفاوت جزئی داشته باشد. برای اجرای معامله، قیمت و اسپرد را در خود MT5 بررسی کن.</p>
+      <div class="mt5-live-strip" aria-live="polite">
+        <span>P/L <b id="mt5ChartFloating" dir="ltr">—</b></span>
+        <span>Equity <b id="mt5ChartEquity" dir="ltr">—</b></span>
+        <span>Balance <b id="mt5ChartBalance" dir="ltr">—</b></span>
+      </div>
+      <p class="mt5-chart-disclaimer">قیمت نمودار TradingView ممکن است با فید LiteFinance متفاوت باشد؛ مبنای اجرای سفارش، قیمت MT5 است.</p>
     </div>
   </div>
   <div id="mt5PaneTrade" class="mt5-inner-pane" role="tabpanel" aria-labelledby="mt5TabTrade" hidden>
@@ -1161,7 +1189,7 @@
         </div>
         <div class="grid two" style="margin-top:14px">
           <div class="card"><h3>امنیت فضای محلی</h3><p class="small muted" style="line-height:2">داده‌های ذخیره‌شده در مرورگر با AES-GCM و کلید مشتق‌شده از رمز عبور رمزگذاری می‌شوند. رمز عبور پیش‌فرض وجود ندارد. قفل برنامه فقط دسترسی رابط را می‌بندد و رمزگذاری فضای داده، لایه محافظ اصلی در حالت ذخیره محلی است.</p><button class="btn danger" id="wipeData">پاک‌کردن کامل داده‌های این دستگاه</button></div>
-          <div class="card"><h3>وضعیت برنامه</h3><div class="metric-row"><span>نسخه</span><b>2.8.6</b></div><div class="metric-row"><span>حالت ذخیره‌سازی</span><b>رمزگذاری‌شده و محلی</b></div><div class="metric-row"><span>اتصال به Sheets</span><b id="connectionState">تنظیم نشده</b></div><div class="metric-row"><span>آخرین همگام‌سازی</span><b id="lastSyncText">—</b></div></div>
+          <div class="card"><h3>وضعیت برنامه</h3><div class="metric-row"><span>نسخه</span><b>2.8.9</b></div><div class="metric-row"><span>حالت ذخیره‌سازی</span><b>رمزگذاری‌شده و محلی</b></div><div class="metric-row"><span>اتصال به Sheets</span><b id="connectionState">تنظیم نشده</b></div><div class="metric-row"><span>آخرین همگام‌سازی</span><b id="lastSyncText">—</b></div></div>
         </div>
       </section>
     </main>
@@ -1840,6 +1868,9 @@
       if($('mt5TodayPL')){$('mt5TodayPL').textContent=fmtMoney(st.todayPL);$('mt5TodayPL').className='value '+(Number(st.todayPL)>=0?'positive':'negative')}
       if($('mt5AccHint'))$('mt5AccHint').textContent='حساب: '+(st.account||'—')+' ('+(st.currency||'USD')+')';
       if($('mt5MarginHint'))$('mt5MarginHint').textContent='مارجین آزاد: '+fmtMoney(st.freeMargin);
+      if($('mt5ChartFloating')){$('mt5ChartFloating').textContent=fmtMoney(st.floating);$('mt5ChartFloating').className=Number(st.floating)>=0?'positive':'negative'}
+      if($('mt5ChartEquity'))$('mt5ChartEquity').textContent=fmtMoney(st.equity);
+      if($('mt5ChartBalance'))$('mt5ChartBalance').textContent=fmtMoney(st.balance);
       if($('mt5RiskSummary'))$('mt5RiskSummary').textContent='1:'+Number(st.rr||1).toFixed(2);
       if($('mt5RiskDetail'))$('mt5RiskDetail').textContent='ریسک: '+(st.riskMode==='CASH'?fmtMoney(st.riskValue):(Number(st.riskValue||0).toFixed(2)+'%'))+' | سقف روزانه: '+Number(st.dailyLimitPct||0).toFixed(2)+'%';
       if($('mt5BtnAuto')){$('mt5BtnAuto').textContent='AUTO: '+(st.autoEnabled?'روشن 🟢':'خاموش 🔴');$('mt5BtnAuto').className='btn '+(st.autoEnabled?'primary':'danger')}
@@ -1942,12 +1973,13 @@
   const chartPane=document.getElementById('mt5PaneChart'), tradePane=document.getElementById('mt5PaneTrade');
   function setPane(which){const chart=which==='chart'; chartPane.hidden=!chart;tradePane.hidden=chart;chartTab.classList.toggle('active',chart);tradeTab.classList.toggle('active',!chart);chartTab.setAttribute('aria-selected',String(chart));tradeTab.setAttribute('aria-selected',String(!chart));if(chart)loadChart();}
   chartTab?.addEventListener('click',()=>setPane('chart'));tradeTab?.addEventListener('click',()=>setPane('trade'));
+  document.getElementById('mt5OpenAccountPane')?.addEventListener('click',()=>setPane('trade'));
   const symbol=document.getElementById('mt5ChartSymbol'), interval=document.getElementById('mt5ChartInterval'), frame=document.getElementById('mt5TradingChart');
   function loadChart(){if(!symbol||!interval||!frame)return;const src='https://www.tradingview.com/widgetembed/?symbol='+encodeURIComponent(symbol.value)+'&interval='+encodeURIComponent(interval.value)+'&hidesidetoolbar=0&symboledit=1&saveimage=0&toolbarbg=0B1724&theme=dark&style=1&timezone=Etc%2FUTC&withdateranges=1&hideideas=1&studies=[]&locale=fa';if(frame.dataset.src!==src){frame.src=src;frame.dataset.src=src;}}
   document.getElementById('mt5ChartReload')?.addEventListener('click',loadChart);
   symbol?.addEventListener('change',loadChart);interval?.addEventListener('change',loadChart);
   // Keep the existing MT5 monitor as the second view; no account/API/command behavior is altered.
-  setPane('trade');
+  setPane('chart');
 })();
 </script>
 
