@@ -887,6 +887,24 @@
 
 </style>
 
+<style id="zt-visual-fix-2-9-1">
+.topbar{border-radius:0 0 16px 16px!important;padding-top:max(8px,env(safe-area-inset-top))!important}
+#view-mt5control .mt5-inner-tabs{top:6px!important;margin:6px 0 12px!important;background:#0d2236!important;box-shadow:0 8px 18px rgba(0,0,0,.35)!important}
+.mt5-inner-tab{min-height:42px}
+.mt5-chart-frame-wrap{min-height:300px!important}
+.mt5-chart-empty{display:grid;place-items:center;height:100%;min-height:260px;padding:24px;text-align:center;color:#8fa3b5;line-height:2}
+#mobileNav button[data-nav-key="manual"]{color:#9fb2c3!important}
+#mobileNav button[data-nav-key="manual"] b{width:42px!important;height:42px!important;margin-top:-18px!important;border-radius:50%!important;display:grid!important;place-items:center!important;background:linear-gradient(135deg,#00dca4,#07966d)!important;box-shadow:0 6px 16px rgba(0,220,164,.35)!important;color:#04131c!important}
+#mobileNav button[data-nav-key="manual"] svg{stroke:#04131c!important;stroke-width:2.6!important;width:22px!important;height:22px!important}
+.mobile-nav button span{font-size:10.5px;white-space:nowrap}
+.mobile-nav button{min-width:0;padding-inline:2px}
+.stat.mini::before,.stat.mini::after{display:none!important}
+.stat.mini .stat-icon{width:34px;height:34px;display:grid;place-items:center;border-radius:10px}
+.mt5-kpi-grid>.stat:last-child:nth-child(odd){grid-column:1/-1}
+.card-head h3{unicode-bidi:plaintext;line-height:1.7}
+.dashboard-chart-card-ref .chart-wrap{min-height:0!important;height:150px!important;display:grid;place-items:center}
+</style>
+<script>(function(){document.addEventListener('click',e=>{if(e.target.closest('[data-view]'))setTimeout(()=>window.scrollTo({top:0}),0)},true)})();</script>
 </head>
 <body>
   <div id="loginWrap" class="login-wrap">
@@ -914,8 +932,11 @@
           <h1 id="loginTitle">ورود به ذهن تریدر</h1>
           <p id="loginHint">اطلاعات ژورنال روی همین دستگاه و به‌صورت رمزگذاری‌شده نگهداری می‌شود.</p>
           <form id="loginForm">
-            <div class="field"><label for="password">رمز عبور</label><input id="password" type="password" minlength="8" autocomplete="current-password" placeholder="حداقل ۸ کاراکتر" required></div>
-            <div class="field" id="confirmField"><label for="confirmPassword">تکرار رمز عبور</label><input id="confirmPassword" type="password" minlength="8" autocomplete="new-password" placeholder="تکرار رمز عبور"></div>
+            <div class="field"><label for="loginWorkerUrl">آدرس Cloudflare Worker</label><input id="loginWorkerUrl" type="url" placeholder="https://your-worker.workers.dev" dir="ltr" autocomplete="url" required></div>
+            <div class="field"><label for="loginUsername">نام کاربری</label><input id="loginUsername" type="text" minlength="3" maxlength="32" autocomplete="username" placeholder="نام کاربری حساب" dir="ltr" required></div>
+            <div class="field"><label for="password">رمز عبور حساب ابری</label><input id="password" type="password" minlength="8" autocomplete="current-password" placeholder="رمز عبور حساب" required></div>
+            <div class="field" id="localVaultField"><label for="localVaultPassword">رمزگذاری محلی ژورنال (مستقل از رمز حساب ابری)</label><input id="localVaultPassword" type="password" autocomplete="current-password" placeholder="رمز قبلی فضای امن محلی"></div>
+            <div class="field" id="localVaultConfirmField"><label for="localVaultConfirm">تکرار رمز فضای امن محلی</label><input id="localVaultConfirm" type="password" autocomplete="new-password" placeholder="تکرار رمز محلی"></div>
             <div class="field" id="rememberField" style="margin:4px 0 12px">
               <label style="display:flex;align-items:center;gap:8px;color:var(--muted)"><input id="rememberSession" type="checkbox" checked style="width:auto"> این نشست را تا ۱۰ دقیقه عدم فعالیت باز نگه دار</label>
             </div>
@@ -936,7 +957,7 @@
 
   <div id="appRoot" class="app hidden">
     <aside class="sidebar">
-      <div class="brand"><div class="logo" aria-hidden="true"></div><div><b>ذهن تریدر</b><span>نسخه 2.9.0 · ژورنال هوشمند</span></div></div>
+      <div class="brand"><div class="logo" aria-hidden="true"></div><div><b>ذهن تریدر</b><span>نسخه 2.9.1 · ژورنال هوشمند</span></div></div>
       <nav class="nav" id="sideNav">
         <button class="active" data-view="dashboard"><span class="ico">▦</span>داشبورد</button>
         <button data-view="trades"><span class="ico">⇄</span>ژورنال معاملات</button>
@@ -1140,10 +1161,10 @@
           <div class="card">
             <div class="card-head"><h3>کنترل سریع اکسپرت و تنظیمات ریسک</h3><span class="pill good">Command Queue</span></div>
             <div class="mt5-cmd-row">
-              <button type="button" class="btn" data-mt5-cmd="TOGGLE_AUTO" id="mt5BtnAuto">AUTO: —</button>
-              <button type="button" class="btn" data-mt5-cmd="TOGGLE_SECOND" id="mt5BtnSecond">سفارش دوم: —</button>
-              <button type="button" class="btn" data-mt5-cmd="TOGGLE_SIGNAL" id="mt5BtnSignal">سیگنال: —</button>
-              <button type="button" class="btn" data-mt5-cmd="TOGGLE_DAILY" id="mt5BtnDaily">حد ضرر روزانه: —</button>
+              <button type="button" class="btn" data-mt5-cmd="SET_AUTO" id="mt5BtnAuto">AUTO: —</button>
+              <button type="button" class="btn" data-mt5-cmd="SET_SECOND" id="mt5BtnSecond">سفارش دوم: —</button>
+              <button type="button" class="btn" data-mt5-cmd="SET_SIGNAL" id="mt5BtnSignal">سیگنال: —</button>
+              <button type="button" class="btn" data-mt5-cmd="SET_DAILY" id="mt5BtnDaily">حد ضرر روزانه: —</button>
             </div>
             <div class="form-grid">
               <div class="field"><label>حالت ریسک</label><select id="mt5RiskModeInput"><option value="PERCENT">درصدی (%)</option><option value="CASH">مبلغی ($)</option></select></div>
@@ -1188,12 +1209,44 @@
 
 <section class="view" id="view-settings">
         <div class="grid two">
+          <div class="card" id="notificationCenterCard">
+            <div class="card-head"><h3>مرکز اعلان‌ها و هشدارها</h3><span class="pill good" id="notificationUnreadCount">۰ اعلان جدید</span></div>
+            <div class="form-actions" style="margin-bottom:10px">
+              <button class="btn primary" type="button" id="enableWebPush">فعال‌سازی اعلان حتی در حالت بسته بودن PWA</button><button class="btn" type="button" id="disableWebPush">غیرفعال‌سازی Web Push</button>
+              <button class="btn" type="button" id="enableBrowserNotifications">فعال‌سازی اعلان مرورگر</button>
+              <button class="btn" type="button" id="enableNotificationSound">فعال‌سازی صدای اختصاصی</button>
+              <button class="btn" type="button" id="markAllNotificationsRead">خواندن همه</button>
+              <button class="btn" type="button" id="refreshNotifications">بروزرسانی</button>
+            </div>
+            <div id="pushStatus" class="small muted" aria-live="polite">اعلان پس‌زمینه هنوز فعال نشده است.</div><div id="notificationList" class="table-wrap" aria-live="polite">برای مشاهده اعلان‌ها وارد حساب ابری شو.</div>
+            <div class="divider" style="margin:16px 0"></div>
+            <h4>ساخت هشدار قیمت</h4>
+            <div class="form-grid">
+              <div class="field"><label for="priceAlertSymbol">نماد</label><input id="priceAlertSymbol" placeholder="مثلاً XAUUSD یا BTCUSDT" dir="ltr" maxlength="32"></div>
+              <div class="field"><label for="priceAlertCondition">شرط هشدار</label><select id="priceAlertCondition"><option value="ABOVE">عبور به بالای قیمت</option><option value="BELOW">عبور به پایین قیمت</option></select></div>
+              <div class="field"><label for="priceAlertTarget">قیمت هدف</label><input id="priceAlertTarget" type="number" min="0" step="any" placeholder="قیمت موردنظر" dir="ltr"></div>
+            </div>
+            <div class="field"><label style="display:flex;align-items:center;gap:8px"><input id="priceAlertRepeat" type="checkbox" style="width:auto"> هشدار تکرارشونده (با هر عبور مجدد از سطح)</label></div>
+            <button class="btn primary" id="createPriceAlert" type="button">ثبت هشدار قیمت</button>
+            <div id="priceAlertList" class="table-wrap" style="margin-top:12px">هنوز هشداری ثبت نشده است.</div>
+            <p class="small muted">هشدار قیمت بر اساس قیمت زنده‌ای فعال می‌شود که MT5 به Cloudflare ارسال می‌کند. برای دریافت قیمت نمادهای مختلف، باید فید آن نمادها از چارت‌ها یا منبع داده متصل ارسال شود.</p>
+          </div>
           <div class="card"><div class="card-head"><h3>اتصال Cloudflare Worker</h3><span class="pill good">MT5 Live · D1</span></div>
             <div class="field"><label>آدرس Worker (بدون مسیر API)</label><input id="workerUrl" type="url" placeholder="https://wall-street-fx-api.<account>.workers.dev" dir="ltr" autocomplete="url"></div>
-            <div class="field"><label>کلید دسترسی PWA (ZT_PWA_TOKEN)</label><input id="workerToken" type="password" placeholder="Secret تنظیم‌شده در Cloudflare" dir="ltr" autocomplete="off"></div>
+            <input id="workerToken" type="hidden" value="">
             <div class="form-actions"><button class="btn primary" id="cloudflareSave" type="button">ذخیره تنظیمات اتصال</button><button class="btn" id="cloudflareTest" type="button">آزمایش اتصال</button><button class="btn" id="cloudflareSyncNow" type="button">دریافت ژورنال از D1</button></div>
-            <div class="notice">این اتصال برای وضعیت زنده MT5، صف فرمان‌ها و ژورنال جدید استفاده می‌شود. کلید در فضای رمزگذاری‌شده همین PWA ذخیره می‌شود و نباید آن را در کد Worker قرار بدهی.</div>
+            <div class="notice">ورود کاربران از طریق نشست ابری انجام می‌شود. کلید MT5 همچنان در Cloudflare Secret با نام ZT_MT5_TOKEN نگهداری می‌شود؛ کلید ثابت PWA دیگر در مرورگر لازم نیست.</div>
             <div id="cloudflareDiagnostics" class="sync-diagnostics" aria-live="polite">پس از تنظیم آدرس و کلید، اتصال Cloudflare را آزمایش کن.</div>
+          </div>
+          <div class="card" id="adminUsersCard" style="display:none">
+            <div class="card-head"><h3>مدیریت کاربران و اشتراک‌ها</h3><span class="pill good">Administrator</span></div>
+            <div class="form-grid">
+              <div class="field"><label>نام کاربری جدید</label><input id="newCloudUsername" minlength="3" maxlength="32" dir="ltr" autocomplete="off"></div>
+              <div class="field"><label>رمز عبور اولیه (حداقل ۸ نویسه)</label><input id="newCloudPassword" type="password" minlength="8" autocomplete="new-password"></div>
+              <div class="field"><label>پایان اشتراک (UTC؛ خالی = بدون انقضا)</label><input id="newCloudExpiry" type="datetime-local"></div>
+            </div>
+            <button class="btn primary" id="createCloudUser" type="button">ایجاد کاربر</button>
+            <div id="cloudUsersList" class="table-wrap" style="margin-top:14px">در حال دریافت کاربران…</div>
           </div>
           <div class="card"><div class="card-head"><h3>اتصال قدیمی Google Sheets</h3><span class="pill">Legacy / Import</span></div>
             <div class="field"><label>آدرس وب‌اپ Apps Script با انتهای /exec</label><input id="gasUrl" type="url" placeholder="https://script.google.com/macros/s/.../exec" dir="ltr"></div>
@@ -1227,7 +1280,7 @@
         </div>
         <div class="grid two" style="margin-top:14px">
           <div class="card"><h3>امنیت فضای محلی</h3><p class="small muted" style="line-height:2">داده‌های ذخیره‌شده در مرورگر با AES-GCM و کلید مشتق‌شده از رمز عبور رمزگذاری می‌شوند. رمز عبور پیش‌فرض وجود ندارد. قفل برنامه فقط دسترسی رابط را می‌بندد و رمزگذاری فضای داده، لایه محافظ اصلی در حالت ذخیره محلی است.</p><button class="btn danger" id="wipeData">پاک‌کردن کامل داده‌های این دستگاه</button></div>
-          <div class="card"><h3>وضعیت برنامه</h3><div class="metric-row"><span>نسخه</span><b>2.8.9</b></div><div class="metric-row"><span>حالت ذخیره‌سازی</span><b>رمزگذاری‌شده و محلی</b></div><div class="metric-row"><span>اتصال به Sheets</span><b id="connectionState">تنظیم نشده</b></div><div class="metric-row"><span>آخرین همگام‌سازی</span><b id="lastSyncText">—</b></div></div>
+          <div class="card"><h3>وضعیت برنامه</h3><div class="metric-row"><span>نسخه</span><b>2.9.1</b></div><div class="metric-row"><span>حالت ذخیره‌سازی</span><b>رمزگذاری‌شده و محلی</b></div><div class="metric-row"><span>اتصال به Sheets</span><b id="connectionState">تنظیم نشده</b></div><div class="metric-row"><span>آخرین همگام‌سازی</span><b id="lastSyncText">—</b></div></div>
         </div>
       </section>
     </main>
@@ -1257,8 +1310,10 @@
 
 (() => {
   'use strict';
-  const VERSION = '2.8.9';
+  const VERSION = '3.0.2-web-push';
   const AUTH_KEY = 'zt2_auth_v1';
+  const CLOUD_TOKEN_KEY = 'zt_cloud_session_v1';
+  const WORKER_URL_KEY = 'zt_cloud_worker_url_v1';
   const VAULT_KEY = 'zt2_vault_v1';
   const THEME_KEY = 'zt2_theme_v1';
   const SESSION_DB = 'zt2_session_db_v1';
@@ -1319,15 +1374,18 @@
   function biometricSupported(){return Boolean(window.isSecureContext&&window.PublicKeyCredential&&navigator.credentials?.create&&navigator.credentials?.get&&crypto?.subtle)}
   function refreshPasskeyUI(){
     const auth=JSON.parse(localStorage.getItem(AUTH_KEY)||'null'),ready=Boolean(auth?.biometric?.credentialId),supported=biometricSupported();
-    const loginBtn=$('passkeyLogin'),hint=$('passkeyHint'),fallback=$('passwordFallback'),toggle=$('passwordFallbackToggle');
-    if(loginBtn){loginBtn.style.display='flex';loginBtn.disabled=!ready||!supported;loginBtn.classList.toggle('is-ready',ready&&supported);}
+    const loginBtn=$('passkeyLogin'),hint=$('passkeyHint'),fallback=$('passwordFallback'),toggle=$('passwordFallbackToggle');if(loginBtn){loginBtn.style.display='none';loginBtn.disabled=true;}if(toggle)toggle.classList.add('hidden');
+    if(loginBtn){loginBtn.style.display='none';loginBtn.disabled=true;}
     if(hint)hint.textContent=ready&&supported?'روش پیش‌فرض ورود این دستگاه فعال است. اثر انگشت یا روش امن دستگاه را تأیید کن.':!supported?'این مرورگر یا بستر امن از Passkey سازگار پشتیبانی نمی‌کند؛ از ورود با رمز استفاده کن.':auth?'Passkey هنوز برای این دستگاه فعال نشده است؛ با رمز وارد شو و آن را از تنظیمات فعال کن.':'در اولین ورود، ابتدا فضای امن را با رمز بساز؛ سپس Passkey را در تنظیمات فعال کن.';
-    if(fallback&&toggle){if(ready&&supported){if(!fallback.dataset.userOpened)fallback.classList.add('is-collapsed');toggle.classList.remove('hidden');}else{fallback.classList.remove('is-collapsed');toggle.classList.add('hidden');}}
+    if(fallback)fallback.classList.remove('is-collapsed');if(toggle)toggle.classList.add('hidden');
     if(toggle&&fallback)toggle.textContent=fallback.classList.contains('is-collapsed')?'ورود با رمز عبور':'بازگشت به ورود با اثر انگشت';
     const status=$('passkeyStatus');if(status)status.textContent=ready?'روی این دستگاه فعال است':(supported?'فعال نشده':'مرورگر/بستر از آن پشتیبانی نمی‌کند');
     const reg=$('registerPasskey'),rem=$('removePasskey');if(reg)reg.disabled=!supported;if(rem)rem.disabled=!ready;
   }
-  function showLogin(isSetup){$('loginWrap').classList.remove('hidden');$('appRoot').classList.add('hidden');$('mobileNav').classList.add('hidden');$('loginTitle').textContent=isSetup?'ساخت فضای امن ذهن تریدر':'ورود به ذهن تریدر';$('loginHint').textContent=isSetup?'برای محافظت از اطلاعات ژورنال، یک رمز عبور حداقل ۸ کاراکتری تعیین کن. این رمز روی سرور ارسال نمی‌شود.':'رمز عبور فضای رمزگذاری‌شده این دستگاه را وارد کن؛ یا از Passkey دستگاه استفاده کن.';$('confirmField').classList.toggle('hidden',!isSetup);$('rememberField').classList.toggle('hidden',isSetup);$('loginSubmit').textContent=isSetup?'ساخت فضای امن':'ورود امن';$('password').value='';$('confirmPassword').value='';$('cryptoStatus').textContent=window.crypto?.subtle?'رمزگذاری فعال':'مرورگر امن لازم است';refreshPasskeyUI()}
+  function cloudBaseFromLogin(){const raw=String($('loginWorkerUrl')?.value||localStorage.getItem(WORKER_URL_KEY)||'').trim().replace(/\/+$/,'');let u;try{u=new URL(raw)}catch(e){throw new Error('آدرس Cloudflare Worker معتبر نیست.')}if(u.protocol!=='https:'||u.pathname!=='/'||u.search||u.hash)throw new Error('آدرس Worker باید HTTPS و بدون مسیر اضافی باشد.');return u.origin}
+  async function cloudAuthLogin(){const base=cloudBaseFromLogin(),username=$('loginUsername').value.trim(),password=$('password').value;if(!username||password.length<8)throw new Error('نام کاربری و رمز عبور معتبر را وارد کن.');const res=await fetch(base+'/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},cache:'no-store',body:JSON.stringify({username,password})});let payload;try{payload=await res.json()}catch(e){throw new Error('پاسخ سرور احراز هویت معتبر نیست.')}if(!res.ok||payload.status!=='success')throw new Error(payload.message||'ورود ابری ناموفق بود.');sessionStorage.setItem(CLOUD_TOKEN_KEY,payload.token);localStorage.setItem(WORKER_URL_KEY,base);app.cloudUser=payload.user;return payload}
+  async function cloudAuthLogout(){const token=sessionStorage.getItem(CLOUD_TOKEN_KEY),base=localStorage.getItem(WORKER_URL_KEY)||app?.data?.settings?.workerUrl;if(token&&base){try{await fetch(base+'/api/auth/logout',{method:'POST',headers:{Authorization:'Bearer '+token},cache:'no-store'})}catch(e){}}sessionStorage.removeItem(CLOUD_TOKEN_KEY)}
+  function showLogin(isSetup){$('loginWrap').classList.remove('hidden');$('appRoot').classList.add('hidden');$('mobileNav').classList.add('hidden');$('loginTitle').textContent='ورود به ذهن تریدر';$('loginHint').textContent='نام کاربری و رمز عبور در Cloudflare اعتبارسنجی می‌شوند. اطلاعات ژورنال رمزگذاری‌شده محلی باقی می‌مانند.';$('localVaultField').classList.remove('hidden');$('localVaultConfirmField').classList.toggle('hidden',!!localStorage.getItem(AUTH_KEY));$('rememberField').classList.remove('hidden');$('loginSubmit').textContent='ورود امن';$('password').value='';$('localVaultPassword').value='';$('localVaultConfirm').value='';$('cryptoStatus').textContent=window.crypto?.subtle?'رمزگذاری فعال':'مرورگر امن لازم است';const savedUrl=localStorage.getItem(WORKER_URL_KEY)||'';$('loginWorkerUrl').value=savedUrl;$('loginUsername').value='';refreshPasskeyUI()}
   async function setupVault(password){const salt=crypto.getRandomValues(new Uint8Array(16));const key=await deriveKey(password,salt);const verifier=await encryptText(key,'ZehnTrader-Verified-v1');const data=clone(DEFAULT_STATE);const vault=await encryptText(key,JSON.stringify(data));localStorage.setItem(AUTH_KEY,JSON.stringify({salt:b64(salt),verifier}));localStorage.setItem(VAULT_KEY,JSON.stringify(vault));app.key=key;app.data=data;}
   async function unlockVault(password){const auth=JSON.parse(localStorage.getItem(AUTH_KEY)||'null');if(!auth)throw new Error('فضای امن هنوز ساخته نشده است.');const key=await deriveKey(password,unb64(auth.salt));const verified=await decryptText(key,auth.verifier);if(verified!=='ZehnTrader-Verified-v1')throw new Error('رمز عبور نادرست است.');const raw=localStorage.getItem(VAULT_KEY);const data=raw?JSON.parse(await decryptText(key,JSON.parse(raw))):clone(DEFAULT_STATE);app.key=key;app.data={...clone(DEFAULT_STATE),...data,settings:{...DEFAULT_STATE.settings,...(data.settings||{})},readiness:{...DEFAULT_STATE.readiness,...(data.readiness||{})}};}
   async function derivePasskeyWrapKey(prfBytes,salt){const material=await crypto.subtle.importKey('raw',prfBytes,'HKDF',false,['deriveKey']);return crypto.subtle.deriveKey({name:'HKDF',hash:'SHA-256',salt,info:enc.encode('ZehnTrader local vault Passkey PRF v1')},material,{name:'AES-GCM',length:256},false,['encrypt','decrypt'])}
@@ -1339,8 +1397,8 @@
   async function exportBackup(){try{if(!(await persist()))return;const authRaw=localStorage.getItem(AUTH_KEY),vaultRaw=localStorage.getItem(VAULT_KEY);if(!authRaw||!vaultRaw)throw new Error('اطلاعات احراز هویت یا مخزن رمزگذاری‌شده پیدا نشد.');const auth=JSON.parse(authRaw),vault=JSON.parse(vaultRaw);if(!vault.iv||!vault.data)throw new Error('مخزن ذخیره‌شده معتبر نیست.');delete auth.biometric;const file={app:'ZehnTrader',version:VERSION,createdAt:new Date().toISOString(),auth,vault};downloadBlob(JSON.stringify(file,null,2),'zehn-trader-backup-'+new Date().toISOString().slice(0,10)+'.json','application/json');toast('پشتیبان رمزگذاری‌شده آماده شد.')}catch(e){toast('ساخت پشتیبان ناموفق بود: '+(e?.message||e))}}
   function downloadBlob(content,name,type){const blob=new Blob([content],{type});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}
   async function restoreBackup(file,password){const parsed=JSON.parse(await file.text());if(parsed.app!=='ZehnTrader'||!parsed.auth||!parsed.vault||!parsed.auth.salt||!parsed.auth.verifier?.iv||!parsed.auth.verifier?.data||!parsed.vault.iv||!parsed.vault.data)throw new Error('فایل پشتیبان معتبر نیست یا ساختار رمزگذاری آن ناقص است.');const key=await deriveKey(password,unb64(parsed.auth.salt));const verified=await decryptText(key,parsed.auth.verifier);if(verified!=='ZehnTrader-Verified-v1')throw new Error('رمز پشتیبان اشتباه است.');const data=JSON.parse(await decryptText(key,parsed.vault));if(!data||typeof data!=='object'||Array.isArray(data)||(data.trades!==undefined&&!Array.isArray(data.trades))||(data.rules!==undefined&&!Array.isArray(data.rules)))throw new Error('ساختار داده‌های داخل پشتیبان معتبر نیست.');const nextData={...clone(DEFAULT_STATE),...data,schemaVersion:1,trades:Array.isArray(data.trades)?data.trades:[],rules:Array.isArray(data.rules)?data.rules:clone(DEFAULT_STATE.rules),ignoredSourceKeys:Array.isArray(data.ignoredSourceKeys)?data.ignoredSourceKeys:[],settings:{...DEFAULT_STATE.settings,...(data.settings||{})},readiness:{...DEFAULT_STATE.readiness,...(data.readiness||{})}};const oldAuth=localStorage.getItem(AUTH_KEY),oldVault=localStorage.getItem(VAULT_KEY);try{const authText=JSON.stringify(parsed.auth),vaultText=JSON.stringify(parsed.vault);localStorage.setItem(AUTH_KEY,authText);localStorage.setItem(VAULT_KEY,vaultText);if(localStorage.getItem(AUTH_KEY)!==authText||localStorage.getItem(VAULT_KEY)!==vaultText)throw new Error('تأیید نوشتن فایل پشتیبان در حافظه ناموفق بود.')}catch(error){try{if(oldAuth===null)localStorage.removeItem(AUTH_KEY);else localStorage.setItem(AUTH_KEY,oldAuth);if(oldVault===null)localStorage.removeItem(VAULT_KEY);else localStorage.setItem(VAULT_KEY,oldVault)}catch(rollbackError){console.error('Backup restore rollback failed',rollbackError)}throw error}app.key=key;app.data=nextData;app.saveChain=Promise.resolve();}
-  async function showApp(options={}){if(options.remember!==false){if($('rememberSession')?.checked!==false)await rememberCurrentSession();else await startVolatileSession()}$('loginWrap').classList.add('hidden');$('appRoot').classList.remove('hidden');$('mobileNav').classList.remove('hidden');applyTheme();populateSettings();renderAll();refreshPasskeyUI();if(app.data.settings.autoSync){if(app.data.settings.workerUrl&&app.data.settings.workerToken)syncFromCloudflare();else if(app.data.settings.gasUrl)syncFromSheet();} }
-  async function lockApp(){if(app.breathTimer){clearInterval(app.breathTimer);app.breathTimer=null}if(app.tiltTimer){clearInterval(app.tiltTimer);app.tiltTimer=null}await clearRememberedSession();app.key=null;app.data=null;showLogin(false)}
+  async function showApp(options={}){if(options.remember!==false){if($('rememberSession')?.checked!==false)await rememberCurrentSession();else await startVolatileSession()}$('loginWrap').classList.add('hidden');$('appRoot').classList.remove('hidden');$('mobileNav').classList.remove('hidden');applyTheme();populateSettings();renderAll();refreshPasskeyUI();if(app.cloudUser?.role==='admin')refreshCloudUsers();refreshNotificationCenter(false);if(app.data.settings.autoSync){if(app.data.settings.workerUrl&&sessionStorage.getItem(CLOUD_TOKEN_KEY))syncFromCloudflare();else if(app.data.settings.gasUrl)syncFromSheet();} }
+  async function lockApp(){if(app.breathTimer){clearInterval(app.breathTimer);app.breathTimer=null}if(app.tiltTimer){clearInterval(app.tiltTimer);app.tiltTimer=null}await clearRememberedSession();await cloudAuthLogout();app.key=null;app.data=null;app.cloudUser=null;showLogin(false)}
   function applyTheme(){const light=localStorage.getItem(THEME_KEY)==='light';document.body.classList.toggle('light',light);$('themeBtn').textContent=light?'☾':'☼'}
   function switchView(view,navKey=view){app.currentView=view;document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id==='view-'+view));document.querySelectorAll('#sideNav [data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===view));document.querySelectorAll('#mobileNav [data-view]').forEach(b=>b.classList.toggle('active',b.dataset.navKey===navKey));const titles={dashboard:'داشبورد عملکرد',trades:'ژورنال معاملات',psychology:'مدیریت روان‌شناسی',reports:'گزارش‌ها و تحلیل',settings:'اتصال و تنظیمات',manual:'ثبت دستی معامله',mt5:'اتصال زنده MT5 و Cloudflare'};$('pageTitle').textContent=titles[navKey]||titles[view]||'ذهن تریدر';if(view==='reports')renderReports();if(view==='psychology')renderPsychology();if(view==='trades')renderTrades();if(view==='mt5control')refreshMt5Control()}
   function isMistake(t){return !t.needsPsych&&(t.ruleStatus&&t.ruleStatus!=='کاملاً رعایت شد'||t.emotion&&t.emotion!=='آرام و منضبط'||t.afterLoss==='yes'||t.reason==='FOMO و ترس از جا ماندن'||t.reason==='جبران ضرر قبلی')}
@@ -1621,7 +1679,7 @@
     $('pdf-report-root').innerHTML=buildPdfReport(arr,range);
     setTimeout(()=>window.print(),120);
   }
-  function populateSettings(){$('workerUrl').value=app.data.settings.workerUrl||'';$('workerToken').value=app.data.settings.workerToken||'';$('gasUrl').value=app.data.settings.gasUrl||'';$('apiToken').value=app.data.settings.apiToken||'';$('autoSync').checked=!!app.data.settings.autoSync;$('sheetName').value=app.data.settings.sheetName||'Journal';$('dailyLossLimit').value=app.data.settings.dailyLossLimit??0;$('lossStreakLimit').value=String(app.data.settings.lossStreakLimit??3);$('connectionState').textContent=app.data.settings.gasUrl?'آماده اتصال':'تنظیم نشده';$('lastSyncText').textContent=app.data.lastSync?fmtDate(app.data.lastSync):'—'}
+  function populateSettings(){$('workerUrl').value=app.data.settings.workerUrl||'';$('workerToken').value='';$('gasUrl').value=app.data.settings.gasUrl||'';$('apiToken').value=app.data.settings.apiToken||'';$('autoSync').checked=!!app.data.settings.autoSync;$('sheetName').value=app.data.settings.sheetName||'Journal';$('dailyLossLimit').value=app.data.settings.dailyLossLimit??0;$('lossStreakLimit').value=String(app.data.settings.lossStreakLimit??3);$('connectionState').textContent=app.data.settings.gasUrl?'آماده اتصال':'تنظیم نشده';$('lastSyncText').textContent=app.data.lastSync?fmtDate(app.data.lastSync):'—'}
   function updateSyncUI(){
     const synced=!!app.data.lastSync;$('syncDot').classList.toggle('off',!synced);$('syncStatus').textContent=synced?'آخرین دریافت: '+fmtDate(app.data.lastSync):'همگام‌سازی انجام نشده';$('lastSyncText').textContent=synced?fmtDate(app.data.lastSync):'—';$('connectionState').textContent=app.data.settings.gasUrl?'آماده اتصال':'تنظیم نشده';
     const root=$('syncDiagnostics');if(!root)return;const r=app.syncReport;
@@ -1720,7 +1778,7 @@
     }catch(e){app.data=before;app.syncReport={status:'error',message:e?.message||String(e),invalidDetails:e?.details||[],headers:e?.headers||[]};$('syncStatus').textContent='خطا در همگام‌سازی';updateSyncUI();toast('خطا در همگام‌سازی: '+(e?.message||e))}
     finally{app.syncing=false;$('syncBtn').disabled=false}
   }
-  function cloudflareConfigured(){return !!(String(app?.data?.settings?.workerUrl||'').trim()&&String(app?.data?.settings?.workerToken||'').trim())}
+  function cloudflareConfigured(){return !!(String(app?.data?.settings?.workerUrl||localStorage.getItem(WORKER_URL_KEY)||'').trim()&&String(sessionStorage.getItem(CLOUD_TOKEN_KEY)||''))}
   function readCloudflareDraft(){
     const rawBase=String($('workerUrl')?.value||app?.data?.settings?.workerUrl||'').trim().replace(/\/+$/,'');
     const token=String($('workerToken')?.value||app?.data?.settings?.workerToken||'').trim();
@@ -1728,13 +1786,13 @@
     let parsed;try{parsed=new URL(rawBase)}catch(e){throw new Error('آدرس Worker معتبر نیست؛ آدرس کامل https:// را وارد کن.')}
     if(parsed.protocol!=='https:'||parsed.username||parsed.password||parsed.search||parsed.hash||parsed.pathname!=='/')
       throw new Error('آدرس Worker باید فقط دامنه HTTPS باشد و در انتها مسیر /api نداشته باشد.');
-    return {workerUrl:parsed.origin,workerToken:token};
+    return {workerUrl:parsed.origin,workerToken:''};
   }
   async function saveCloudflareSettings(options={}){
     const quiet=!!options.quiet,diag=$('cloudflareDiagnostics'),before=clone(app.data.settings);
     try{
       const draft=readCloudflareDraft();
-      app.data.settings={...app.data.settings,...draft};
+      app.data.settings={...app.data.settings,...draft};localStorage.setItem(WORKER_URL_KEY,draft.workerUrl);
       if(!(await persist()))throw new Error('ذخیره رمزگذاری‌شده تنظیمات در این دستگاه انجام نشد؛ نشست امن و حافظه مرورگر را بررسی کن.');
       if($('workerUrl'))$('workerUrl').value=draft.workerUrl;
       if($('workerToken'))$('workerToken').value=draft.workerToken;
@@ -1751,7 +1809,7 @@
   function cloudflareBase(){return String(app?.data?.settings?.workerUrl||'').trim().replace(/\/+$/,'')}
   async function cloudflareApi(path,options={}){
     if(!cloudflareConfigured())throw new Error('تنظیمات اتصال Cloudflare ذخیره نشده‌اند. آدرس و کلید را وارد و «ذخیره تنظیمات اتصال» را بزن.');
-    const headers={...(options.headers||{}),'Authorization':'Bearer '+String(app.data.settings.workerToken).trim()};
+    const cloudToken=sessionStorage.getItem(CLOUD_TOKEN_KEY)||'';if(!cloudToken)throw new Error('نشست ابری معتبر نیست؛ دوباره وارد شو.');const headers={...(options.headers||{}),'Authorization':'Bearer '+cloudToken};
     if(options.body!==undefined)headers['Content-Type']='application/json';
     const response=await fetch(cloudflareBase()+path,{...options,headers,cache:'no-store'});
     let payload=null;try{payload=await response.json()}catch(e){throw new Error('پاسخ Worker JSON معتبر نیست؛ HTTP '+response.status)}
@@ -1759,21 +1817,9 @@
     return payload;
   }
   async function testCloudflareConnection(){
-    const diag=$('cloudflareDiagnostics');if(diag)diag.textContent='در حال آزمایش اتصال…';
-    try{
-      const draft=readCloudflareDraft(),base=draft.workerUrl,token=draft.workerToken;
-      const r=await fetch(base+'/api/health',{cache:'no-store'});
-      let h;try{h=await r.json()}catch(e){throw new Error('پاسخ Health از Worker معتبر نیست؛ HTTP '+r.status)}
-      if(!r.ok||h.status!=='success'||!h.database)throw new Error(h.message||'Worker یا اتصال D1 آماده نیست.');
-      const authResponse=await fetch(base+'/api/mt5/state',{headers:{'Authorization':'Bearer '+token},cache:'no-store'});
-      let authPayload;try{authPayload=await authResponse.json()}catch(e){throw new Error('پاسخ احراز هویت Worker معتبر نیست؛ HTTP '+authResponse.status)}
-      if(!authResponse.ok||authPayload.status!=='success')throw new Error(authPayload.message||'کلید PWA معتبر نیست یا دسترسی API رد شد.');
-      // Persist the exact credentials that passed the live authentication check.
-      if(!(await saveCloudflareSettings({quiet:true})))throw new Error('اتصال تأیید شد، اما ذخیره تنظیمات محلی ناموفق بود.');
-      if(diag)diag.textContent='اتصال Worker و D1 موفق است؛ احراز هویت تأیید و تنظیمات در حافظه رمزگذاری‌شده ذخیره شد. اکنون می‌توانی ژورنال را دریافت کنی.';
-      toast('اتصال Cloudflare تأیید و تنظیمات ذخیره شد.');return true;
-    }catch(e){if(diag)diag.textContent='خطا: '+(e?.message||String(e));toast('آزمایش Cloudflare ناموفق بود: '+(e?.message||e));return false}
-  }
+     const diag=$('cloudflareDiagnostics');if(diag)diag.textContent='در حال آزمایش اتصال و نشست ابری…';
+     try{const draft=readCloudflareDraft(),token=sessionStorage.getItem(CLOUD_TOKEN_KEY)||'';if(!token)throw new Error('ابتدا با حساب ابری وارد شو.');const r=await fetch(draft.workerUrl+'/api/auth/me',{headers:{Authorization:'Bearer '+token},cache:'no-store'});const h=await r.json();if(!r.ok||h.status!=='success')throw new Error(h.message||'نشست ابری معتبر نیست.');await saveCloudflareSettings({quiet:true});if(diag)diag.textContent='اتصال Cloudflare و اعتبار حساب کاربری تأیید شد.';toast('اتصال و اعتبار حساب تأیید شد.');return true}catch(e){if(diag)diag.textContent='خطا: '+(e?.message||String(e));toast('آزمایش Cloudflare ناموفق بود: '+(e?.message||e));return false}
+   }
   async function syncFromCloudflare(){
     if(app.syncing)return;
     app.syncing=true;
@@ -1825,6 +1871,14 @@
   async function sendMt5Command(cmd, params={}){
     if(mt5CommandInFlight){toast('یک فرمان در حال ارسال است؛ لطفاً تا دریافت پاسخ صبر کن.');return}
     if(!hasMt5Config()){toast('ابتدا آدرس Cloudflare Worker و کلید PWA را در تنظیمات وارد کن.');switchView('settings');return}
+    const confirmText=({
+      CLOSE_ALL:()=>'⚠️ همه پوزیشن‌های باز حساب (از جمله دستی‌ها) بسته می‌شوند. ادامه می‌دهی؟',
+      CLOSE_POS:p=>'پوزیشن #'+(p&&p.ticket)+' بسته شود؟',
+      CANCEL_ORDER:p=>'سفارش معلق #'+(p&&p.ticket)+' لغو شود؟',
+      BREAKEVEN_POS:p=>'حد ضرر پوزیشن #'+(p&&p.ticket)+' روی نقطه ورود (Breakeven) قرار بگیرد؟',
+      QUICK_ORDER:p=>'سفارش سریع ثبت شود؟\n'+String(p&&p.symbol||'')+' · '+String(p&&p.side||'')+'\nورود: '+(p&&p.entry)+' | حد ضرر: '+(p&&p.sl)
+    })[cmd];
+    if(confirmText&&!window.confirm(confirmText(params||{})))return;
     if(cloudflareConfigured()){
       const cleanParams={...(params||{})};
       const requestKey=String(cmd)+'|'+JSON.stringify(cleanParams);
@@ -1893,12 +1947,12 @@
   function renderMt5LiveState(payload){
     const st=payload?.state;
     const cmds=Array.isArray(payload?.recentCommands)?payload.recentCommands:[];
-    window.__ztMt5AccountLogin=st?.account?String(st.account):'';
+    window.__ztMt5AccountLogin=st?.account?String(st.account):'';window.__ztMt5Last=st||null;
     if(!st){
       if($('mt5LiveBadge')){$('mt5LiveBadge').textContent='بدون داده زنده';$('mt5LiveBadge').className='pill warn'}
     }else{
       const hb=st.heartbeatAt?new Date(st.heartbeatAt).getTime():0;
-      const online=hb>0 && (Date.now()-hb)<90000;
+      const refNow=Date.parse(payload?.syncedAt||'')||Date.now();const online=hb>0 && (refNow-hb)<90000 && (refNow-hb)>-30000;
       if($('mt5LiveBadge')){$('mt5LiveBadge').textContent=online?'آنلاین · متصل به MT5':'تاخیر در ارسال داده MT5';$('mt5LiveBadge').className='pill '+(online?'good':'warn')}
       if($('mt5Bal'))$('mt5Bal').textContent=fmtMoney(st.balance);
       if($('mt5Eq'))$('mt5Eq').textContent=fmtMoney(st.equity);
@@ -1951,28 +2005,125 @@
   window.__ztMt5Cmd=(cmd,params)=>sendMt5Command(cmd,params);
   window.__ztMt5RefreshNow=()=>refreshMt5Control(true);
 
+  function urlBase64ToUint8Array(value){const padding='='.repeat((4-value.length%4)%4);const base64=(value+padding).replace(/-/g,'+').replace(/_/g,'/');const raw=atob(base64);return Uint8Array.from(raw,c=>c.charCodeAt(0))}
+  async function enableWebPush(){
+    try{
+      if(!('serviceWorker'in navigator)||!('PushManager'in window)||!('Notification'in window))throw new Error('این مرورگر از Web Push پشتیبانی نمی‌کند.');
+      const permission=await Notification.requestPermission();if(permission!=='granted')throw new Error('مجوز اعلان مرورگر داده نشد.');
+      const keyData=await cloudflareApi('/api/push/public-key');
+      const registration=await navigator.serviceWorker.ready;
+      let subscription=await registration.pushManager.getSubscription();
+      if(!subscription)subscription=await registration.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlBase64ToUint8Array(keyData.publicKey)});
+      await cloudflareApi('/api/push/subscribe',{method:'POST',body:JSON.stringify({subscription:subscription.toJSON()})});
+      if($('pushStatus'))$('pushStatus').textContent='Web Push فعال است؛ اعلان‌ها حتی هنگام بسته بودن PWA ارسال می‌شوند.';
+      toast('اعلان پس‌زمینه فعال شد.');return true;
+    }catch(e){if($('pushStatus'))$('pushStatus').textContent='فعال‌سازی ناموفق: '+e.message;toast(e.message);return false}
+  }
+  async function disableWebPush(){
+    try{const reg=await navigator.serviceWorker.ready,sub=await reg.pushManager.getSubscription();if(sub){await cloudflareApi('/api/push/subscribe',{method:'POST',body:JSON.stringify({action:'unsubscribe',endpoint:sub.endpoint})});await sub.unsubscribe()}if($('pushStatus'))$('pushStatus').textContent='اعلان پس‌زمینه غیرفعال شد.';toast('اعلان پس‌زمینه غیرفعال شد.')}catch(e){toast(e.message)}
+  }
+  function playNotificationSound(category='general'){
+    if(localStorage.getItem('zt_notification_sound')!=='1')return;
+    try{
+      const Ctx=window.AudioContext||window.webkitAudioContext;if(!Ctx)return;
+      const ctx=app.notificationAudio||(app.notificationAudio=new Ctx());
+      if(ctx.state==='suspended')return;
+      const now=ctx.currentTime;
+      const pattern=String(category).includes('close')?[660,440]:String(category).includes('price')?[880,1046,880]:[523,659];
+      pattern.forEach((frequency,index)=>{
+        const osc=ctx.createOscillator(),gain=ctx.createGain(),start=now+index*.14;
+        osc.type='sine';osc.frequency.setValueAtTime(frequency,start);
+        gain.gain.setValueAtTime(.0001,start);gain.gain.exponentialRampToValueAtTime(.13,start+.025);gain.gain.exponentialRampToValueAtTime(.0001,start+.19);
+        osc.connect(gain);gain.connect(ctx.destination);osc.start(start);osc.stop(start+.21);
+      });
+    }catch(e){}
+  }
+  async function enableNotificationSound(){
+    try{
+      const Ctx=window.AudioContext||window.webkitAudioContext;if(!Ctx)throw new Error('مرورگر از صدای وب پشتیبانی نمی‌کند.');
+      const ctx=app.notificationAudio||(app.notificationAudio=new Ctx());await ctx.resume();
+      localStorage.setItem('zt_notification_sound','1');playNotificationSound('open');
+      $('enableNotificationSound').textContent='صدای اختصاصی فعال است';
+      toast('صدای اختصاصی اعلان فعال شد.');
+    }catch(e){toast(e.message)}
+  }
+  async function refreshNotificationCenter(showNew=true){
+    if(!app.key||!sessionStorage.getItem(CLOUD_TOKEN_KEY))return;
+    try{
+      const [n,a]=await Promise.all([cloudflareApi('/api/notifications'),cloudflareApi('/api/price-alerts')]);
+      const items=Array.isArray(n.notifications)?n.notifications:[];
+      const unread=items.filter(x=>!x.read_at).length;
+      if($('notificationUnreadCount'))$('notificationUnreadCount').textContent=enNum(unread)+' اعلان جدید';
+      const seen=app.notificationSeen||(app.notificationSeen=new Set());
+      if(showNew){
+        for(const item of items){
+          if(!seen.has(item.id)){
+            if(seen.size>0 && !item.read_at){
+              playNotificationSound(item.category);
+              if('Notification' in window && Notification.permission==='granted'){
+                try{const reg=await navigator.serviceWorker.ready;await reg.showNotification(item.title,{body:item.message,icon:'./icon-192.png',tag:item.id,data:{url:'./'}})}catch(e){}
+              }
+              toast(item.title+' — '+item.message);
+            }
+            seen.add(item.id);
+          }
+        }
+      }else items.forEach(x=>seen.add(x.id));
+      const list=$('notificationList');
+      if(list)list.innerHTML=items.length?items.map(x=>`<div class="notice" style="margin:6px 0;opacity:${x.read_at?'.72':'1'}"><div style="display:flex;justify-content:space-between;gap:8px"><b>${esc(x.title)}</b><small>${esc(fmtDate(x.created_at))}</small></div><div>${esc(x.message)}</div><div class="form-actions"><small>${esc(x.category)}</small>${x.read_at?'':'<button class="btn small" data-notification-read="'+esc(x.id)+'">خواندم</button>'}</div></div>`).join(''):'<div class="empty">اعلانی ثبت نشده است.</div>';
+      const alerts=Array.isArray(a.alerts)?a.alerts:[];
+      const box=$('priceAlertList');
+      if(box)box.innerHTML=alerts.length?alerts.map(x=>`<div class="notice" style="margin:6px 0"><div style="display:flex;justify-content:space-between;gap:8px"><b dir="ltr">${esc(x.symbol)} ${x.condition==='ABOVE'?'≥':'≤'} ${enNum(x.target_price)}</b><small>${x.enabled?'فعال':'غیرفعال'}</small></div><div class="form-actions"><small>${x.repeat_enabled?'تکرارشونده':'یک‌بار مصرف'}</small><button class="btn small" data-alert-toggle="${esc(x.id)}" data-enabled="${x.enabled?'0':'1'}">${x.enabled?'توقف':'فعال‌سازی'}</button><button class="btn small danger" data-alert-delete="${esc(x.id)}">حذف</button></div></div>`).join(''):'<div class="empty">هنوز هشداری ثبت نشده است.</div>';
+    }catch(e){if($('notificationList'))$('notificationList').textContent='خطا در دریافت اعلان‌ها: '+(e?.message||e)}
+  }
+  async function createPriceAlert(){
+    try{
+      const symbol=$('priceAlertSymbol').value.trim().toUpperCase(),condition=$('priceAlertCondition').value,targetPrice=Number($('priceAlertTarget').value),repeat=$('priceAlertRepeat').checked;
+      if(!symbol||!Number.isFinite(targetPrice)||targetPrice<=0)throw new Error('نماد و قیمت هدف معتبر وارد کن.');
+      await cloudflareApi('/api/price-alerts',{method:'POST',body:JSON.stringify({action:'create',symbol,condition,targetPrice,repeat})});
+      $('priceAlertTarget').value='';toast('هشدار قیمت ثبت شد.');await refreshNotificationCenter(false);
+    }catch(e){toast('ثبت هشدار ناموفق بود: '+e.message)}
+  }
+  async function adminApi(path,options={}){const base=cloudflareBase(),token=sessionStorage.getItem(CLOUD_TOKEN_KEY);if(!base||!token)throw new Error('نشست ابری فعال نیست.');const r=await fetch(base+path,{...options,headers:{Authorization:'Bearer '+token,...(options.body?{'Content-Type':'application/json'}:{}),...(options.headers||{})},cache:'no-store'});const data=await r.json();if(!r.ok||data.status!=='success')throw new Error(data.message||'عملیات مدیریت کاربران ناموفق بود.');return data}
+  async function refreshCloudUsers(){if(app.cloudUser?.role!=='admin')return;const card=$('adminUsersCard');if(card)card.style.display='block';const box=$('cloudUsersList');if(!box)return;try{const data=await adminApi('/api/admin/users');box.innerHTML='<table><thead><tr><th>کاربر</th><th>وضعیت</th><th>اعتبار تا (UTC)</th><th>عملیات</th></tr></thead><tbody>'+data.users.map(u=>`<tr><td>${esc(u.username)} <small>${esc(u.role)}</small></td><td>${u.status==='active'?'فعال':'غیرفعال'}</td><td>${u.subscription_end?esc(u.subscription_end):'بدون انقضا'}</td><td>${u.role==='admin'?'مدیر':`<button class="btn small" data-user-action="toggle" data-user-id="${esc(u.id)}" data-status="${u.status==='active'?'disabled':'active'}">${u.status==='active'?'غیرفعال‌سازی':'فعال‌سازی'}</button> <button class="btn small" data-user-action="expiry" data-user-id="${esc(u.id)}">تمدید</button> <button class="btn small" data-user-action="password" data-user-id="${esc(u.id)}">تغییر رمز</button> <button class="btn small" data-user-action="account" data-user-id="${esc(u.id)}">اتصال حساب MT5</button> <button class="btn small danger" data-user-action="delete" data-user-id="${esc(u.id)}">حذف</button>`}</td></tr>`).join('')+'</tbody></table>';}catch(e){box.textContent=e.message}}
+  async function createCloudUser(){try{const username=$('newCloudUsername').value.trim(),password=$('newCloudPassword').value,local=$('newCloudExpiry').value;let subscriptionEnd=null;if(!local)throw new Error('برای کاربر عادی باید تاریخ پایان اشتراک تعیین شود.');if(local){const d=new Date(local);if(!Number.isFinite(d.getTime()))throw new Error('تاریخ اعتبار معتبر نیست.');subscriptionEnd=d.toISOString()}await adminApi('/api/admin/users',{method:'POST',body:JSON.stringify({action:'create',username,password,subscriptionEnd})});$('newCloudUsername').value='';$('newCloudPassword').value='';$('newCloudExpiry').value='';toast('کاربر جدید ایجاد شد.');await refreshCloudUsers()}catch(e){toast(e.message)}}
   function bindEvents(){
-    $('loginForm').addEventListener('submit',async e=>{e.preventDefault();$('loginError').textContent='';const p=$('password').value;try{if(!localStorage.getItem(AUTH_KEY)){if(p.length<8)throw new Error('رمز عبور باید حداقل ۸ کاراکتر باشد.');if(p!==$('confirmPassword').value)throw new Error('تکرار رمز عبور یکسان نیست.');await setupVault(p)}else await unlockVault(p);await showApp()}catch(err){$('loginError').textContent=err.message}});
-    $('passkeyLogin').onclick=async()=>{ $('loginError').textContent='';try{await unlockWithPasskey()}catch(err){$('loginError').textContent=err.message||'ورود با Passkey انجام نشد.'}};
+    $('loginForm').addEventListener('submit',async e=>{e.preventDefault();$('loginError').textContent='';$('loginSubmit').disabled=true;try{const cloud=await cloudAuthLogin();const existing=localStorage.getItem(AUTH_KEY);if(existing){const localPass=$('localVaultPassword').value;if(!localPass)throw new Error('برای بازکردن اطلاعات رمزگذاری‌شده این دستگاه، رمز فضای امن محلی را وارد کن.');await unlockVault(localPass)}else{const localPass=$('localVaultPassword').value,confirm=$('localVaultConfirm').value;if(localPass.length<8)throw new Error('رمزگذاری محلی باید حداقل ۸ نویسه باشد.');if(localPass!==confirm)throw new Error('تکرار رمز فضای امن محلی یکسان نیست.');await setupVault(localPass)}app.cloudUser=cloud.user;if(app.data?.settings){app.data.settings.workerUrl=localStorage.getItem(WORKER_URL_KEY)||cloudBaseFromLogin();app.data.settings.workerToken='';await persist()}await showApp()}catch(err){sessionStorage.removeItem(CLOUD_TOKEN_KEY);$('loginError').textContent=err.message}finally{$('loginSubmit').disabled=false}});
+    $('passkeyLogin').onclick=()=>{$('loginError').textContent='ابتدا باید هویت حساب در Cloudflare تأیید شود.'};
     $('passwordFallbackToggle').onclick=()=>{const panel=$('passwordFallback');panel.classList.toggle('is-collapsed');if(panel.classList.contains('is-collapsed'))delete panel.dataset.userOpened;else panel.dataset.userOpened='1';$('passwordFallbackToggle').textContent=panel.classList.contains('is-collapsed')?'ورود با رمز عبور':'بازگشت به ورود با اثر انگشت'};if($('changeAccountBtn'))$('changeAccountBtn').onclick=()=>{const panel=$('passwordFallback');panel.classList.remove('is-collapsed');panel.dataset.userOpened='1';if($('passwordFallbackToggle'))$('passwordFallbackToggle').textContent='بازگشت به ورود با اثر انگشت';$('password').focus();};
     $('restoreFile').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;const p=prompt('رمز عبور فایل پشتیبان را وارد کن:');if(!p)return;try{await restoreBackup(f,p);await showApp();toast('پشتیبان با موفقیت بازیابی شد.')}catch(err){$('loginError').textContent=err.message}e.target.value=''});
     $('settingsRestore').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;const p=prompt('رمز عبور فایل پشتیبان را وارد کن:');if(!p)return;try{await restoreBackup(f,p);await showApp();toast('پشتیبان بازیابی شد.')}catch(err){toast(err.message)}e.target.value=''});
     $('sideNav').addEventListener('click',e=>{const b=e.target.closest('[data-view]');if(b)switchView(b.dataset.view)});$('mobileNav').addEventListener('click',e=>{const b=e.target.closest('[data-view]');if(!b)return;switchView(b.dataset.view,b.dataset.navKey||b.dataset.view);if(b.dataset.jump)setTimeout(()=>$(b.dataset.jump)?.scrollIntoView({behavior:'smooth',block:'center'}),140)});document.querySelectorAll('[data-goto]').forEach(b=>b.addEventListener('click',()=>switchView(b.dataset.goto)));
     $('themeBtn').onclick=()=>{const light=!document.body.classList.contains('light');localStorage.setItem(THEME_KEY,light?'light':'dark');applyTheme();drawChart()};$('settingsBtn').onclick=()=>switchView('settings');$('lockBtn').onclick=async()=>{if(!(await persist()))return;await lockApp()};$('syncBtn').onclick=()=>cloudflareConfigured()?syncFromCloudflare():syncFromSheet();$('syncNow').onclick=syncFromSheet;$('backupBtn').onclick=exportBackup;$('settingsBackup').onclick=exportBackup;$('csvBtn').onclick=exportCSV;
-    $('saveSettings').onclick=async()=>{const before=clone(app.data.settings);app.data.settings={...app.data.settings,workerUrl:$('workerUrl').value.trim().replace(/\/+$/,''),workerToken:$('workerToken').value.trim(),gasUrl:$('gasUrl').value.trim(),apiToken:$('apiToken').value.trim(),autoSync:$('autoSync').checked,sheetName:$('sheetName').value.trim()||'Journal'};if(!(await persist())){app.data.settings=before;populateSettings();return}populateSettings();toast('تنظیمات ذخیره شد.')};
+    $('saveSettings').onclick=async()=>{const before=clone(app.data.settings);app.data.settings={...app.data.settings,workerUrl:$('workerUrl').value.trim().replace(/\/+$/,''),workerToken:'',gasUrl:$('gasUrl').value.trim(),apiToken:$('apiToken').value.trim(),autoSync:$('autoSync').checked,sheetName:$('sheetName').value.trim()||'Journal'};if(!(await persist())){app.data.settings=before;populateSettings();return}populateSettings();toast('تنظیمات ذخیره شد.')};
     $('registerPasskey').onclick=async()=>{try{await registerPasskey()}catch(err){toast(err.message||'فعال‌سازی Passkey ناموفق بود.')}};
     $('removePasskey').onclick=removePasskey;
     $('sideBuyBtn').onclick=()=>{ $('fSide').value='Buy'; $('sideBuyBtn').classList.add('active'); $('sideSellBtn').classList.remove('active'); $('sideBuyBtn').setAttribute('aria-pressed','true'); $('sideSellBtn').setAttribute('aria-pressed','false')};$('sideSellBtn').onclick=()=>{ $('fSide').value='Sell'; $('sideSellBtn').classList.add('active'); $('sideBuyBtn').classList.remove('active'); $('sideSellBtn').setAttribute('aria-pressed','true'); $('sideBuyBtn').setAttribute('aria-pressed','false')};$('tradeForm').addEventListener('submit',addManualTrade);$('tradeSearch').addEventListener('input',renderTrades);$('tradeSort').addEventListener('change',renderTrades);$('tradeFilters').addEventListener('click',e=>{const b=e.target.closest('[data-filter]');if(!b)return;app.currentFilter=b.dataset.filter;$('tradeFilters').querySelectorAll('.filter').forEach(x=>x.classList.toggle('active',x===b));renderTrades()});
     $('psychForm').addEventListener('submit',savePsych);$('closePsych').onclick=closePsych;$('cancelPsych').onclick=closePsych;$('psychModal').addEventListener('click',e=>{if(e.target===$('psychModal'))closePsych()});$('pStress').oninput=()=> $('stressValue').textContent=$('pStress').value+'/5';
     [['sleepRange','sleep'],['focusRange','focus'],['planRange','plan']].forEach(([id,k])=>$(id).addEventListener('input',async()=>{const before=app.data.readiness[k];app.data.readiness[k]=Number($(id).value);updateReadinessUI();if(!(await persist())){app.data.readiness[k]=before;updateReadinessUI()}}));$('openPendingBtn').onclick=()=>{const t=app.data.trades.find(x=>x.needsPsych);if(t)openPsych(t.id)};
     $('breathStart').onclick=startBreathing;$('breathStop').onclick=stopBreathing;document.querySelectorAll('[data-tilt]').forEach(b=>b.onclick=()=>startTilt(Number(b.dataset.tilt)));$('tiltStop').onclick=stopTilt;$('addRule').onclick=addRule;$('newRule').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addRule()}});$('reportRange').onchange=renderReports;['reportSymbolFilter','reportStrategyFilter','reportSideFilter'].forEach(id=>{if($(id))$(id).onchange=renderReports});$('assistantForm').addEventListener('submit',e=>{e.preventDefault();const input=$('assistantQuestion'),q=input.value.trim();if(!q)return;askAssistant(q);input.value=''});$('assistantClear').onclick=clearAssistant;document.querySelectorAll('[data-assistant-prompt]').forEach(b=>b.addEventListener('click',()=>askAssistant(b.dataset.assistantPrompt)));$('calendarPrev').onclick=()=>shiftPersianCalendarMonth(-1);$('calendarNext').onclick=()=>shiftPersianCalendarMonth(1);$('pdfBtn').onclick=exportPDF;$('saveRiskSettings').onclick=async()=>{const before={dailyLossLimit:app.data.settings.dailyLossLimit,lossStreakLimit:app.data.settings.lossStreakLimit};app.data.settings.dailyLossLimit=Math.max(0,Number($('dailyLossLimit').value)||0);app.data.settings.lossStreakLimit=Number($('lossStreakLimit').value)||3;if(!(await persist())){Object.assign(app.data.settings,before);$('dailyLossLimit').value=before.dailyLossLimit??0;$('lossStreakLimit').value=String(before.lossStreakLimit??3);return}renderRiskOverview();toast('قوانین ریسک ذخیره شد.')};
-    $('wipeData').onclick=async()=>{if(!confirm('تمام معاملات، قوانین و تنظیمات محلی این دستگاه پاک شوند؟ این کار برگشت‌ناپذیر است.'))return;if(!confirm('برای تأیید نهایی، مطمئنی که پشتیبان لازم را گرفته‌ای؟'))return;localStorage.removeItem(AUTH_KEY);localStorage.removeItem(VAULT_KEY);await clearRememberedSession();app.key=null;app.data=null;showLogin(true)};
+    $('wipeData').onclick=async()=>{if(!confirm('تمام معاملات، قوانین و تنظیمات محلی این دستگاه پاک شوند؟ این کار برگشت‌ناپذیر است.'))return;if(!confirm('برای تأیید نهایی، مطمئنی که پشتیبان لازم را گرفته‌ای؟'))return;localStorage.removeItem(AUTH_KEY);localStorage.removeItem(VAULT_KEY);await clearRememberedSession();await cloudAuthLogout();app.key=null;app.data=null;app.cloudUser=null;showLogin(false)};
 
+    if($('enableBrowserNotifications'))$('enableBrowserNotifications').onclick=async()=>{if(!('Notification' in window)){toast('این مرورگر از اعلان سیستمی پشتیبانی نمی‌کند.');return}const p=await Notification.requestPermission();toast(p==='granted'?'اعلان مرورگر فعال شد.':'مجوز اعلان داده نشد.')};
+    if($('enableWebPush'))$('enableWebPush').onclick=enableWebPush;
+    if($('disableWebPush'))$('disableWebPush').onclick=disableWebPush;
+    if($('enableNotificationSound'))$('enableNotificationSound').onclick=enableNotificationSound;
+    if($('markAllNotificationsRead'))$('markAllNotificationsRead').onclick=async()=>{try{await cloudflareApi('/api/notifications',{method:'POST',body:JSON.stringify({action:'read_all'})});await refreshNotificationCenter(false)}catch(e){toast(e.message)}};
+    if($('refreshNotifications'))$('refreshNotifications').onclick=()=>refreshNotificationCenter(false);
+    if($('createPriceAlert'))$('createPriceAlert').onclick=createPriceAlert;
+    if($('notificationList'))$('notificationList').addEventListener('click',async e=>{const b=e.target.closest('[data-notification-read]');if(!b)return;try{await cloudflareApi('/api/notifications',{method:'POST',body:JSON.stringify({action:'read',id:b.dataset.notificationRead})});await refreshNotificationCenter(false)}catch(err){toast(err.message)}});
+    if($('priceAlertList'))$('priceAlertList').addEventListener('click',async e=>{const t=e.target.closest('[data-alert-toggle]'),d=e.target.closest('[data-alert-delete]');try{if(t)await cloudflareApi('/api/price-alerts',{method:'POST',body:JSON.stringify({action:'toggle',id:t.dataset.alertToggle,enabled:t.dataset.enabled==='1'})});else if(d){if(!confirm('این هشدار قیمت حذف شود؟'))return;await cloudflareApi('/api/price-alerts',{method:'POST',body:JSON.stringify({action:'delete',id:d.dataset.alertDelete})})}else return;await refreshNotificationCenter(false)}catch(err){toast(err.message)}});
     if($('cloudflareSave'))$('cloudflareSave').onclick=()=>saveCloudflareSettings();
     if($('cloudflareSyncNow'))$('cloudflareSyncNow').onclick=syncFromCloudflare;
-    if($('cloudflareTest'))$('cloudflareTest').onclick=testCloudflareConnection;
+    if($('cloudflareTest'))$('cloudflareTest').onclick=testCloudflareConnection;if($('createCloudUser'))$('createCloudUser').onclick=createCloudUser;if($('cloudUsersList'))$('cloudUsersList').addEventListener('click',async e=>{const b=e.target.closest('[data-user-action]');if(!b)return;const id=b.dataset.userId,action=b.dataset.userAction;try{if(action==='toggle')await adminApi('/api/admin/users',{method:'POST',body:JSON.stringify({action:'update',id,status:b.dataset.status})});else if(action==='expiry'){const v=prompt('تاریخ پایان اشتراک را با زمان UTC وارد کن (ISO 8601). خالی = بدون انقضا:');if(v===null)return;await adminApi('/api/admin/users',{method:'POST',body:JSON.stringify({action:'update',id,subscriptionEnd:v.trim()?new Date(v).toISOString():null})})}else if(action==='password'){const password=prompt('رمز جدید کاربر (حداقل ۸ نویسه):');if(password===null)return;await adminApi('/api/admin/users',{method:'POST',body:JSON.stringify({action:'password',id,password})})}else if(action==='account'){const account=prompt('شماره Login حساب MT5 را وارد کن:');if(!account)return;await adminApi('/api/admin/accounts',{method:'POST',body:JSON.stringify({action:'assign',userId:id,account})})}else if(action==='delete'){if(!confirm('این کاربر حذف شود؟'))return;await adminApi('/api/admin/users',{method:'POST',body:JSON.stringify({action:'delete',id})})}await refreshCloudUsers();toast('تغییرات کاربر ذخیره شد.')}catch(err){toast(err.message)}});
     if($('mt5RefreshBtn'))$('mt5RefreshBtn').onclick=()=>refreshMt5Control(false);
-    document.querySelectorAll('[data-mt5-cmd]').forEach(btn=>btn.addEventListener('click',()=>sendMt5Command(btn.dataset.mt5Cmd,{})));
+    const SET_KEYS={SET_AUTO:'autoEnabled',SET_SECOND:'secondEnabled',SET_SIGNAL:'signalEnabled',SET_DAILY:'dailyLimitEnabled'};
+    document.querySelectorAll('[data-mt5-cmd]').forEach(btn=>btn.addEventListener('click',()=>{
+      const cmd=btn.dataset.mt5Cmd,key=SET_KEYS[cmd];
+      if(key){const st=window.__ztMt5Last;if(!st||typeof st[key]==='undefined'){toast('وضعیت فعلی MT5 هنوز دریافت نشده است؛ چند ثانیه صبر کن.');return}
+        sendMt5Command(cmd,{value:st[key]?0:1});return}
+      sendMt5Command(cmd,{});
+    }));
     if($('mt5ApplyRiskBtn'))$('mt5ApplyRiskBtn').onclick=()=>sendMt5Command('SET_RISK',{mode:$('mt5RiskModeInput')?.value||'PERCENT',value:Number($('mt5RiskValInput')?.value||0)});
     if($('mt5ApplyRrBtn'))$('mt5ApplyRrBtn').onclick=()=>sendMt5Command('SET_RR',{rr:Number($('mt5RrInput')?.value||0)});
     if($('mt5SendQoBtn'))$('mt5SendQoBtn').onclick=()=>sendMt5Command('QUICK_ORDER',{symbol:String($('mt5QoSymbol')?.value||'XAUUSD').trim().toUpperCase(),side:$('mt5QoSide')?.value||'BUY',entry:Number($('mt5QoEntry')?.value||0),sl:Number($('mt5QoSl')?.value||0)});
@@ -1996,14 +2147,17 @@
   let swUpdatePromptOpen=false;
   async function activateWaitingWorker(registration){if(swUpdatePromptOpen||!registration?.waiting||!navigator.serviceWorker.controller)return;swUpdatePromptOpen=true;const accepted=window.confirm('نسخه جدید ذهن تریدر آماده است. پیش از به‌روزرسانی، اطلاعات فعلی ذخیره می‌شود. اکنون به‌روزرسانی انجام شود؟');if(!accepted){swUpdatePromptOpen=false;return}if(app.key&&app.data&&!(await persist())){swUpdatePromptOpen=false;toast('به‌روزرسانی انجام نشد؛ ابتدا مشکل ذخیره اطلاعات را برطرف کن.');return}const waiting=registration.waiting;navigator.serviceWorker.addEventListener('controllerchange',()=>location.reload(),{once:true});waiting.postMessage({type:'SKIP_WAITING'});}
   async function registerServiceWorker(){if(!('serviceWorker'in navigator)||!location.protocol.startsWith('http'))return null;try{const registration=await navigator.serviceWorker.register('./sw.js');if(registration.waiting&&navigator.serviceWorker.controller)activateWaitingWorker(registration);registration.addEventListener('updatefound',()=>{const installing=registration.installing;if(!installing)return;installing.addEventListener('statechange',()=>{if(installing.state==='installed'&&navigator.serviceWorker.controller)activateWaitingWorker(registration)})});return registration}catch(error){console.warn('Service Worker registration failed',error);return null}}
-  async function init(){bindEvents();initActivityTracking();await registerServiceWorker();if(localStorage.getItem(AUTH_KEY)){const resumed=await resumeRememberedSession();if(resumed)await showApp({remember:false});else showLogin(false)}else showLogin(true)}
+  if('serviceWorker' in navigator)navigator.serviceWorker.addEventListener('message',event=>{if(event.data?.type==='MINDTRADER_PUSH_RECEIVED'&&app.key){refreshNotificationCenter(true)}});
+  async function validateCloudSession(){const token=sessionStorage.getItem(CLOUD_TOKEN_KEY),baseUrl=localStorage.getItem(WORKER_URL_KEY);if(!token||!baseUrl)return false;try{const r=await fetch(baseUrl+'/api/auth/me',{headers:{Authorization:'Bearer '+token},cache:'no-store'});const data=await r.json();if(r.ok&&data.status==='success'){app.cloudUser=data.user;return true}if(r.status===401||r.status===403){toast(data.message||'اعتبار حساب یا نشست پایان یافته است.');await lockApp();return false}return false}catch(e){return false}}
+  async function init(){bindEvents();initActivityTracking();await registerServiceWorker();setInterval(()=>{if(app.key){validateCloudSession();refreshNotificationCenter(true)}},15*1000);const token=sessionStorage.getItem(CLOUD_TOKEN_KEY),baseUrl=localStorage.getItem(WORKER_URL_KEY);if(token&&baseUrl){try{const r=await fetch(baseUrl+'/api/auth/me',{headers:{Authorization:'Bearer '+token},cache:'no-store'});const data=await r.json();if(r.ok&&data.status==='success'){app.cloudUser=data.user;const resumed=await resumeRememberedSession();if(resumed){if(app.data?.settings)app.data.settings.workerUrl=baseUrl;await showApp({remember:false});return}}}catch(e){console.warn('Cloud session resume failed',e)}sessionStorage.removeItem(CLOUD_TOKEN_KEY)}showLogin(false)}
   init().catch(err=>{console.error(err);showLogin(Boolean(!localStorage.getItem(AUTH_KEY))) });
 })();
 
 </script>
   <div id="pdf-report-root" aria-hidden="true"></div>
 
-<script src="https://unpkg.com/lightweight-charts@4.2.2/dist/lightweight-charts.standalone.production.js"></script>
+<script src="./lightweight-charts.standalone.production.js"></script>
+<script>window.LightweightCharts||document.write('<script src="https://unpkg.com/lightweight-charts@4.2.2/dist/lightweight-charts.standalone.production.js"><\/script>');</script>
 <script id="zt-mt5-dual-view-js">
 (function(){
   const root=document.getElementById('view-mt5control'); if(!root||root.dataset.dualViewReady==='1')return; root.dataset.dualViewReady='1';
@@ -2018,9 +2172,10 @@
 <script id="zt-mt5-price-chart-js">
 (function(){
   const host=document.getElementById('mt5TradingChart'); if(!host||host.dataset.chartReady==='1')return; host.dataset.chartReady='1';
-  let chart=null,candleSeries=null,volumeSeries=null,lastBarsKey='',positionLines=[],currentPositions=[],resizeObserver=null;
+  let chart=null,candleSeries=null,volumeSeries=null,lastBarsKey='',lastBodyKey='',positionLines=[],currentPositions=[],resizeObserver=null;
   const tooltip=document.getElementById('mt5ChartTooltip'),badge=document.getElementById('mt5ChartFeedBadge'),meta=document.getElementById('mt5ChartMeta'),title=document.getElementById('mt5ChartTitle');
   const money=v=>{const n=Number(v||0);return (n<0?'-':'')+'$'+Math.abs(n).toFixed(2)};
+  const escHtml=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   function ensureChart(){
     if(chart)return true;
     if(!window.LightweightCharts){host.innerHTML='<div class="mt5-chart-empty">کتابخانه نمودار بارگذاری نشد. اتصال اینترنت و دسترسی به CDN را بررسی کن.</div>';return false;}
@@ -2054,17 +2209,23 @@
     }
     if(!best){hideTooltip();return;}
     const pnl=Number(best.profit||0),side=String(best.side||'');
-    tooltip.innerHTML=`<b>#${String(best.ticket)}</b> · ${side} ${String(best.symbol||'')}<br>حجم: ${String(best.lots??'—')}<br><span class="pnl ${pnl>=0?'positive':'negative'}">${money(pnl)}</span> · سود/زیان شناور`;
+    tooltip.innerHTML=`<b>#${escHtml(best.ticket)}</b> · ${escHtml(side)} ${escHtml(best.symbol||'')}<br>حجم: ${escHtml(best.lots??'—')}<br><span class="pnl ${pnl>=0?'positive':'negative'}">${money(pnl)}</span> · سود/زیان شناور`;
     const x=Math.max(6,Math.min(host.clientWidth-220,param.point.x+10));const top=Math.max(6,Math.min(host.clientHeight-90,y-46));tooltip.style.left=x+'px';tooltip.style.top=top+'px';tooltip.classList.add('show');
   }
   function hideTooltip(){tooltip?.classList.remove('show');}
   function render(chartData,positions){
     if(!chartData||!Array.isArray(chartData.bars)||!chartData.bars.length){if(badge)badge.textContent='در انتظار فید کندل MT5';if(meta)meta.textContent='اکسپرت باید نسخه دارای ارسال کندل باشد';return;}
     if(!ensureChart())return;
-    const bars=chartData.bars.map(b=>({time:Number(b.time),open:Number(b.open),high:Number(b.high),low:Number(b.low),close:Number(b.close)})).filter(b=>b.time>0&&b.open>0&&b.high>0&&b.low>0&&b.close>0).sort((a,b)=>a.time-b.time);
-    if(!bars.length)return;
-    const key=bars.map(b=>b.time+':'+b.close).join('|');
-    if(key!==lastBarsKey){candleSeries.setData(bars);const volumes=chartData.bars.map(b=>({time:Number(b.time),value:Number(b.volume||0),color:Number(b.close)>=Number(b.open)?'rgba(19,189,145,.38)':'rgba(239,83,102,.38)'})).filter(v=>v.time>0);volumeSeries.setData(volumes);lastBarsKey=key;}
+    // MT5 candle times are broker-server time; shift them so the axis shows the device's local time.
+    const srvOff=Number(chartData.serverOffset),localOff=-new Date().getTimezoneOffset()*60,shift=Number.isFinite(srvOff)&&chartData.serverOffset!==undefined?(localOff-srvOff):0;
+    const raw=chartData.bars.map(b=>({time:Number(b.time)+shift,open:Number(b.open),high:Number(b.high),low:Number(b.low),close:Number(b.close),volume:Number(b.volume||0)})).filter(b=>b.time>0&&b.open>0&&b.high>0&&b.low>0&&b.close>0).sort((a,b)=>a.time-b.time);
+    if(!raw.length)return;
+    const bars=raw.map(b=>({time:b.time,open:b.open,high:b.high,low:b.low,close:b.close}));
+    const volumes=raw.map(b=>({time:b.time,value:b.volume,color:b.close>=b.open?'rgba(19,189,145,.38)':'rgba(239,83,102,.38)'}));
+    const sig=b=>b.time+':'+b.open+':'+b.high+':'+b.low+':'+b.close+':'+b.volume;
+    const bodyKey=raw.slice(0,-1).map(sig).join('|'),lastKey=sig(raw[raw.length-1]);
+    if(bodyKey!==lastBodyKey){candleSeries.setData(bars);volumeSeries.setData(volumes);lastBodyKey=bodyKey;lastBarsKey=lastKey;}
+    else if(lastKey!==lastBarsKey){candleSeries.update(bars[bars.length-1]);volumeSeries.update(volumes[volumes.length-1]);lastBarsKey=lastKey;}
     addPositionLines(positions,chartData.symbol);
     const tf=String(chartData.timeframe||'MT5'),sym=String(chartData.symbol||'');if(meta)meta.textContent=`${sym} · ${tf} · فید مستقیم MT5`;if(title)title.textContent=`${sym} · ${tf}`;if(badge){badge.textContent='LIVE · MT5';badge.className='pill good';}
     resizeChart();
