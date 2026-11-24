@@ -180,7 +180,7 @@
 
 
   
-    /* Zehn Trader 2.8.5: Cloudflare settings persistence fix */
+    /* Zehn Trader 2.8.6: faster MT5 live refresh */
     .report-quality-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:12px 0}
     .report-quality-grid .stat{min-width:0;padding:13px;border-radius:16px}
     .report-quality-grid .label{font-size:10px;line-height:1.6}
@@ -837,7 +837,7 @@
 
   <div id="appRoot" class="app hidden">
     <aside class="sidebar">
-      <div class="brand"><div class="logo" aria-hidden="true"></div><div><b>ذهن تریدر</b><span>نسخه 2.8.5 · ژورنال هوشمند</span></div></div>
+      <div class="brand"><div class="logo" aria-hidden="true"></div><div><b>ذهن تریدر</b><span>نسخه 2.8.6 · ژورنال هوشمند</span></div></div>
       <nav class="nav" id="sideNav">
         <button class="active" data-view="dashboard"><span class="ico">▦</span>داشبورد</button>
         <button data-view="trades"><span class="ico">⇄</span>ژورنال معاملات</button>
@@ -1108,7 +1108,7 @@
         </div>
         <div class="grid two" style="margin-top:14px">
           <div class="card"><h3>امنیت فضای محلی</h3><p class="small muted" style="line-height:2">داده‌های ذخیره‌شده در مرورگر با AES-GCM و کلید مشتق‌شده از رمز عبور رمزگذاری می‌شوند. رمز عبور پیش‌فرض وجود ندارد. قفل برنامه فقط دسترسی رابط را می‌بندد و رمزگذاری فضای داده، لایه محافظ اصلی در حالت ذخیره محلی است.</p><button class="btn danger" id="wipeData">پاک‌کردن کامل داده‌های این دستگاه</button></div>
-          <div class="card"><h3>وضعیت برنامه</h3><div class="metric-row"><span>نسخه</span><b>2.8.5</b></div><div class="metric-row"><span>حالت ذخیره‌سازی</span><b>رمزگذاری‌شده و محلی</b></div><div class="metric-row"><span>اتصال به Sheets</span><b id="connectionState">تنظیم نشده</b></div><div class="metric-row"><span>آخرین همگام‌سازی</span><b id="lastSyncText">—</b></div></div>
+          <div class="card"><h3>وضعیت برنامه</h3><div class="metric-row"><span>نسخه</span><b>2.8.6</b></div><div class="metric-row"><span>حالت ذخیره‌سازی</span><b>رمزگذاری‌شده و محلی</b></div><div class="metric-row"><span>اتصال به Sheets</span><b id="connectionState">تنظیم نشده</b></div><div class="metric-row"><span>آخرین همگام‌سازی</span><b id="lastSyncText">—</b></div></div>
         </div>
       </section>
     </main>
@@ -1138,7 +1138,7 @@
 
 (() => {
   'use strict';
-  const VERSION = '2.8.5';
+  const VERSION = '2.8.6';
   const AUTH_KEY = 'zt2_auth_v1';
   const VAULT_KEY = 'zt2_vault_v1';
   const THEME_KEY = 'zt2_theme_v1';
@@ -1690,6 +1690,7 @@
   async function addRule(){const v=$('newRule').value.trim();if(!v)return;app.data.rules.push(v);if(!(await persist())){app.data.rules.pop();return}$('newRule').value='';renderPsychology();toast('قانون اضافه شد.')}
 
   let mt5PollTimer = null;
+  let mt5RefreshInFlight = false;
   function hasMt5Config(){
     if(cloudflareConfigured())return true;
     const url=String(app?.data?.settings?.gasUrl||'').trim();
@@ -1808,10 +1809,12 @@
     }
   }
   async function refreshMt5Control(silent=false){
+    if(mt5RefreshInFlight)return;
     if(!hasMt5Config()){
       if(!silent && $('mt5LiveBadge')){$('mt5LiveBadge').textContent='نیاز به تنظیم URL و Token';$('mt5LiveBadge').className='pill warn'}
       return;
     }
+    mt5RefreshInFlight=true;
     try{
       if(cloudflareConfigured()){
         const res=await cloudflareApi('/api/mt5/state');
@@ -1823,6 +1826,7 @@
         const res=await jsonp(endpoint.toString(),15000);if(res&&res.status==='success')renderMt5LiveState(res);
       }
     }catch(err){if(!silent)toast('خطا در دریافت وضعیت زنده MT5: '+(err?.message||err));}
+    finally{mt5RefreshInFlight=false;}
   }
   window.__ztMt5Cmd=(cmd,params)=>sendMt5Command(cmd,params);
 
@@ -1852,11 +1856,22 @@
     if($('mt5ApplyRrBtn'))$('mt5ApplyRrBtn').onclick=()=>sendMt5Command('SET_RR',{rr:Number($('mt5RrInput')?.value||0)});
     if($('mt5SendQoBtn'))$('mt5SendQoBtn').onclick=()=>sendMt5Command('QUICK_ORDER',{symbol:String($('mt5QoSymbol')?.value||'XAUUSD').trim().toUpperCase(),side:$('mt5QoSide')?.value||'BUY',entry:Number($('mt5QoEntry')?.value||0),sl:Number($('mt5QoSl')?.value||0)});
     clearInterval(mt5PollTimer);
-    mt5PollTimer=setInterval(()=>{if(app.key && app.currentView==='mt5control')refreshMt5Control(true)},8000);
+    mt5PollTimer=setInterval(()=>{if(app.key && app.currentView==='mt5control')refreshMt5Control(true)},3000);
 
     window.addEventListener('resize',()=>{clearTimeout(app.chartResize);app.chartResize=setTimeout(()=>{if(app.currentView==='reports')renderReports();else drawChart()},140)});
   }
-  function initActivityTracking(){['pointerdown','keydown','touchstart','click'].forEach(evt=>document.addEventListener(evt,()=>touchSession(),{passive:true}));document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&app.key){if(sessionExpired())lockForInactivity();else touchSession(true)}})}
+  function initActivityTracking(){
+    ['pointerdown','keydown','touchstart','click'].forEach(evt=>document.addEventListener(evt,()=>touchSession(),{passive:true}));
+    document.addEventListener('visibilitychange',()=>{
+      if(document.visibilityState!=='visible'||!app.key)return;
+      if(sessionExpired()){lockForInactivity();return;}
+      touchSession(true);
+      if(app.currentView==='mt5control')refreshMt5Control(true);
+    });
+    window.addEventListener('pageshow',()=>{
+      if(document.visibilityState==='visible'&&app.key&&app.currentView==='mt5control')refreshMt5Control(true);
+    });
+  }
   let swUpdatePromptOpen=false;
   async function activateWaitingWorker(registration){if(swUpdatePromptOpen||!registration?.waiting||!navigator.serviceWorker.controller)return;swUpdatePromptOpen=true;const accepted=window.confirm('نسخه جدید ذهن تریدر آماده است. پیش از به‌روزرسانی، اطلاعات فعلی ذخیره می‌شود. اکنون به‌روزرسانی انجام شود؟');if(!accepted){swUpdatePromptOpen=false;return}if(app.key&&app.data&&!(await persist())){swUpdatePromptOpen=false;toast('به‌روزرسانی انجام نشد؛ ابتدا مشکل ذخیره اطلاعات را برطرف کن.');return}const waiting=registration.waiting;navigator.serviceWorker.addEventListener('controllerchange',()=>location.reload(),{once:true});waiting.postMessage({type:'SKIP_WAITING'});}
   async function registerServiceWorker(){if(!('serviceWorker'in navigator)||!location.protocol.startsWith('http'))return null;try{const registration=await navigator.serviceWorker.register('./sw.js');if(registration.waiting&&navigator.serviceWorker.controller)activateWaitingWorker(registration);registration.addEventListener('updatefound',()=>{const installing=registration.installing;if(!installing)return;installing.addEventListener('statechange',()=>{if(installing.state==='installed'&&navigator.serviceWorker.controller)activateWaitingWorker(registration)})});return registration}catch(error){console.warn('Service Worker registration failed',error);return null}}
