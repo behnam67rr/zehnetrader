@@ -1694,9 +1694,16 @@ if(document.readyState==='loading')addEventListener('DOMContentLoaded',startDomB
   }
 </style>
 
+<style id="zt-auth-bootstrap-css">
+#loginWrap.auth-checking{opacity:0!important;pointer-events:none!important}
+#authBootSplash{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;background:radial-gradient(circle at 50% 35%,#0d3b38,#071421 58%,#040b12);color:#eafff8;font-family:inherit}
+#authBootSplash.hidden{display:none!important}#authBootSplash .boot-card{display:grid;justify-items:center;gap:13px;padding:28px;text-align:center}#authBootSplash .boot-mark{width:58px;height:58px;border-radius:18px;background:linear-gradient(145deg,#00dba4,#079a78);display:grid;place-items:center;font-size:27px;font-weight:900;box-shadow:0 0 30px #00d9a344}#authBootSplash .boot-track{width:150px;height:4px;border-radius:9px;background:#203b4b;overflow:hidden}#authBootSplash .boot-track:after{content:"";display:block;width:42%;height:100%;background:#18d9a8;border-radius:9px;animation:ztBoot 1s ease-in-out infinite alternate}@keyframes ztBoot{from{transform:translateX(0)}to{transform:translateX(140%)}}
+#notificationCenterCard .notice-toolbar{display:grid;gap:9px;margin:12px 0}#notificationCenterCard .notice-search-row{display:grid;grid-template-columns:1fr 150px;gap:8px}#notificationCenterCard .notice-search-row input,#notificationCenterCard .notice-search-row select{min-width:0;width:100%;border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:12px;padding:11px 12px}#notificationCenterCard .notice-actions{display:flex;gap:7px;flex-wrap:wrap}#notificationCenterCard .notice-item{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:start;padding:13px;margin:8px 0;border:1px solid var(--line);border-radius:15px;background:linear-gradient(145deg,var(--panel2),var(--panel))}#notificationCenterCard .notice-item.is-unread{border-color:#16866b;box-shadow:inset -3px 0 #18c99a}#notificationCenterCard .notice-item.is-pinned{border-color:#b78b43}#notificationCenterCard .notice-item .notice-title{font-weight:850;font-size:13px}#notificationCenterCard .notice-item .notice-message{font-size:12px;line-height:1.9;color:var(--muted);margin-top:4px;overflow-wrap:anywhere}#notificationCenterCard .notice-item .notice-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:10px;color:var(--muted);margin-top:7px}#notificationCenterCard .notice-item .notice-tools{display:flex;gap:5px;flex-wrap:wrap}#notificationCenterCard .notice-item .notice-tools button{padding:6px 8px;font-size:10px}#notificationCenterCard .notice-empty{padding:24px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:14px}@media(max-width:520px){#notificationCenterCard .notice-search-row{grid-template-columns:1fr}#notificationCenterCard .notice-item{grid-template-columns:auto 1fr}#notificationCenterCard .notice-item .notice-tools{grid-column:2}}
+</style>
 </head>
 <body>
-  <div id="loginWrap" class="login-wrap">
+  <div id="authBootSplash" aria-live="polite"><div class="boot-card"><div class="boot-mark">◎</div><strong>ذهن تریدر</strong><span class="small" style="color:#9bb4c2">در حال بررسی نشست امن…</span><div class="boot-track"></div></div></div>
+  <div id="loginWrap" class="login-wrap auth-checking">
     <div class="login-shell">
       <div class="login-brand">
         <div class="login-mark" aria-hidden="true"></div>
@@ -2094,26 +2101,19 @@ if(document.readyState==='loading')addEventListener('DOMContentLoaded',startDomB
 
   <div id="notifModal" class="modal" role="dialog" aria-modal="true" aria-label="مرکز اعلان‌ها و هشدارها"><div class="modal-box">
           <div id="notificationCenterCard">
-            <div class="card-head"><h3>مرکز اعلان‌ها و هشدارها</h3><div style="display:flex;align-items:center;gap:8px"><span class="pill good" id="notificationUnreadCount">۰ اعلان جدید</span><button class="icon-btn" type="button" id="closeNotifModal" aria-label="بستن">✕</button></div></div>
-            <div class="form-actions" style="margin-bottom:10px">
-              <button class="btn primary" type="button" id="enableWebPush">فعال‌سازی اعلان حتی در حالت بسته بودن PWA</button><button class="btn" type="button" id="disableWebPush">غیرفعال‌سازی Web Push</button>
-              <button class="btn" type="button" id="enableBrowserNotifications">فعال‌سازی اعلان مرورگر</button>
-              <button class="btn" type="button" id="enableNotificationSound">فعال‌سازی صدای اختصاصی</button>
-              <button class="btn" type="button" id="markAllNotificationsRead">خواندن همه</button>
-              <button class="btn" type="button" id="refreshNotifications">بروزرسانی</button>
+            <div class="card-head"><div><h3>مرکز اعلان‌ها</h3><div class="small muted">مدیریت یکپارچه رویدادها و هشدارهای معاملاتی</div></div><div style="display:flex;align-items:center;gap:8px"><span class="pill good" id="notificationUnreadCount">۰ خوانده‌نشده</span><button class="icon-btn" type="button" id="closeNotifModal" aria-label="بستن">✕</button></div></div>
+            <div class="notice-toolbar">
+              <div class="notice-search-row"><input id="noticeSearch" type="search" placeholder="جست‌وجو در اعلان‌ها یا نماد…"><select id="noticeCategory"><option value="all">همه دسته‌ها</option><option value="price_alert">هشدار قیمت</option><option value="position_open">باز شدن معامله</option><option value="position_close">بسته شدن معامله</option><option value="position_partial_close">بسته‌شدن بخشی</option><option value="system">سیستم</option></select></div>
+              <div class="notice-search-row"><select id="noticeReadFilter"><option value="all">خوانده‌شده و جدید</option><option value="unread">فقط خوانده‌نشده</option><option value="read">فقط خوانده‌شده</option><option value="archived">آرشیو</option></select><select id="noticeSort"><option value="newest">جدیدترین ابتدا</option><option value="oldest">قدیمی‌ترین ابتدا</option></select></div>
+              <div class="notice-actions"><button class="btn primary" type="button" id="enableWebPush">فعال‌سازی اعلان حتی در حالت بسته بودن PWA</button><button class="btn" type="button" id="disableWebPush">غیرفعال‌سازی Web Push</button><button class="btn" type="button" id="enableBrowserNotifications">اعلان مرورگر</button><button class="btn" type="button" id="enableNotificationSound">فعال‌سازی صدا</button><button class="btn" type="button" id="markAllNotificationsRead">خواندن همه</button><button class="btn" type="button" id="refreshNotifications">بروزرسانی</button></div>
+              <div class="notice-actions"><button class="btn" type="button" id="archiveSelectedNotifications">آرشیو انتخاب‌شده</button><button class="btn danger" type="button" id="deleteSelectedNotifications">حذف انتخاب‌شده</button><button class="btn" type="button" id="exportNotifications">خروجی CSV</button></div>
             </div>
-            <div id="pushStatus" class="small muted" aria-live="polite">اعلان پس‌زمینه هنوز فعال نشده است.</div><div id="notificationList" class="table-wrap" aria-live="polite">برای مشاهده اعلان‌ها وارد حساب ابری شو.</div>
-            <div class="divider" style="margin:16px 0"></div>
-            <h4>ساخت هشدار قیمت</h4>
-            <div class="form-grid">
-              <div class="field"><label for="priceAlertSymbol">نماد</label><input id="priceAlertSymbol" placeholder="مثلاً XAUUSD یا BTCUSDT" dir="ltr" maxlength="32"></div>
-              <div class="field"><label for="priceAlertCondition">شرط هشدار</label><select id="priceAlertCondition"><option value="ABOVE">عبور به بالای قیمت</option><option value="BELOW">عبور به پایین قیمت</option></select></div>
-              <div class="field"><label for="priceAlertTarget">قیمت هدف</label><input id="priceAlertTarget" type="number" min="0" step="any" placeholder="قیمت موردنظر" dir="ltr"></div>
-            </div>
-            <div class="field"><label style="display:flex;align-items:center;gap:8px"><input id="priceAlertRepeat" type="checkbox" style="width:auto"> هشدار تکرارشونده (با هر عبور مجدد از سطح)</label></div>
-            <button class="btn primary" id="createPriceAlert" type="button">ثبت هشدار قیمت</button>
-            <div id="priceAlertList" class="table-wrap" style="margin-top:12px">هنوز هشداری ثبت نشده است.</div>
-            <p class="small muted">هشدار قیمت بر اساس قیمت زنده‌ای فعال می‌شود که MT5 به Cloudflare ارسال می‌کند. برای دریافت قیمت نمادهای مختلف، باید فید آن نمادها از چارت‌ها یا منبع داده متصل ارسال شود.</p>
+            <div id="pushStatus" class="small muted" aria-live="polite">وضعیت اعلان‌ها در حال بررسی است.</div><div id="notificationList" class="table-wrap" aria-live="polite">برای مشاهده اعلان‌ها وارد حساب ابری شو.</div>
+            <div class="notice-actions" style="justify-content:center;margin:10px 0"><button class="btn" type="button" id="loadMoreNotifications">نمایش اعلان‌های قدیمی‌تر</button></div>
+            <div class="divider" style="margin:16px 0"></div><h4>تنظیمات صدای اعلان‌ها</h4>
+            <div class="form-grid"><div class="field"><label for="soundPrice">صدای هشدار قیمت</label><select id="soundPrice"><option value="digital">دیجیتال</option><option value="soft">ملایم</option><option value="classic">کلاسیک</option><option value="urgent">هشدار برجسته</option><option value="off">بی‌صدا</option></select></div><div class="field"><label for="soundSystem">صدای پیام‌های سیستم</label><select id="soundSystem"><option value="soft">ملایم</option><option value="digital">دیجیتال</option><option value="classic">کلاسیک</option><option value="off">بی‌صدا</option></select></div><div class="field"><label for="soundTrade">صدای رویدادهای معاملاتی</label><select id="soundTrade"><option value="classic">کلاسیک</option><option value="digital">دیجیتال</option><option value="soft">ملایم</option><option value="off">بی‌صدا</option></select></div><div class="field"><label for="soundVolume">شدت صدا: <span id="soundVolumeLabel">70%</span></label><input id="soundVolume" type="range" min="0" max="100" value="70"></div><div class="field"><label for="soundRepeat">تعداد تکرار</label><select id="soundRepeat"><option value="1">یک بار</option><option value="2">دو بار</option><option value="3">سه بار</option></select></div><div class="field"><label for="quietHours">ساعات سکوت</label><select id="quietHours"><option value="off">غیرفعال</option><option value="night">۲۲ تا ۸</option></select></div></div>
+            <div class="notice-actions"><label class="small"><input id="customSoundFile" type="file" accept="audio/*"> صدای اختصاصی (فقط روی همین دستگاه)</label><button class="btn" type="button" id="testNotificationSound">پخش صدای آزمایشی</button><button class="btn primary" type="button" id="saveNotificationSound">ذخیره تنظیمات صدا</button></div>
+            <div class="divider" style="margin:16px 0"></div><h4>ساخت هشدار قیمت</h4><div class="form-grid"><div class="field"><label for="priceAlertSymbol">نماد</label><input id="priceAlertSymbol" placeholder="مثلاً XAUUSD یا BTCUSDT" dir="ltr" maxlength="32"></div><div class="field"><label for="priceAlertCondition">شرط هشدار</label><select id="priceAlertCondition"><option value="ABOVE">عبور به بالای قیمت</option><option value="BELOW">عبور به پایین قیمت</option></select></div><div class="field"><label for="priceAlertTarget">قیمت هدف</label><input id="priceAlertTarget" type="number" min="0" step="any" placeholder="قیمت موردنظر" dir="ltr"></div></div><div class="field"><label style="display:flex;align-items:center;gap:8px"><input id="priceAlertRepeat" type="checkbox" style="width:auto"> هشدار تکرارشونده</label></div><button class="btn primary" id="createPriceAlert" type="button">ثبت هشدار قیمت</button><div id="priceAlertList" class="table-wrap" style="margin-top:12px"></div><p class="small muted">هشدار قیمت بر اساس قیمت زنده MT5 و نمادهای متصل بررسی می‌شود.</p>
           </div>
   </div></div>
   <div id="psychModal" class="modal"><div class="modal-box"><div class="card-head"><h3>تکمیل روان‌شناسی معامله</h3><button class="icon-btn" id="closePsych">✕</button></div><div id="psychSummary" class="pill" style="margin-bottom:13px"></div>
@@ -2615,6 +2615,8 @@ if(document.readyState==='loading')addEventListener('DOMContentLoaded',startDomB
   }
 
   function showLogin() {
+    $('authBootSplash')?.classList.add('hidden');
+    $('loginWrap').classList.remove('auth-checking');
     $('loginWrap').classList.remove('hidden');
     $('appRoot').classList.add('hidden');
     $('mobileNav').classList.add('hidden');
@@ -2692,6 +2694,8 @@ if(document.readyState==='loading')addEventListener('DOMContentLoaded',startDomB
   async function showApp() {
     // Do not reveal an empty workspace until the authenticated cloud state is loaded.
     await loadCloudAppState();
+    $('authBootSplash')?.classList.add('hidden');
+    $('loginWrap').classList.add('auth-checking');
     $('loginWrap').classList.add('hidden');
     $('appRoot').classList.remove('hidden');
     $('mobileNav').classList.remove('hidden');
@@ -2962,7 +2966,7 @@ if(document.readyState==='loading')addEventListener('DOMContentLoaded',startDomB
     try {
       const [n, a] = await Promise.all([cloudflareApi('/api/notifications'), cloudflareApi('/api/price-alerts')]);
       const items = Array.isArray(n.notifications) ? n.notifications : [];
-      const unread = items.filter(x => !x.read_at).length;
+      const unread = Number(n.unread_count ?? items.filter(x => !x.read_at && !x.archived_at).length);
       if ($('notificationUnreadCount')) $('notificationUnreadCount').textContent = enNum(unread) + ' اعلان جدید';
       if ($('bellBadge')) { $('bellBadge').textContent = unread > 99 ? '99+' : enNum(unread); $('bellBadge').classList.toggle('hidden', unread <= 0); }
       if ($('notificationList')) $('notificationList').innerHTML = items.length ? items.map(x => `<div class="notice" style="margin:6px 0"><div style="display:flex;justify-content:space-between;gap:8px"><b>${esc(x.title)}</b><small>${esc(fmtDate(x.created_at))}</small></div><div>${esc(x.message)}</div></div>`).join('') : '<div class="empty">اعلانی ثبت نشده است.</div>';
@@ -3166,6 +3170,9 @@ if(document.readyState==='loading')addEventListener('DOMContentLoaded',startDomB
           errBox.style.display = 'block';
           errBox.textContent = 'بارگذاری اطلاعات فضای ابری انجام نشد: ' + (e?.message || e) + '؛ برای جلوگیری از باز شدن فضای خالی، دوباره تلاش کن.';
         }
+        $('authBootSplash')?.classList.add('hidden');
+        $('loginWrap').classList.remove('auth-checking');
+        showLogin();
         return;
       }
       sessionStorage.removeItem(CLOUD_TOKEN_KEY);
@@ -3428,69 +3435,64 @@ if(document.readyState==='loading')addEventListener('DOMContentLoaded',startDomB
     }
   }
 
-  async function enhancedRefreshNotifications(){
-    if(!getCloudBase() || !getCloudToken()) return;
+  let noticeCache = [], noticeOffset = 0, noticeHasMore = true;
+  const noticeSelected = new Set();
+  const soundDefaults = {price:'digital',system:'soft',trade:'classic',volume:70,repeat:1,quiet:'off',customAudio:''};
+  let customAudioData='';
+  let soundPrefsLoaded=false;
+  function soundKey(){ return 'mindtrader_notice_sound_v1_' + String(getRememberedUsername() || 'account'); }
+  function loadSoundPrefs(){
+    let p={...soundDefaults}; try{p={...p,...JSON.parse(localStorage.getItem(soundKey())||'{}')}}catch(_){} customAudioData=p.customAudio||'';
+    ['soundPrice','soundSystem','soundTrade','soundVolume','soundRepeat','quietHours'].forEach((id,i)=>{const el=$(id);if(el)el.value=[p.price,p.system,p.trade,p.volume,p.repeat,p.quiet][i]});
+    if($('soundVolumeLabel'))$('soundVolumeLabel').textContent=(p.volume||0)+'%';
+  }
+  function currentSoundPrefs(){return {price:$('soundPrice')?.value||'digital',system:$('soundSystem')?.value||'soft',trade:$('soundTrade')?.value||'classic',volume:Number($('soundVolume')?.value||70),repeat:Number($('soundRepeat')?.value||1),quiet:$('quietHours')?.value||'off',customAudio:customAudioData};}
+  function playTone(kind='system'){
+    const p=currentSoundPrefs(), mode=kind==='price'?p.price:kind==='trade'?p.trade:p.system;
+    if(mode==='off'||p.volume<=0)return;
+    const hour=new Date().getHours(); if(p.quiet==='night'&&(hour>=22||hour<8))return;
+    try{const C=window.AudioContext||window.webkitAudioContext;if(!C)return;const ctx=new C();const tones={digital:[880,660],soft:[523,659],classic:[740,587],urgent:[1046,784,1046]};const seq=tones[mode]||tones.digital;let t=ctx.currentTime;for(let r=0;r<Math.max(1,Math.min(3,p.repeat));r++){seq.forEach((f,i)=>{const o=ctx.createOscillator(),g=ctx.createGain();o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(Math.max(.001,p.volume/100*.11),t+i*.13);g.gain.exponentialRampToValueAtTime(.001,t+i*.13+.11);o.connect(g);g.connect(ctx.destination);o.start(t+i*.13);o.stop(t+i*.13+.12)});t+=seq.length*.13+.16;}setTimeout(()=>ctx.close().catch(()=>{}),1500);}catch(_){}}
+  function renderNoticeList(){
+    const q=String($('noticeSearch')?.value||'').trim().toLowerCase(), cat=$('noticeCategory')?.value||'all', read=$('noticeReadFilter')?.value||'all', sort=$('noticeSort')?.value||'newest';
+    let rows=noticeCache.filter(x=>{const hay=[x.title,x.message,x.category,x.payload?.symbol].join(' ').toLowerCase();if(q&&!hay.includes(q))return false;if(cat!=='all'&&String(x.category)!==cat)return false;if(read==='unread'&&x.read_at)return false;if(read==='read'&&!x.read_at)return false;if(read==='archived'&&!x.archived_at)return false;if(read!=='archived'&&x.archived_at)return false;return true;});
+    rows.sort((a,b)=>{const pin=(b.pinned_at?1:0)-(a.pinned_at?1:0);if(pin)return pin;const d=String(a.created_at||'').localeCompare(String(b.created_at||''));return sort==='oldest'?d:-d;});
+    const box=$('notificationList');if(!box)return;
+    box.innerHTML=rows.length?rows.map(x=>{const id=String(x.id),checked=noticeSelected.has(id);const category=x.category==='price_alert'?'هشدار قیمت':String(x.category||'سیستم').startsWith('position_')?'رویداد معامله':'سیستم';return `<article class="notice-item ${x.read_at?'':'is-unread'} ${x.pinned_at?'is-pinned':''}"><input type="checkbox" aria-label="انتخاب اعلان" data-notice-select="${esc(id)}" ${checked?'checked':''}><div><div class="notice-title">${esc(x.title||'اعلان ذهن تریدر')}</div><div class="notice-message">${esc(x.message||'')}</div><div class="notice-meta"><span>${esc(category)}</span><span>${esc(fmtDate(x.created_at))}</span><span>${x.read_at?'خوانده‌شده':'جدید'}</span>${x.pinned_at?'<span>سنجاق‌شده</span>':''}</div></div><div class="notice-tools"><button class="btn" data-notice-read="${esc(id)}">${x.read_at?'خوانده‌شده':'خواندم'}</button><button class="btn" data-notice-pin="${esc(id)}" data-action="${x.pinned_at?'unpin':'pin'}">${x.pinned_at?'برداشتن سنجاق':'سنجاق'}</button><button class="btn" data-notice-archive="${esc(id)}" data-action="${x.archived_at?'unarchive':'archive'}">${x.archived_at?'بازگردانی':'آرشیو'}</button><button class="btn danger" data-notice-delete="${esc(id)}">حذف</button></div></article>`}).join(''):'<div class="notice-empty">اعلانی با این فیلترها پیدا نشد.</div>';
+    if($('loadMoreNotifications'))$('loadMoreNotifications').classList.toggle('hidden',!noticeHasMore);
+    box.querySelectorAll('[data-notice-select]').forEach(el=>el.onchange=()=>{if(el.checked)noticeSelected.add(el.dataset.noticeSelect);else noticeSelected.delete(el.dataset.noticeSelect)});
+    box.querySelectorAll('[data-notice-read]').forEach(el=>el.onclick=()=>noticeAction('read',el.dataset.noticeRead));
+    box.querySelectorAll('[data-notice-pin]').forEach(el=>el.onclick=()=>noticeAction(el.dataset.action,el.dataset.noticePin));
+    box.querySelectorAll('[data-notice-archive]').forEach(el=>el.onclick=()=>noticeAction(el.dataset.action,el.dataset.noticeArchive));
+    box.querySelectorAll('[data-notice-delete]').forEach(el=>el.onclick=()=>{if(confirm('این اعلان حذف شود؟'))noticeAction('delete',el.dataset.noticeDelete)});
+  }
+  async function noticeAction(action,id){try{await callCloud('/api/notifications',{method:'POST',body:JSON.stringify({action,id})});await enhancedRefreshNotifications(true); }catch(e){updatePushStatusText('عملیات اعلان انجام نشد: '+(e?.message||e));}}
+  async function enhancedRefreshNotifications(append=false){
+    if(!getCloudBase()||!getCloudToken())return;
     try{
-      const [nRes, aRes] = await Promise.all([
-        callCloud('/api/notifications'),
-        callCloud('/api/price-alerts')
-      ]);
-      const items = Array.isArray(nRes.notifications) ? nRes.notifications : [];
-      const unread = items.filter(x => !x.read_at).length;
-
-      if($('notificationUnreadCount')){
-        $('notificationUnreadCount').textContent = unread.toLocaleString('en-US') + ' اعلان جدید';
-      }
-      if($('bellBadge')){
-        $('bellBadge').textContent = unread > 99 ? '99+' : unread.toLocaleString('en-US');
-        $('bellBadge').classList.toggle('hidden', unread <= 0);
-      }
-
-      if(initializedNotifs){
-        for(const x of items){
-          const key = String(x.id ?? (x.title + '|' + x.created_at));
-          if(!x.read_at && !seenNotifIds.has(key)){
-            seenNotifIds.add(key);
-            triggerNativeAlert(x);
-          }
-        }
-      }else{
-        items.forEach(x => seenNotifIds.add(String(x.id ?? (x.title + '|' + x.created_at))));
-        initializedNotifs = true;
-      }
-
-      if($('notificationList')){
-        $('notificationList').innerHTML = items.length
-          ? items.map(x => `<div class="notice" style="margin:6px 0"><div style="display:flex;justify-content:space-between;gap:8px"><b>${String(x.title || 'اعلان')}</b><small>${String(x.created_at || '')}</small></div><div>${String(x.message || '')}</div></div>`).join('')
-          : '<div class="empty">اعلانی ثبت نشده است.</div>';
-      }
-
-      const alerts = Array.isArray(aRes.alerts) ? aRes.alerts : [];
-      if($('priceAlertList')){
-        $('priceAlertList').innerHTML = alerts.length
-          ? alerts.map(x => `<div class="notice" style="margin:6px 0;display:flex;justify-content:space-between;align-items:center;gap:8px"><b dir="ltr">${String(x.symbol || '')} ${x.condition === 'ABOVE' ? '≥' : '≤'} ${Number(x.target_price || 0)}</b><button type="button" class="btn danger" style="padding:4px 8px;font-size:10px" data-del-alert="${String(x.id || '')}">حذف</button></div>`).join('')
-          : '<div class="empty">هشداری ثبت نشده است.</div>';
-        $('priceAlertList').querySelectorAll('[data-del-alert]').forEach(btn => {
-          btn.onclick = async () => {
-            const aid = btn.dataset.delAlert;
-            if(!aid) return;
-            try{
-              await callCloud('/api/price-alerts', {
-                method: 'POST',
-                body: JSON.stringify({ action: 'delete', id: aid })
-              });
-              await enhancedRefreshNotifications();
-            }catch(e){
-              updatePushStatusText('حذف هشدار ناموفق بود: ' + (e?.message || e));
-            }
-          };
-        });
-      }
-    }catch(e){
-      updatePushStatusText('خطا در دریافت اعلان‌ها: ' + (e?.message || e));
-    }
+      if(!append)noticeOffset=0;
+      const [nRes,aRes,pRes]=await Promise.all([callCloud('/api/notifications?limit=100&offset='+noticeOffset),callCloud('/api/price-alerts'),callCloud('/api/notification-preferences')]);
+      if(!soundPrefsLoaded&&pRes.preferences&&Object.keys(pRes.preferences).length){const prefs={...soundDefaults,...pRes.preferences};customAudioData=prefs.customAudio||'';['soundPrice','soundSystem','soundTrade','soundVolume','soundRepeat','quietHours'].forEach((id,i)=>{if($(id))$(id).value=[prefs.price,prefs.system,prefs.trade,prefs.volume,prefs.repeat,prefs.quiet][i]});if($('soundVolumeLabel'))$('soundVolumeLabel').textContent=prefs.volume+'%';soundPrefsLoaded=true;}
+      const items=Array.isArray(nRes.notifications)?nRes.notifications:[];
+      if(append)noticeCache=[...noticeCache,...items];else noticeCache=items;
+      noticeHasMore=Boolean(nRes.has_more);const unread=Number(nRes.unread_count??noticeCache.filter(x=>!x.read_at&&!x.archived_at).length);
+      if($('notificationUnreadCount'))$('notificationUnreadCount').textContent=unread.toLocaleString('en-US')+' خوانده‌نشده';
+      if($('bellBadge')){$('bellBadge').textContent=unread>99?'99+':unread.toLocaleString('en-US');$('bellBadge').classList.toggle('hidden',unread<=0)}
+      if(initializedNotifs){for(const x of items){const key=String(x.id??(x.title+'|'+x.created_at));if(!x.read_at&&!seenNotifIds.has(key)){seenNotifIds.add(key);const kind=x.category==='price_alert'?'price':String(x.category||'').startsWith('position_')?'trade':'system';playTone(kind);if('Notification'in window&&Notification.permission==='granted'&&document.visibilityState==='hidden'){try{new Notification(String(x.title||'اعلان ذهن تریدر'),{body:String(x.message||''),tag:'zt-'+key})}catch(_){}}}}}else{items.forEach(x=>seenNotifIds.add(String(x.id??(x.title+'|'+x.created_at))));initializedNotifs=true;}
+      renderNoticeList();
+      const alerts=Array.isArray(aRes.alerts)?aRes.alerts:[];if($('priceAlertList')){$('priceAlertList').innerHTML=alerts.length?alerts.map(x=>`<div class="notice" style="margin:6px 0;display:flex;justify-content:space-between;align-items:center;gap:8px"><b dir="ltr">${esc(x.symbol)} ${x.condition==='ABOVE'?'≥':'≤'} ${enNum(x.target_price)}</b><button type="button" class="btn danger" data-del-alert="${esc(x.id)}">حذف</button></div>`).join(''):'<div class="empty">هشداری ثبت نشده است.</div>';$('priceAlertList').querySelectorAll('[data-del-alert]').forEach(btn=>btn.onclick=async()=>{try{await callCloud('/api/price-alerts',{method:'POST',body:JSON.stringify({action:'delete',id:btn.dataset.delAlert})});await enhancedRefreshNotifications(false)}catch(e){updatePushStatusText('حذف هشدار ناموفق بود: '+e.message)}})}
+    }catch(e){updatePushStatusText('خطا در دریافت اعلان‌ها: '+(e?.message||e));}
   }
 
+  loadSoundPrefs();
+  ['noticeSearch','noticeCategory','noticeReadFilter','noticeSort'].forEach(id=>$(id)?.addEventListener(id==='noticeSearch'?'input':'change',renderNoticeList));
+  $('soundVolume')?.addEventListener('input',()=>{if($('soundVolumeLabel'))$('soundVolumeLabel').textContent=$('soundVolume').value+'%'});
+  $('customSoundFile')?.addEventListener('change',()=>{const f=$('customSoundFile').files?.[0];if(!f)return;if(f.size>300000){updatePushStatusText('فایل صدا باید کمتر از 300 کیلوبایت باشد.');$('customSoundFile').value='';return;}const r=new FileReader();r.onload=()=>{customAudioData=String(r.result||'');updatePushStatusText('صدای اختصاصی انتخاب شد؛ برای همگام‌سازی روی همه دستگاه‌ها ذخیره تنظیمات را بزن.');};r.readAsDataURL(f);});
+  $('saveNotificationSound')?.addEventListener('click',async()=>{try{const prefs=currentSoundPrefs();localStorage.setItem(soundKey(),JSON.stringify(prefs));await callCloud('/api/notification-preferences',{method:'PUT',body:JSON.stringify({preferences:prefs})});updatePushStatusText('تنظیمات صدا در فضای ابری ذخیره شد و با دستگاه‌های دیگر همگام می‌شود.')}catch(e){updatePushStatusText('ذخیره ابری تنظیمات ناموفق بود: '+(e?.message||e))}});
+  $('testNotificationSound')?.addEventListener('click',()=>playTone('price'));
+  $('loadMoreNotifications')?.addEventListener('click',()=>{noticeOffset+=100;enhancedRefreshNotifications(true)});
+  $('archiveSelectedNotifications')?.addEventListener('click',async()=>{if(!noticeSelected.size)return updatePushStatusText('ابتدا اعلان‌ها را انتخاب کن.');try{await callCloud('/api/notifications',{method:'POST',body:JSON.stringify({action:'archive_many',ids:[...noticeSelected]})});noticeSelected.clear();await enhancedRefreshNotifications(false)}catch(e){updatePushStatusText(e.message)}});
+  $('deleteSelectedNotifications')?.addEventListener('click',async()=>{if(!noticeSelected.size)return updatePushStatusText('ابتدا اعلان‌ها را انتخاب کن.');if(!confirm('اعلان‌های انتخاب‌شده برای همیشه حذف شوند؟'))return;try{await callCloud('/api/notifications',{method:'POST',body:JSON.stringify({action:'delete_many',ids:[...noticeSelected]})});noticeSelected.clear();await enhancedRefreshNotifications(false)}catch(e){updatePushStatusText(e.message)}});
+  $('exportNotifications')?.addEventListener('click',()=>{const rows=[['زمان','دسته','عنوان','پیام','وضعیت'],...noticeCache.map(x=>[x.created_at,x.category,x.title,x.message,x.read_at?'خوانده‌شده':'خوانده‌نشده'])];const csv='\ufeff'+rows.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='mindtrader-notifications.csv';a.click();URL.revokeObjectURL(a.href)});
   $('enableBrowserNotifications')?.addEventListener('click', async () => {
     if(!('Notification' in window)){
       updatePushStatusText('این مرورگر از اعلان‌های سیستمی پشتیبانی نمی‌کند.');
@@ -3572,7 +3574,7 @@ if(document.readyState==='loading')addEventListener('DOMContentLoaded',startDomB
 
   $('markAllNotificationsRead')?.addEventListener('click', async () => {
     try{
-      await callCloud('/api/notifications/read-all', { method: 'POST', body: JSON.stringify({}) });
+      await callCloud('/api/notifications', { method: 'POST', body: JSON.stringify({ action: 'read_all' }) });
       await enhancedRefreshNotifications();
       updatePushStatusText('همه اعلان‌ها به‌عنوان خوانده‌شده علامت خوردند.');
     }catch(e){
