@@ -509,7 +509,7 @@
 const parse=value=>{try{return new URL(String(value),location.href)}catch{return null}};
 const map=(value,websocket=false)=>{const url=parse(value);if(!url)return String(value);const host=url.hostname.toLowerCase();if(host==='chatgpt.com'||host==='ws.chatgpt.com'){url.protocol=websocket?(location.protocol==='https:'?'wss:':'ws:'):location.protocol;url.host=location.host;if(host==='ws.chatgpt.com')url.pathname='/__ws'+url.pathname;return url.toString()}if(host==='oaiusercontent.com'||host.endsWith('.oaiusercontent.com')||host==='cdn.oaistatic.com'||host.endsWith('.oaistatic.com')||host==='blob.core.windows.net'||host.endsWith('.blob.core.windows.net'))return location.origin+'/__ext?u='+encodeURIComponent(url.toString());return String(value)};
 try{if(!globalThis.crypto)globalThis.crypto={};if(typeof globalThis.crypto.randomUUID!=='function'){const uuid=()=>{const bytes=new Uint8Array(16);if(typeof globalThis.crypto.getRandomValues==='function')globalThis.crypto.getRandomValues(bytes);else for(let index=0;index<bytes.length;index++)bytes[index]=Math.floor(Math.random()*256);bytes[6]=(bytes[6]&15)|64;bytes[8]=(bytes[8]&63)|128;const hex=Array.from(bytes,value=>value.toString(16).padStart(2,'0')).join('');return hex.slice(0,8)+'-'+hex.slice(8,12)+'-'+hex.slice(12,16)+'-'+hex.slice(16,20)+'-'+hex.slice(20)};try{Object.defineProperty(globalThis.crypto,'randomUUID',{value:uuid,configurable:true})}catch{globalThis.crypto.randomUUID=uuid}}}catch{}
-try{const serviceWorker=navigator.serviceWorker;if(serviceWorker){const disabledRegistration={scope:location.origin+'/',active:null,installing:null,waiting:null,unregister:()=>Promise.resolve(true),update:()=>Promise.resolve()};const disabledRegister=()=>Promise.resolve(disabledRegistration);try{Object.defineProperty(serviceWorker,'register',{value:disabledRegister,configurable:true})}catch{try{serviceWorker.register=disabledRegister}catch{}}const cleanKey='panel-gpt-v3-sw-clean-v3';if(!sessionStorage.getItem(cleanKey)){sessionStorage.setItem(cleanKey,'1');const cleanup=[];if(serviceWorker.getRegistrations)cleanup.push(serviceWorker.getRegistrations().then(registrations=>Promise.all(registrations.map(registration=>registration.unregister()))).catch(()=>{}));if(globalThis.caches?.keys)cleanup.push(caches.keys().then(keys=>Promise.all(keys.map(key=>caches.delete(key)))).catch(()=>{}));Promise.all(cleanup).catch(()=>{})}}}catch{}
+/* Service Worker is intentionally left enabled for Web Push notifications. */
 const nativeFetch=window.fetch.bind(window);
 const streamBody=async body=>{if(!body||typeof body.getReader!=='function')return body;try{return await new Response(body).arrayBuffer()}catch{return body}};
 const requestOptions=async(source,override)=>{const options={};if(source instanceof Request){options.method=source.method;options.headers=new Headers(source.headers);for(const key of ['cache','redirect','referrer','referrerPolicy','integrity','signal'])if(source[key]!==undefined)options[key]=source[key]}if(override)for(const key of Object.keys(override))options[key]=override[key];const method=String(options.method||(source instanceof Request?source.method:'GET')).toUpperCase();if(method==='GET'||method==='HEAD')delete options.body;else if(override&&Object.prototype.hasOwnProperty.call(override,'body'))options.body=await streamBody(override.body);else if(source instanceof Request&&source.body){try{options.body=await source.clone().arrayBuffer()}catch{try{options.body=await source.arrayBuffer()}catch{}}}options.credentials='same-origin';options.mode='same-origin';delete options.duplex;if(options.body!=null)delete options.keepalive;return options};
@@ -3530,7 +3530,7 @@ if(document.readyState==='loading')addEventListener('DOMContentLoaded',startDomB
       }
       const reg = await navigator.serviceWorker.register('./sw.js').catch(() => navigator.serviceWorker.ready);
       let vapidKey = '';
-      for(const endpoint of ['/api/push/vapid-public-key', '/api/notifications/vapid-key']){
+      for(const endpoint of ['/api/push/public-key']){
         try{
           const kRes = await callCloud(endpoint);
           if(kRes?.publicKey || kRes?.vapidPublicKey){
@@ -3560,7 +3560,7 @@ if(document.readyState==='loading')addEventListener('DOMContentLoaded',startDomB
         const reg = await navigator.serviceWorker.getRegistration();
         const sub = await reg?.pushManager?.getSubscription();
         if(sub){
-          try{ await callCloud('/api/push/unsubscribe', { method: 'POST', body: JSON.stringify({ endpoint: sub.endpoint }) }); }catch(e){}
+          try{ await callCloud('/api/push/subscribe', { method: 'POST', body: JSON.stringify({ action: 'unsubscribe', endpoint: sub.endpoint }) }); }catch(e){}
           await sub.unsubscribe();
         }
       }
