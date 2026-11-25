@@ -1,6 +1,567 @@
 <!doctype html>
 <html lang="fa" dir="rtl">
-<head>
+<head><link data-panel-gpt-v3="work-policy" rel="stylesheet" href="/__ui-policy/v0.1.6/work.css"><script data-panel-gpt-v3="work-policy-controller">(() => {
+  let enabled = false;
+  let observer;
+  let restoreQueued = false;
+  let restoreTimer;
+  let restoreAttempts = 0;
+  let restoreRetryAt = 0;
+  // A click on server-rendered HTML can be ignored until the app hydrates.
+  // Retry only while Work is still selected, with a finite, per-page budget.
+  // DOM replacement/mutation must not replenish this budget or accelerate it.
+  const restoreDelays = [500, 1000, 2000, 4000, 8000];
+  let pendingFile = false;
+  const marked = new Set();
+  const linkSelector = 'link[data-panel-gpt-v3="work-policy"]';
+  const controlSelector = 'button,a,[role="button"],[role="menuitem"],[role="menuitemradio"],[role="radio"],[role="tab"],[role="checkbox"]';
+  const composerModeSelector = '[aria-label="Composer mode"]';
+  const messageSelector = '[data-message-author-role],article[data-testid^="conversation-turn"]';
+  const normalize = value => (value || '').trim().replace(/\s+/g, ' ').toLowerCase();
+  // Exact entry labels are a fallback for upstream promotional buttons lacking
+  // stable attributes. Never match message text or generic words like "work".
+  const labels = new Set(['try work', 'try chatgpt work', 'open in work', 'continue in work', 'try in work', 'switch to work', 'try chatgpt work now']);
+  const chatLabels = new Set(['back to chatgpt', 'switch to chatgpt', 'return to chatgpt']);
+  const modeLabel = element => normalize(element.getAttribute('aria-label') || element.textContent);
+  const composerModePair = element => {
+    // Bare "Work" is meaningful only in the named Chat/Work mode selector,
+    // never in a message, project title or an unrelated checkbox group.
+    const group = element.closest?.(composerModeSelector);
+    if (!group || group.closest(messageSelector)) return {};
+    const controls = [...group.querySelectorAll(controlSelector)].filter(control => control.closest(composerModeSelector) === group);
+    const chat = controls.find(control => modeLabel(control) === 'chat');
+    const work = controls.find(control => modeLabel(control) === 'work');
+    return chat && work ? { chat, work } : {};
+  };
+  const isEntry = element => {
+    // Message links may quote the same labels or point to Work documentation.
+    // Fallback matching is only for upstream UI, never conversation content.
+    if (element.closest?.(messageSelector)) return false;
+    if (element.matches?.('[data-tpp-toggle-value="work"]')) return true;
+    if (modeLabel(element) === 'work' && composerModePair(element).work === element) return true;
+    if (labels.has(normalize(element.getAttribute('aria-label'))) || labels.has(normalize(element.textContent))) return true;
+    // A current-surface menu trigger is also named ChatGPT Work: leave that
+    // trigger available so the user can switch back without losing a draft.
+    if (normalize(element.textContent) === 'chatgpt work' && !element.hasAttribute('aria-haspopup') &&
+        element.matches('[role="menuitem"],[role="menuitemradio"],[role="radio"],[role="tab"]')) return true;
+    if (element.tagName === 'A') {
+      try {
+        const url = new URL(element.href, location.href);
+        return url.origin === location.origin && (url.pathname === '/work' || url.pathname.startsWith('/work/') || url.searchParams.get('mode') === 'work');
+      } catch {}
+    }
+    return false;
+  };
+  const mark = element => {
+    if (!element?.matches?.(controlSelector)) return;
+    if (isEntry(element)) {
+      element.setAttribute('data-panel-work-entry', '');
+      marked.add(element);
+    } else if (marked.delete(element)) {
+      // React can reuse the same node for a different, ordinary control.
+      element.removeAttribute('data-panel-work-entry');
+    }
+  };
+  const scan = root => {
+    if (enabled) return;
+    mark(root);
+    root.querySelectorAll?.(controlSelector).forEach(mark);
+  };
+  const preferChat = () => {
+    // Only this UI preference, never auth cookies, drafts or other local data.
+    try {
+      const mode = localStorage.getItem('oai/apps/tpp/chat-surface-mode');
+      if (mode === '"work"' || mode === 'work') localStorage.setItem('oai/apps/tpp/chat-surface-mode', mode === 'work' ? 'chatgpt' : '"chatgpt"');
+    } catch {}
+    // Cookie access may still succeed when localStorage is disabled.
+    try {
+      if (document.cookie.split(';').some(value => value.trim() === 'oai-chat-surface-mode=work')) document.cookie = 'oai-chat-surface-mode=chatgpt; Path=/; SameSite=Lax; Secure';
+    } catch {}
+  };
+  const isSelected = element => element.matches('[aria-checked="true"],[aria-selected="true"],[aria-pressed="true"],[data-state="active"],[data-state="checked"]');
+  const isAvailable = element => element && !element.closest(messageSelector + ',[inert]') && !element.matches(':disabled,[aria-disabled="true"]') && element.getClientRects().length > 0;
+  const nativeChatSwitch = () => {
+    const active = [...document.querySelectorAll('[data-tpp-toggle-value="work"]')].find(element => !element.closest(messageSelector) && isSelected(element));
+    if (active) return { active, chat: [...document.querySelectorAll('[data-tpp-toggle-value="chatgpt"]')].find(isAvailable) };
+    for (const group of document.querySelectorAll(composerModeSelector)) {
+      const { work, chat } = composerModePair(group);
+      if (work && isSelected(work) && isAvailable(chat)) return { active: work, chat };
+    }
+    // Newer home screens have no old two-part toggle. Recognize the exact Work
+    // welcome heading only on a landing route, never arbitrary message text.
+    const heading = [...document.querySelectorAll('h1,[role="heading"]')].find(element =>
+      !element.closest(messageSelector) && normalize(element.textContent) === 'what should we work on?');
+    if (!heading || !document.querySelector('#prompt-textarea')) return {};
+    const explicit = [...document.querySelectorAll(controlSelector)].find(element => isAvailable(element) &&
+      (chatLabels.has(normalize(element.textContent)) || chatLabels.has(normalize(element.getAttribute('aria-label')))));
+    if (explicit) return { active: heading, chat: explicit };
+    // A plain ChatGPT label is only a switch when the same header/navigation
+    // group also identifies ChatGPT Work. Never click a profile/menu item just
+    // because its label mentions ChatGPT, and never open menus automatically.
+    for (const group of document.querySelectorAll('header,nav,[role="navigation"],[role="radiogroup"],[role="tablist"]')) {
+      if (group.closest(messageSelector)) continue;
+      const controls = [...group.querySelectorAll(controlSelector)];
+      if (!controls.some(element => normalize(element.textContent) === 'chatgpt work')) continue;
+      const chat = controls.find(element => normalize(element.textContent) === 'chatgpt' && isAvailable(element));
+      if (chat) return { active: heading, chat };
+    }
+    return {};
+  };
+  const hasDraftOrTask = () => {
+    if (pendingFile || document.querySelector(messageSelector + ',[data-testid="stop-button"],[data-testid="stop-task-button"]')) return true;
+    // Textarea/input value is not textContent; check all editable fields so a
+    // Work task name or another draft cannot be silently abandoned either.
+    for (const input of document.querySelectorAll('textarea,input:not([type]),input[type="text"],input[type="search"],[contenteditable="true"]')) {
+      if ((('value' in input ? input.value : input.textContent) || '').trim()) return true;
+    }
+    if ([...document.querySelectorAll('input[type="file"]')].some(input => input.files?.length)) return true;
+    if (document.querySelector('[data-file-id],[data-testid^="attachment"],[aria-label^="Remove attachment"],[aria-label^="Remove file"]')) return true;
+    const composer = document.querySelector('#prompt-textarea')?.closest('form');
+    return !!composer?.querySelector('img,video,audio');
+  };
+  const cancelRestoreTimer = () => {
+    clearTimeout(restoreTimer);
+    restoreTimer = undefined;
+  };
+  const resetRestore = () => {
+    cancelRestoreTimer();
+    restoreAttempts = 0;
+    restoreRetryAt = 0;
+  };
+  const chatIsSelected = () => {
+    const chat = [...document.querySelectorAll('[data-tpp-toggle-value="chatgpt"]')].find(element => isAvailable(element) && isSelected(element));
+    if (chat) return true;
+    for (const group of document.querySelectorAll(composerModeSelector)) {
+      const pair = composerModePair(group);
+      if (pair.chat && isAvailable(pair.chat) && isSelected(pair.chat) && !isSelected(pair.work)) return true;
+    }
+    return [...document.querySelectorAll('[aria-label="Switch mode, current mode: ChatGPT"]')].some(isAvailable);
+  };
+  const scheduleRestore = () => {
+    if (enabled || restoreTimer !== undefined || restoreAttempts > restoreDelays.length) return;
+    restoreTimer = setTimeout(() => {
+      restoreTimer = undefined;
+      restoreIdleChat();
+    }, Math.max(0, restoreRetryAt - performance.now()));
+  };
+  const restoreIdleChat = () => {
+    if (enabled || restoreQueued) return;
+    restoreQueued = true;
+    queueMicrotask(() => {
+      restoreQueued = false;
+      // Parsing completion is necessary, but is not proof of React hydration.
+      // Each later attempt rechecks policy, route, drafts, tasks and files.
+      if (enabled || !['/', '/work', '/work/'].includes(location.pathname) || hasDraftOrTask()) {
+        cancelRestoreTimer();
+        return;
+      }
+      if (document.readyState === 'loading') return;
+      // Some upstream releases can render a Work shell with no composer when
+      // the account bootstrap failed. There is no native Chat switch in that
+      // error view, so a bounded root reload is the safe recovery: it replays
+      // the server-side Chat preference without touching drafts, messages or
+      // authentication cookies. Never do this on a task, conversation, or
+      // page with any editable/upload state.
+      if (normalizeBrokenWorkLanding()) return;
+      // A conversation may still be hydrating before its messages are present.
+      // Surface recovery is only allowed on a new-chat landing page.
+      const { active, chat } = nativeChatSwitch();
+      if (!active) {
+        // A temporarily removed Work node is not proof of successful recovery.
+        if (chatIsSelected()) resetRestore();
+        else cancelRestoreTimer();
+        return;
+      }
+      // Use the application's own switch. Never reload, rewrite history, or
+      // synthesize a new chat just because upstream changed its navigation UI.
+      // Observe the selected mode on a later pass instead of treating click()
+      // as success. At most six attempts; no polling on normal Chat pages.
+      if (!chat || restoreAttempts > restoreDelays.length) return;
+      if (performance.now() < restoreRetryAt) { scheduleRestore(); return; }
+      preferChat();
+      const delay = restoreDelays[restoreAttempts];
+      restoreAttempts++;
+      restoreRetryAt = performance.now() + (delay || 0);
+      chat.click();
+      if (delay) scheduleRestore();
+    });
+  };
+  const normalizeBrokenWorkLanding = () => {
+    if (enabled || location.pathname !== '/' || hasDraftOrTask()) return false;
+    const title = String(document.title || '');
+    const body = String(document.body?.innerText || '').slice(0, 6000);
+    // Some upstream builds keep the tab title as "ChatGPT" while the
+    // rendered surface header still says "ChatGPT Work". Inspect the landing
+    // markup too, but only alongside the exact bootstrap error and root route.
+    if (!/chatgpt\s+work/i.test(`${title}\n${body}`) || !/couldn[’']t\s+load\s+your\s+account|unable\s+to\s+load\s+your\s+account/i.test(body)) return false;
+    try {
+      if (sessionStorage.getItem('panel-work-broken-landing-retried') === '1') return false;
+      sessionStorage.setItem('panel-work-broken-landing-retried', '1');
+    } catch { return false; }
+    preferChat();
+    location.replace('/');
+    return true;
+  };
+  const apply = next => {
+    enabled = next;
+    resetRestore();
+    document.documentElement?.toggleAttribute('data-panel-work-blocked', !enabled);
+    if (enabled) {
+      observer?.disconnect(); observer = undefined;
+      marked.forEach(element => element.removeAttribute('data-panel-work-entry')); marked.clear();
+      document.querySelectorAll(linkSelector).forEach(link => link.remove());
+      return;
+    }
+    preferChat();
+    if (!document.querySelector(linkSelector)) {
+      const link = document.createElement('link');
+      link.setAttribute('data-panel-gpt-v3', 'work-policy');link.rel='stylesheet';link.href='/__ui-policy/v0.1.6/work.css';
+      (document.head || document.documentElement).appendChild(link);
+    }
+    scan(document);
+    restoreIdleChat();
+    if (!observer && document.documentElement) {
+      observer = new MutationObserver(records => {
+        for (const record of records) {
+          // Only new/changed entry controls are examined, not every message.
+          mark(record.target?.closest?.(controlSelector));
+          const modeGroup = record.target?.closest?.(composerModeSelector);
+          if (modeGroup) scan(modeGroup);
+          if (record.type === 'attributes') scan(record.target);
+          record.addedNodes.forEach(scan);
+        }
+        for (const element of marked) if (!element.isConnected) marked.delete(element);
+        restoreIdleChat();
+      });
+      observer.observe(document.documentElement,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['href','aria-label','aria-checked','aria-selected','aria-pressed','aria-disabled','disabled','data-state','data-tpp-toggle-value','data-message-author-role','data-testid']});
+    }
+  };
+  document.addEventListener('click',event => {
+    if (enabled) return;
+    const control=event.target?.closest?.(controlSelector);
+    if (control && isEntry(control)) { event.preventDefault();event.stopImmediatePropagation(); }
+  },true);
+  // File selections can live in React state after their input is cleared. Once
+  // observed, conservatively leave this page alone, even if the preview moves.
+  document.addEventListener('change', event => {
+    if (event.target?.matches?.('input[type="file"]') && event.target.files?.length) pendingFile = true;
+  }, true);
+  for (const type of ['drop', 'paste']) document.addEventListener(type, event => {
+    if ((event.dataTransfer || event.clipboardData)?.files?.length) pendingFile = true;
+  }, true);
+  document.addEventListener('input', restoreIdleChat, true);
+  document.addEventListener('DOMContentLoaded', restoreIdleChat, {once:true});
+  addEventListener('pagehide', cancelRestoreTimer);
+  addEventListener('pageshow', restoreIdleChat);
+  addEventListener('panel-work-policy-state',event=>{
+    if (typeof event.detail?.enabled === 'boolean' && event.detail.enabled !== enabled) apply(event.detail.enabled);
+  });
+  apply(enabled);
+})();
+</script><link data-panel-gpt-v3="ui-policy" rel="stylesheet" href="/__ui-policy/v0.1.7/safe.css"><script data-panel-gpt-v3="ui-policy-entries">(() => {
+  // Presentation only. Recognize exact menu labels where upstream provides no
+  // stable href/test-id. CSS owns hiding; no request/history/composer hooks.
+  let enabled = true;
+  let observer = null;
+  const marker = 'data-panel-safe-entry';
+  const menuEntries = '[role="menuitem"], [role="option"], div.__menu-item';
+  const controls = 'button, a, [role="button"]';
+  const candidates = menuEntries + ', ' + controls;
+  const protectedArea = 'article, [data-message-author-role], [contenteditable="true"], #prompt-textarea';
+  const labels = new Set(['settings', 'personalization', 'workspace settings', 'memory',
+    'account settings', 'manage workspace', 'invite team members', 'add teammates',
+    'تنظیمات', 'شخصی‌سازی', 'شخصی سازی', 'تنظیمات فضای کاری', 'حافظه']);
+  const clean = value => (value || '').replace(/\s+/g, ' ').trim().toLowerCase();
+  function classify(element) {
+    if (element.closest(protectedArea)) return;
+    const inMenu = element.closest('[role="menu"], [role="listbox"]') || element.matches('div.__menu-item');
+    const isMenuEntry = inMenu && element.matches(menuEntries);
+    // Slash rows may put a description after the title. Only use whole text
+    // or an exact direct title node, never a substring anywhere in the row.
+    const names = [element.getAttribute('aria-label'), element.textContent];
+    for (const child of element.children) {
+      names.push(child.textContent);
+      for (const title of child.children) if (title.tagName !== 'SVG') names.push(title.textContent);
+    }
+    // Current composer buttons nest their title several spans deep in this
+    // stable row. Read only its first real text, skipping icon/style text;
+    // the following description must not identify a different action.
+    const menuRow = element.querySelector(':scope > [data-menu-row-content="true"]');
+    if (menuRow) {
+      const walker = document.createTreeWalker(menuRow, NodeFilter.SHOW_TEXT);
+      for (let title = walker.nextNode(); title; title = walker.nextNode()) {
+        if (title.parentElement?.closest('svg, style, script, [aria-hidden="true"], .leadingIcon')) continue;
+        if (!clean(title.nodeValue)) continue;
+        names.push(title.nodeValue);
+        break;
+      }
+    }
+    const exactNames = names.map(clean);
+    // The current composer picker is a plain button with a title and a
+    // description, not a menuitem or a #library sprite. Match only the exact
+    // action on an interactive entry; never its popover/dialog container.
+    const isLibraryEntry = (isMenuEntry || element.matches(controls)) &&
+      (exactNames.includes('add from library') ||
+        ((inMenu || element.closest('nav, [role="navigation"]')) && exactNames.includes('library')));
+    if (isLibraryEntry) element.setAttribute(marker, 'library');
+    else if (isMenuEntry && exactNames.some(name => labels.has(name))) element.setAttribute(marker, 'settings');
+    else if (['settings', 'library'].includes(element.getAttribute(marker))) element.removeAttribute(marker);
+  }
+  function scan(root) {
+    if (!enabled || !root?.querySelectorAll || root.closest?.(protectedArea)) return;
+    if (root.matches?.(candidates)) classify(root);
+    root.querySelectorAll(candidates).forEach(classify);
+    const menus = root.matches?.('[role="menu"]') ? [root] : root.querySelectorAll('[role="menu"]');
+    for (const menu of menus) {
+      const owner = document.getElementById(menu.getAttribute('aria-labelledby') || '');
+      if (owner?.getAttribute('aria-label') !== 'Open profile menu') continue;
+      const first = menu.querySelector('[role="menuitem"]');
+      // Current profile menu's first submenu is the shared account/workspace
+      // identity chooser. Do not affect Help or other menu submenus.
+      if (first?.getAttribute('aria-haspopup') === 'menu') first.setAttribute(marker, 'account');
+    }
+  }
+  function start() {
+    if (!enabled || !document.body) return;
+    scan(document.body);
+    if (observer) return;
+    observer = new MutationObserver(records => {
+      for (const record of records) {
+        if (record.target.nodeType === 1 && record.target.closest(protectedArea)) continue;
+        const row = record.target.parentElement?.closest(candidates) || record.target.closest?.(candidates);
+        if (row) classify(row);
+        for (const node of record.addedNodes) if (node.nodeType === 1) scan(node);
+      }
+    });
+    // Only added fragments and changed controls are inspected; no full rescan per
+    // streamed token and no attributes/characterData observer.
+    observer.observe(document.body, { childList: true, subtree: true });
+  }
+  addEventListener('panel-ui-policy-state', event => {
+    if (typeof event.detail?.enabled !== 'boolean') return;
+    enabled = event.detail.enabled;
+    if (enabled) start();
+    else {
+      observer?.disconnect(); observer = null;
+      document.querySelectorAll('[' + marker + ']').forEach(element => element.removeAttribute(marker));
+    }
+  });
+  document.addEventListener('DOMContentLoaded', start, { once: true });
+  start();
+})();
+</script><script data-panel-gpt-v3="ui-policy-controller">(() => {
+  // Only our stylesheet is managed here. No chat requests, history methods,
+  // composer elements or upstream DOM are intercepted or changed.
+  const selector = 'link[data-panel-gpt-v3="ui-policy"]';
+  let pending = false;
+  let enabled = document.querySelectorAll(selector).length > 0;
+  let current = null;
+  let retry = null;
+  let watchdog = null;
+  let attempts = 0;
+  let headObserver = null;
+  const delays = [500, 1500, 4000];
+  const watched = new WeakSet();
+  const failed = new WeakSet();
+
+  const loaded = link => {
+    try { return !!link.sheet?.cssRules?.length; } catch { return false; }
+  };
+  const cancelTimers = () => {
+    clearTimeout(retry); clearTimeout(watchdog);
+    retry = watchdog = null;
+  };
+  const recover = () => {
+    if (!enabled || retry !== null || attempts >= delays.length) return;
+    retry = setTimeout(() => {
+      retry = null;
+      if (!enabled) return;
+      if (current && loaded(current) && Array.from(document.querySelectorAll(selector)).includes(current)) return;
+      clearTimeout(watchdog); watchdog = null;
+      document.querySelectorAll(selector).forEach(link => link.remove());
+      current = null;
+      ensure();
+    }, delays[attempts++]);
+  };
+  const inspect = link => {
+    if (!enabled || current !== link) return;
+    if (loaded(link)) { cancelTimers(); return; }
+    if (failed.has(link) || link.sheet) recover();
+  };
+  const ensure = () => {
+    if (!enabled) return;
+    let link = document.querySelectorAll(selector)[0];
+    if (!link) {
+      link = document.createElement('link');
+      link.setAttribute('data-panel-gpt-v3', 'ui-policy');
+      link.rel = 'stylesheet';
+      link.href = '/__ui-policy/v0.1.7/safe.css' + (attempts ? '?retry=' + attempts : '');
+    }
+    current = link;
+    if (!watched.has(link)) {
+      watched.add(link);
+      link.addEventListener('load', () => { failed.add(link); inspect(link); });
+      link.addEventListener('error', () => { failed.add(link); inspect(link); });
+      clearTimeout(watchdog);
+      // Also recover a stalled load or an SSR link whose error preceded us.
+      watchdog = setTimeout(() => { failed.add(link); inspect(link); }, 6000);
+    }
+    if (!link.parentNode) (document.head || document.documentElement).appendChild(link);
+    inspect(link);
+    if (!headObserver && document.head && typeof MutationObserver !== 'undefined') {
+      headObserver = new MutationObserver(() => {
+        if (enabled && !document.querySelectorAll(selector).length) recover();
+      });
+      // Observe only stylesheet removal, never streaming messages/composer.
+      headObserver.observe(document.head, { childList: true });
+    }
+  };
+
+  const apply = next => {
+    enabled = next;
+    if (!enabled) {
+      cancelTimers();
+      headObserver?.disconnect(); headObserver = null;
+      document.querySelectorAll(selector).forEach(link => link.remove());
+      current = null;
+    } else {
+      // A later explicit page event may retry after a previous bounded failure.
+      if (retry === null) attempts = 0;
+      ensure();
+    }
+    dispatchEvent(new CustomEvent('panel-ui-policy-state', { detail: { enabled } }));
+  };
+
+  const sync = async () => {
+    if (pending || document.visibilityState === 'hidden') return;
+    pending = true;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 4000);
+    try {
+      const response = await fetch('/__ui-policy/state', {
+        credentials: 'same-origin', cache: 'no-store',
+        headers: { Accept: 'application/json' }, signal: controller.signal
+      });
+      if (!response.ok) return;
+      const state = await response.json();
+      if (typeof state.enabled === 'boolean') apply(state.enabled);
+      if (typeof state.workEnabled === 'boolean') dispatchEvent(new CustomEvent('panel-work-policy-state', { detail: { enabled: state.workEnabled } }));
+    } catch {
+      // A transient local network failure keeps the last known presentation.
+    } finally {
+      clearTimeout(timeout);
+      pending = false;
+    }
+  };
+
+  // Event-driven refresh only: no periodic polling and no pushState/fetch patch.
+  addEventListener('focus', sync);
+  addEventListener('pageshow', sync);
+  addEventListener('popstate', sync);
+  addEventListener('hashchange', sync);
+  document.addEventListener('visibilitychange', sync);
+  document.addEventListener('click', event => {
+    const anchor = event.target?.closest?.('a[href]');
+    if (!anchor) return;
+    try {
+      if (new URL(anchor.href, location.href).origin === location.origin) sync();
+    } catch {}
+  }, true);
+  addEventListener('load', () => { if (current) { failed.add(current); inspect(current); } });
+  ensure();
+  sync();
+})();
+</script><script data-panel-gpt-v3="preview-frame">(() => {
+  const host = 'connector-openai-deep-research.web-sandbox.oaiusercontent.com';
+  const map = value => {
+    try {
+      let url = new URL(String(value), location.href);
+      // JSON/HTML responses may already contain the gateway's external URL.
+      // Unwrap only our own exact /__ext route, then apply the same host check.
+      if (url.origin === location.origin && url.pathname === '/__ext' && url.searchParams.has('u')) {
+        url = new URL(url.searchParams.get('u'));
+      }
+      if (url.protocol === 'https:' && url.hostname === host && (!url.port || url.port === '443') && !url.username && !url.password) {
+        return location.origin + '/__sandbox/' + host + url.pathname + url.search + url.hash;
+      }
+      if (url.origin === 'https://cdn.platform.openai.com' && !url.username && !url.password && !url.search && /^\/deployments\/dil\/v[1-9][0-9]{0,3}\/runner\.html$/.test(url.pathname)) {
+        return location.origin + '/__dil' + url.pathname + url.hash;
+      }
+    } catch {}
+    return value;
+  };
+  // Run before React sets src, so its postMessage origin check observes the
+  // mapped address from the start. Other elements and iframe hosts are untouched.
+  const proto = HTMLIFrameElement.prototype;
+  const descriptor = Object.getOwnPropertyDescriptor(proto, 'src');
+  if (descriptor?.set && descriptor.configurable) {
+    Object.defineProperty(proto, 'src', {
+      ...descriptor,
+      set(value) { descriptor.set.call(this, map(value)); }
+    });
+  }
+  const setAttribute = proto.setAttribute;
+  proto.setAttribute = function(name, value) {
+    return setAttribute.call(this, name, String(name).toLowerCase() === 'src' ? map(value) : value);
+  };
+})();
+</script><script data-panel-gpt-v3="gateway">(()=>{
+const parse=value=>{try{return new URL(String(value),location.href)}catch{return null}};
+const map=(value,websocket=false)=>{const url=parse(value);if(!url)return String(value);const host=url.hostname.toLowerCase();if(host==='chatgpt.com'||host==='ws.chatgpt.com'){url.protocol=websocket?(location.protocol==='https:'?'wss:':'ws:'):location.protocol;url.host=location.host;if(host==='ws.chatgpt.com')url.pathname='/__ws'+url.pathname;return url.toString()}if(host==='oaiusercontent.com'||host.endsWith('.oaiusercontent.com')||host==='cdn.oaistatic.com'||host.endsWith('.oaistatic.com')||host==='blob.core.windows.net'||host.endsWith('.blob.core.windows.net'))return location.origin+'/__ext?u='+encodeURIComponent(url.toString());return String(value)};
+try{if(!globalThis.crypto)globalThis.crypto={};if(typeof globalThis.crypto.randomUUID!=='function'){const uuid=()=>{const bytes=new Uint8Array(16);if(typeof globalThis.crypto.getRandomValues==='function')globalThis.crypto.getRandomValues(bytes);else for(let index=0;index<bytes.length;index++)bytes[index]=Math.floor(Math.random()*256);bytes[6]=(bytes[6]&15)|64;bytes[8]=(bytes[8]&63)|128;const hex=Array.from(bytes,value=>value.toString(16).padStart(2,'0')).join('');return hex.slice(0,8)+'-'+hex.slice(8,12)+'-'+hex.slice(12,16)+'-'+hex.slice(16,20)+'-'+hex.slice(20)};try{Object.defineProperty(globalThis.crypto,'randomUUID',{value:uuid,configurable:true})}catch{globalThis.crypto.randomUUID=uuid}}}catch{}
+try{const serviceWorker=navigator.serviceWorker;if(serviceWorker){const disabledRegistration={scope:location.origin+'/',active:null,installing:null,waiting:null,unregister:()=>Promise.resolve(true),update:()=>Promise.resolve()};const disabledRegister=()=>Promise.resolve(disabledRegistration);try{Object.defineProperty(serviceWorker,'register',{value:disabledRegister,configurable:true})}catch{try{serviceWorker.register=disabledRegister}catch{}}const cleanKey='panel-gpt-v3-sw-clean-v3';if(!sessionStorage.getItem(cleanKey)){sessionStorage.setItem(cleanKey,'1');const cleanup=[];if(serviceWorker.getRegistrations)cleanup.push(serviceWorker.getRegistrations().then(registrations=>Promise.all(registrations.map(registration=>registration.unregister()))).catch(()=>{}));if(globalThis.caches?.keys)cleanup.push(caches.keys().then(keys=>Promise.all(keys.map(key=>caches.delete(key)))).catch(()=>{}));Promise.all(cleanup).catch(()=>{})}}}catch{}
+const nativeFetch=window.fetch.bind(window);
+const streamBody=async body=>{if(!body||typeof body.getReader!=='function')return body;try{return await new Response(body).arrayBuffer()}catch{return body}};
+const requestOptions=async(source,override)=>{const options={};if(source instanceof Request){options.method=source.method;options.headers=new Headers(source.headers);for(const key of ['cache','redirect','referrer','referrerPolicy','integrity','signal'])if(source[key]!==undefined)options[key]=source[key]}if(override)for(const key of Object.keys(override))options[key]=override[key];const method=String(options.method||(source instanceof Request?source.method:'GET')).toUpperCase();if(method==='GET'||method==='HEAD')delete options.body;else if(override&&Object.prototype.hasOwnProperty.call(override,'body'))options.body=await streamBody(override.body);else if(source instanceof Request&&source.body){try{options.body=await source.clone().arrayBuffer()}catch{try{options.body=await source.arrayBuffer()}catch{}}}options.credentials='same-origin';options.mode='same-origin';delete options.duplex;if(options.body!=null)delete options.keepalive;return options};
+window.fetch=async(input,init)=>{const original=input instanceof Request?input.url:input;const mapped=map(original);if(mapped===String(original))return nativeFetch(input,init);const options=await requestOptions(input instanceof Request?input:null,init);return nativeFetch(mapped,options)};
+const nativeOpen=XMLHttpRequest.prototype.open;XMLHttpRequest.prototype.open=function(method,url,...rest){return nativeOpen.call(this,method,map(url),...rest)};
+if(window.EventSource){const NativeEventSource=window.EventSource;window.EventSource=function(url,options){return new NativeEventSource(map(url),options)};window.EventSource.prototype=NativeEventSource.prototype}
+if(window.WebSocket){const NativeWebSocket=window.WebSocket;window.WebSocket=function(url,protocols){const mapped=map(url,true);return protocols===undefined?new NativeWebSocket(mapped):new NativeWebSocket(mapped,protocols)};window.WebSocket.prototype=NativeWebSocket.prototype;Object.setPrototypeOf(window.WebSocket,NativeWebSocket)}
+if(navigator.sendBeacon){const nativeBeacon=navigator.sendBeacon.bind(navigator);navigator.sendBeacon=(url,data)=>nativeBeacon(map(url),data)}
+const fix=root=>{if(!root?.querySelectorAll)return;for(const element of [root,...root.querySelectorAll('[src],[href],[action]')])for(const attribute of ['src','href','action'])if(element.hasAttribute?.(attribute)){const current=element.getAttribute(attribute),mapped=map(current);if(mapped!==current)element.setAttribute(attribute,mapped)}};
+const startDomBridge=()=>requestAnimationFrame(()=>requestAnimationFrame(()=>setTimeout(()=>{fix(document.documentElement);new MutationObserver(records=>records.forEach(record=>{if(record.type==='attributes')fix(record.target);else record.addedNodes.forEach(fix)})).observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:['src','href','action']})},350)));
+if(document.readyState==='loading')addEventListener('DOMContentLoaded',startDomBridge,{once:true});else startDomBridge();
+})();</script><script data-panel-gpt-v3="customer-logout">(() => {
+  // Customer logout belongs to the panel session, not the shared ChatGPT
+  // account. Keep this independent of optional presentation/Work policies.
+  const protectedArea = 'article,[data-message-author-role],[contenteditable="true"],#prompt-textarea,textarea,input';
+  const labels = new Set(['log out', 'خروج']);
+  const normalize = value => (value || '').replace(/\s+/g, ' ').trim().toLowerCase();
+  const isLogout = target => {
+    if (target?.closest?.(protectedArea)) return false;
+    const item = target?.closest?.('[role="menuitem"]');
+    if (!item || item.closest(protectedArea) || item.matches('[aria-disabled="true"],:disabled')) return false;
+    const menu = item.closest('[role="menu"]');
+    if (!menu || menu.closest(protectedArea)) return false;
+    // Only the proven profile menu, never arbitrary menus or quoted content.
+    const owner = document.getElementById(menu.getAttribute('aria-labelledby') || '');
+    // The live ChatGPT menu can use a hydration-generated labelledby ID that
+    // differs from the trigger ID. Its own accessible menu label is the
+    // stable signal; keep the trigger check as a fallback for older builds.
+    const profileMenu = normalize(menu.getAttribute('aria-label')) === 'open profile menu' ||
+      owner?.getAttribute('aria-label') === 'Open profile menu';
+    if (!profileMenu || owner?.closest(protectedArea)) return false;
+    const text = normalize(item.textContent);
+    const accessibleName = normalize(item.getAttribute('aria-label'));
+    // Require the whole name: "Log out all devices" must never be captured.
+    return labels.has(accessibleName || text) && (!text || labels.has(text));
+  };
+  const logout = event => {
+    if (event.type === 'click' && event.button !== 0) return;
+    if (event.type === 'keydown' && event.key !== 'Enter' && event.key !== ' ') return;
+    if (!isLogout(event.target)) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    // A document navigation avoids upstream SPA signout/CSRF behavior and
+    // ensures that /access replaces the stale in-memory authenticated shell.
+    location.assign('/logout');
+  };
+  // Window capture runs before React's document/menu listeners, including
+  // menu libraries which activate keyboard items directly on keydown.
+  addEventListener('click', logout, true);
+  addEventListener('keydown', logout, true);
+})();
+</script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
   <meta name="theme-color" content="#080d17">
@@ -1017,182 +1578,7 @@
 </style>
 
 
-<style id="zt-no-zoom-and-full-login">
-  html,body{
-    touch-action:manipulation;
-    overscroll-behavior:none;
-  }
-  #loginWrap{
-    position:fixed!important;
-    inset:0!important;
-    width:100vw!important;
-    height:100dvh!important;
-    min-height:100dvh!important;
-    max-height:100dvh!important;
-    overflow:hidden!important;
-    display:flex!important;
-    align-items:center!important;
-    justify-content:center!important;
-    padding:8px 12px!important;
-    box-sizing:border-box!important;
-  }
-  #loginWrap .login-shell{
-    width:min(100%,440px)!important;
-    height:100%!important;
-    max-height:100%!important;
-    margin:0!important;
-    display:flex!important;
-    flex-direction:column!important;
-    justify-content:space-between!important;
-    gap:6px!important;
-  }
-  #loginWrap .login-brand{
-    margin:0 auto!important;
-    gap:8px!important;
-    flex:0 0 auto!important;
-  }
-  #loginWrap .login-mark{
-    width:34px!important;
-    height:34px!important;
-    border-radius:10px!important;
-  }
-  #loginWrap .login-brand strong{
-    font-size:16px!important;
-    line-height:1.2!important;
-  }
-  #loginWrap .login-brand span{
-    font-size:9px!important;
-    margin-top:0!important;
-  }
-  #loginWrap .login-card{
-    padding:10px 13px!important;
-    border-radius:18px!important;
-    flex:1 1 auto!important;
-    min-height:0!important;
-    display:flex!important;
-    flex-direction:column!important;
-    justify-content:space-between!important;
-    gap:4px!important;
-  }
-  #loginWrap .login-biometric{
-    padding:0!important;
-    flex:0 0 auto!important;
-  }
-  #loginWrap .fingerprint-frame{
-    width:54px!important;
-    height:54px!important;
-    margin:0 auto 4px!important;
-    border-radius:14px!important;
-  }
-  #loginWrap .fingerprint-frame svg{
-    width:32px!important;
-    height:32px!important;
-  }
-  #loginWrap .login-biometric-title{
-    font-size:14px!important;
-    line-height:1.25!important;
-  }
-  #loginWrap .login-biometric p{
-    font-size:9.5px!important;
-    line-height:1.35!important;
-    margin:2px auto 5px!important;
-    max-width:100%!important;
-  }
-  #loginWrap .biometric-btn{
-    min-height:34px!important;
-    height:34px!important;
-    padding:4px 10px!important;
-    font-size:11.5px!important;
-    border-radius:10px!important;
-  }
-  #loginWrap .passkey-hint{
-    min-height:0!important;
-    margin:3px auto 0!important;
-    font-size:8.5px!important;
-    line-height:1.3!important;
-  }
-  #loginWrap .login-divider{
-    margin:4px 0!important;
-    font-size:8.5px!important;
-  }
-  #loginWrap .password-fallback{
-    padding-top:4px!important;
-    flex:0 0 auto!important;
-  }
-  #loginWrap .password-fallback h1{
-    font-size:13px!important;
-    line-height:1.25!important;
-    margin:0 0 2px!important;
-  }
-  #loginWrap .password-fallback>p{
-    font-size:8.5px!important;
-    line-height:1.35!important;
-    margin:0 0 5px!important;
-  }
-  #loginWrap .field{
-    gap:2px!important;
-    margin-bottom:5px!important;
-  }
-  #loginWrap .field label{
-    font-size:9.5px!important;
-    min-height:0!important;
-    line-height:1.25!important;
-  }
-  #loginWrap input{
-    min-height:32px!important;
-    height:32px!important;
-    padding:4px 9px!important;
-    font-size:11.5px!important;
-    border-radius:9px!important;
-  }
-  #loginWrap #loginError{
-    min-height:12px!important;
-    margin-bottom:2px!important;
-    font-size:9.5px!important;
-    line-height:1.25!important;
-  }
-  #loginWrap .login-submit{
-    min-height:34px!important;
-    height:34px!important;
-    padding:4px 10px!important;
-    font-size:12px!important;
-    border-radius:10px!important;
-  }
-  #loginWrap .login-utilities{
-    margin-top:4px!important;
-    gap:4px!important;
-  }
-  #loginWrap .login-utilities .btn{
-    padding:3px 7px!important;
-    font-size:8.5px!important;
-    min-height:0!important;
-  }
-  #loginWrap .login-utilities #cryptoStatus{
-    font-size:8px!important;
-  }
-  #loginWrap .login-quick-links{
-    margin-top:0!important;
-    gap:6px!important;
-    flex:0 0 auto!important;
-  }
-  #loginWrap .login-mini-action{
-    padding:6px 6px!important;
-    gap:2px!important;
-    font-size:9.5px!important;
-    border-radius:10px!important;
-  }
-  #loginWrap .login-mini-action svg{
-    width:14px!important;
-    height:14px!important;
-  }
-  #loginWrap .login-foot{
-    margin-top:0!important;
-    padding-bottom:0!important;
-    gap:8px!important;
-    font-size:8px!important;
-    flex:0 0 auto!important;
-  }
-</style>
+
 
 
 <style id="zt-login-hidden-override">
@@ -1225,6 +1611,89 @@
   }
 </style>
 
+
+<style id="zt-cloud-login-compact-v6">
+  #loginWrap:not(.hidden) {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100dvh !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: center !important;
+    padding: max(16px, env(safe-area-inset-top)) 14px max(20px, env(safe-area-inset-bottom)) !important;
+    box-sizing: border-box !important;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+  }
+  #loginWrap.hidden { display: none !important; }
+  #loginWrap .login-shell {
+    width: min(100%, 440px) !important;
+    height: auto !important;
+    max-height: none !important;
+    min-height: 0 !important;
+    margin: 0 auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+  }
+  #loginWrap .login-brand {
+    flex: 0 0 auto !important;
+    margin: 4px auto 0 !important;
+    gap: 10px !important;
+  }
+  #loginWrap .login-mark { width: 42px !important; height: 42px !important; border-radius: 12px !important; }
+  #loginWrap .login-brand strong { font-size: 20px !important; line-height: 1.25 !important; }
+  #loginWrap .login-brand span { font-size: 10px !important; margin-top: 2px !important; }
+  #loginWrap .login-card {
+    flex: 0 0 auto !important;
+    display: block !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    padding: 20px 18px 18px !important;
+    border-radius: 22px !important;
+    overflow: visible !important;
+  }
+  #loginWrap .login-biometric { display: block !important; padding: 0 !important; margin: 0 !important; }
+  #loginWrap .fingerprint-frame { width: 76px !important; height: 76px !important; margin: 0 auto 10px !important; border-radius: 19px !important; }
+  #loginWrap .fingerprint-frame svg { width: 44px !important; height: 44px !important; }
+  #loginWrap .login-biometric-title { font-size: 20px !important; line-height: 1.35 !important; margin-bottom: 3px !important; }
+  #loginWrap .login-biometric p { font-size: 11.5px !important; line-height: 1.6 !important; margin: 0 auto 12px !important; max-width: 100% !important; }
+  #loginWrap .biometric-btn { min-height: 48px !important; height: auto !important; padding: 11px 14px !important; font-size: 14px !important; border-radius: 13px !important; }
+  #loginWrap .passkey-hint { min-height: 0 !important; margin: 9px auto 0 !important; font-size: 10.5px !important; line-height: 1.55 !important; }
+  #loginWrap .password-fallback { display: block !important; flex: 0 0 auto !important; border-top: 1px solid #1d4552 !important; margin: 16px 0 0 !important; padding: 14px 0 0 !important; }
+  #loginWrap .password-fallback h1, #loginWrap .password-fallback > p { display: none !important; }
+  #loginWrap .login-divider { display: block !important; margin: 0 0 14px !important; }
+  #loginWrap .login-divider span { font-size: 0 !important; }
+  #loginWrap .login-divider span::after { content: "یا با رمز حساب ابری" !important; font-size: 13px !important; font-weight: 800 !important; }
+  #loginWrap #loginWorkerField, #loginWrap #workerSettingField, #loginWrap #localVaultField, #loginWrap #localVaultConfirmField, #loginWrap #rememberField { display: none !important; }
+  #loginWrap .field { gap: 4px !important; margin: 0 0 12px !important; }
+  #loginWrap .field label { display: block !important; min-height: 0 !important; font-size: 12px !important; line-height: 1.4 !important; margin-bottom: 5px !important; }
+  #loginWrap input { width: 100% !important; min-height: 44px !important; height: 44px !important; padding: 9px 12px !important; font-size: 14px !important; border-radius: 11px !important; }
+  #loginWrap #loginError { display: block; min-height: 0 !important; margin: 3px 0 10px !important; font-size: 11px !important; line-height: 1.6 !important; }
+  #loginWrap #loginError:empty { display: none !important; }
+  #loginWrap .login-submit { width: 100% !important; min-height: 48px !important; height: 48px !important; padding: 10px 14px !important; font-size: 14px !important; border-radius: 13px !important; }
+  #loginWrap .login-utilities, #loginWrap .login-quick-links { display: none !important; }
+  #loginWrap .login-foot { flex: 0 0 auto !important; margin: 0 auto !important; padding: 0 !important; gap: 8px !important; font-size: 10px !important; }
+  #workerSettingField { display: none !important; }
+  #cloudflareSave { display: none !important; }
+  @media (min-height: 770px) { #loginWrap:not(.hidden) { padding-top: min(5vh, 50px) !important; } }
+  @media (max-height: 650px) {
+    #loginWrap .login-card { padding: 12px 14px !important; }
+    #loginWrap .fingerprint-frame { width: 54px !important; height: 54px !important; margin-bottom: 5px !important; }
+    #loginWrap .fingerprint-frame svg { width: 33px !important; height: 33px !important; }
+    #loginWrap .login-biometric p { margin-bottom: 6px !important; }
+    #loginWrap .password-fallback { margin-top: 9px !important; padding-top: 9px !important; }
+  }
+</style>
+
 </head>
 <body>
   <div id="loginWrap" class="login-wrap">
@@ -1252,7 +1721,7 @@
           <h1 id="loginTitle">ورود به ذهن تریدر</h1>
           <p id="loginHint">اطلاعات ژورنال و تنظیمات در فضای ابری حساب شما ذخیره می‌شوند.</p>
           <form id="loginForm">
-            <div class="field"><label for="loginWorkerUrl">آدرس Cloudflare Worker</label><input id="loginWorkerUrl" type="url" placeholder="https://your-worker.workers.dev" dir="ltr" autocomplete="url" required></div>
+            <div class="field" id="loginWorkerField" hidden aria-hidden="true"><label for="loginWorkerUrl">آدرس Cloudflare Worker</label><input id="loginWorkerUrl" type="url" dir="ltr" tabindex="-1" autocomplete="off" value="https://wall-street-fx-api.ll3ehi3071.workers.dev"></div>
             <div class="field"><label for="loginUsername">نام کاربری</label><input id="loginUsername" type="text" minlength="3" maxlength="32" autocomplete="username" placeholder="نام کاربری حساب" dir="ltr" required></div>
             <div class="field"><label for="password">رمز حساب ابری</label><input id="password" type="password" minlength="8" autocomplete="current-password" placeholder="رمز عبور حساب" required></div>
             <div class="field" id="localVaultField"><label for="localVaultPassword">رمزگذاری محلی ژورنال (مستقل از رمز حساب ابری)</label><input id="localVaultPassword" type="password" autocomplete="current-password" placeholder="رمز قبلی فضای امن محلی"></div>
@@ -1560,7 +2029,8 @@
 <section class="view" id="view-settings">
         <div class="grid two">
           <div class="card"><div class="card-head"><h3>اتصال Cloudflare Worker</h3><span class="pill good">MT5 Live · D1</span></div>
-            <div class="field"><label>آدرس Worker (بدون مسیر API)</label><input id="workerUrl" type="url" placeholder="https://wall-street-fx-api.<account>.workers.dev" dir="ltr" autocomplete="url"></div>
+            <div class="field" id="workerSettingField" hidden aria-hidden="true"><label>آدرس Worker</label><input id="workerUrl" type="url" dir="ltr" tabindex="-1" autocomplete="off" value="https://wall-street-fx-api.ll3ehi3071.workers.dev"></div>
+            <p class="small muted" style="margin:0 0 12px">اتصال به سرور اصلی ذهن تریدر به‌صورت خودکار تنظیم شده است.</p>
             <input id="workerToken" type="hidden" value="">
             <div class="form-actions"><button class="btn primary" id="cloudflareSave" type="button">ذخیره تنظیمات اتصال</button><button class="btn" id="cloudflareTest" type="button">آزمایش اتصال</button><button class="btn" id="cloudflareSyncNow" type="button">دریافت ژورنال از D1</button></div>
             <div class="notice">ورود کاربران از طریق نشست ابری انجام می‌شود. کلید MT5 همچنان در Cloudflare Secret با نام ZT_MT5_TOKEN نگهداری می‌شود؛ کلید ثابت PWA دیگر در مرورگر لازم نیست.</div>
@@ -1663,6 +2133,8 @@
   const VERSION = '3.0.2-online-only';
   const CLOUD_TOKEN_KEY = 'zt_cloud_session_v1';
   const WORKER_URL_KEY = 'zt_cloud_worker_url_v1';
+  const DEFAULT_WORKER_URL = 'https://wall-street-fx-api.ll3ehi3071.workers.dev';
+  const LAST_LOGIN_USERNAME_KEY = 'zt_last_login_username_session_v1';
   const THEME_KEY = 'zt2_theme_v1';
   const DEFAULT_STATE = {
     trades: [],
@@ -1765,7 +2237,7 @@
         ? result.state : {};
       const merged = { ...defaults, ...incoming };
       merged.settings = { ...defaults.settings, ...(incoming.settings || {}) };
-      merged.settings.workerUrl = sessionStorage.getItem(WORKER_URL_KEY) || merged.settings.workerUrl || '';
+      merged.settings.workerUrl = DEFAULT_WORKER_URL;
       merged.trades = Array.isArray(incoming.trades) ? incoming.trades : [];
       merged.rules = Array.isArray(incoming.rules) ? incoming.rules : defaults.rules;
       merged.readiness = { ...defaults.readiness, ...(incoming.readiness || {}) };
@@ -1845,7 +2317,7 @@
   async function persist() { return saveCloudAppState(true); }
 
   function cloudBaseFromLogin() {
-    const raw = String($('loginWorkerUrl')?.value || sessionStorage.getItem(WORKER_URL_KEY) || '').trim().replace(/\/+$/, '');
+    const raw = DEFAULT_WORKER_URL;
     let u;
     try { u = new URL(raw); } catch (e) { throw new Error('آدرس Cloudflare Worker معتبر نیست.'); }
     if (u.protocol !== 'https:' || u.pathname !== '/' || u.search || u.hash) throw new Error('آدرس Worker باید HTTPS و بدون مسیر اضافی باشد.');
@@ -1918,6 +2390,7 @@
       sessionStorage.setItem(WORKER_URL_KEY, base);
       app.data.settings.workerUrl = base;
       app.cloudUser = payload.user;
+      sessionStorage.setItem(LAST_LOGIN_USERNAME_KEY, payload.user.username || username);
 
       setLoginStage('ورود تأیید شد؛ در حال باز کردن برنامه…');
       return payload;
@@ -2030,6 +2503,7 @@
     sessionStorage.setItem('zt_passkey_credential_id_v1', verified.credentialId || assertion.id);
     app.data.settings.workerUrl = base;
     app.cloudUser = verified.user;
+    sessionStorage.setItem(LAST_LOGIN_USERNAME_KEY, verified.user.username || username);
     return verified;
   }
 
@@ -2132,14 +2606,14 @@
     $('localVaultConfirmField')?.classList.add('hidden');
     $('rememberField')?.classList.add('hidden');
     $('passkeyLogin')?.parentElement?.classList.remove('hidden');
-    if ($('passkeyHint')) $('passkeyHint').textContent = 'برای ورود با اثر انگشت، نام کاربری را وارد کن و دکمه Passkey را بزن. اگر هنوز ثبت نکرده‌ای، ابتدا با رمز ابری وارد شو و از تنظیمات فعالش کن.';
+    if ($('passkeyHint')) $('passkeyHint').textContent = 'نام کاربری حساب را وارد کن و اثر انگشت را بزن؛ ثبت اولیه Passkey از تنظیمات انجام می‌شود.';
     $('passwordFallbackToggle')?.classList.add('hidden');
     $('passwordFallback')?.classList.remove('is-collapsed');
     $('loginSubmit').textContent = 'ورود به حساب ابری';
     $('password').value = '';
     $('cryptoStatus').textContent = 'حالت بدون ذخیره‌سازی محلی (Online Only)';
-    $('loginWorkerUrl').value = sessionStorage.getItem(WORKER_URL_KEY) || '';
-    $('loginUsername').value = '';
+    $('loginWorkerUrl').value = DEFAULT_WORKER_URL;
+    $('loginUsername').value = sessionStorage.getItem(LAST_LOGIN_USERNAME_KEY) || '';
   }
 
   async function showApp() {
@@ -2165,6 +2639,7 @@
     if (app.breathTimer) { clearInterval(app.breathTimer); app.breathTimer = null; }
     if (app.tiltTimer) { clearInterval(app.tiltTimer); app.tiltTimer = null; }
     try { await saveCloudAppState(true); } catch (e) {}
+    if (app.cloudUser?.username) sessionStorage.setItem(LAST_LOGIN_USERNAME_KEY, app.cloudUser.username);
     cloudStateReady = false;
     await cloudAuthLogout();
     app.data = clone(DEFAULT_STATE);
@@ -2232,7 +2707,7 @@
   function renderCalendar(trades = app.reportTrades ?? app.data.trades) { const root = $('tradeCalendar'); if (!root) return; const cursor = app.calendarCursor || new Date(), target = persianDateParts(cursor), scanStart = new Date(cursor.getFullYear(), cursor.getMonth(), cursor.getDate() - 40, 12, 0, 0, 0), dates = []; for (let i = 0; i < 80; i++) { const d = new Date(scanStart.getFullYear(), scanStart.getMonth(), scanStart.getDate() + i, 12, 0, 0, 0), p = persianDateParts(d); if (p.year === target.year && p.month === target.month) dates.push({ date: d, day: p.day }); } if (!dates.length) { root.innerHTML = '<div class="empty">تقویم در دسترس نیست.</div>'; return; } const first = dates[0].date; $('calendarMonthLabel').textContent = first.toLocaleDateString('fa-IR-u-ca-persian', { year: 'numeric', month: 'long' }); const totals = {}; trades.forEach(t => { const d = safeDate(t.date); if (!d) return; const p = persianDateParts(d); if (p.year !== target.year || p.month !== target.month) return; const key = localDayKey(d); totals[key] ??= { pnl: 0, n: 0 }; totals[key].pnl += tradePnlValue(t); totals[key].n++; }); const names = ['ش', 'ی', 'د', 'س', 'چ', 'پ', 'ج']; let html = names.map(x => `<div class="calendar-cell weekday">${x}</div>`).join(''); const offset = (first.getDay() + 1) % 7; for (let i = 0; i < offset; i++) html += '<div class="calendar-cell empty"></div>'; dates.forEach(({ date, day }) => { const v = totals[localDayKey(date)], cls = v ? (v.pnl > 0 ? 'has-profit' : v.pnl < 0 ? 'has-loss' : '') : ''; html += `<div class="calendar-cell ${cls}"><span class="day">${faNum(day)}</span>${v ? `<span class="day-pnl ${v.pnl >= 0 ? 'positive' : 'negative'}">${v.pnl >= 0 ? '+' : ''}${fmtMoney(v.pnl)}</span>` : ''}</div>`; }); root.innerHTML = html; }
   function tradeHourDate(t) { return safeDate(t.openTime) || safeDate(t.date); }
   function renderAdvancedReports(arr) { const m = computeAdvancedMetrics(arr), s = m.stats, fmtFactor = v => v === null ? '—' : Number.isFinite(v) ? v.toFixed(2) : '∞', fmtTrade = t => t ? `${String(t.symbol || '—')} · ${fmtMoney(tradePnlValue(t))}` : '—'; const set = (id, value) => { const el = $(id); if (el) el.textContent = value; }; set('avgWinMetric', m.avgWin ? fmtMoney(m.avgWin) : '—'); set('avgLossMetric', m.avgLoss ? fmtMoney(m.avgLoss) : '—'); set('payoffMetric', fmtFactor(m.payoff)); set('recoveryMetric', fmtFactor(m.recovery)); set('bestTradeMetric', fmtTrade(m.best)); set('worstTradeMetric', fmtTrade(m.worst)); if ($('streakSummary')) $('streakSummary').innerHTML = `<div class="metric-row"><span>بیشترین برد متوالی</span><b>${enNum(m.streaks.maxWins)}</b></div><div class="metric-row"><span>بیشترین باخت متوالی</span><b>${enNum(m.streaks.maxLosses)}</b></div>`; }
-  function populateSettings() { $('workerUrl').value = app.data.settings.workerUrl || sessionStorage.getItem(WORKER_URL_KEY) || ''; $('gasUrl').value = app.data.settings.gasUrl || ''; $('apiToken').value = app.data.settings.apiToken || ''; $('autoSync').checked = !!app.data.settings.autoSync; $('sheetName').value = app.data.settings.sheetName || 'Journal'; $('dailyLossLimit').value = app.data.settings.dailyLossLimit ?? 0; $('lossStreakLimit').value = String(app.data.settings.lossStreakLimit ?? 3); $('connectionState').textContent = 'حالت آنلاین (بدون ذخیره محلی)'; $('lastSyncText').textContent = app.lastSync ? fmtDate(app.lastSync) : '—'; }
+  function populateSettings() { $('workerUrl').value = DEFAULT_WORKER_URL; $('gasUrl').value = app.data.settings.gasUrl || ''; $('apiToken').value = app.data.settings.apiToken || ''; $('autoSync').checked = !!app.data.settings.autoSync; $('sheetName').value = app.data.settings.sheetName || 'Journal'; $('dailyLossLimit').value = app.data.settings.dailyLossLimit ?? 0; $('lossStreakLimit').value = String(app.data.settings.lossStreakLimit ?? 3); $('connectionState').textContent = 'حالت آنلاین (بدون ذخیره محلی)'; $('lastSyncText').textContent = app.lastSync ? fmtDate(app.lastSync) : '—'; }
   function updateSyncUI() { const synced = !!app.lastSync; $('syncDot').classList.toggle('off', !synced); $('syncStatus').textContent = synced ? 'آخرین دریافت: ' + fmtDate(app.lastSync) : 'در انتظار دریافت آنلاین'; $('lastSyncText').textContent = synced ? fmtDate(app.lastSync) : '—'; if ($('syncDiagnostics')) $('syncDiagnostics').textContent = 'همگام‌سازی مستقیم از سرور انجام می‌شود؛ هیچ اطلاعاتی روی گوشی ذخیره نمی‌شود.'; }
   function getByAliases(row, aliases) { const entries = Object.entries(row || {}); for (const alias of aliases) { const k = normalize(alias); const hit = entries.find(([h]) => normalize(h) === k); if (hit && hit[1] !== '' && hit[1] !== null && hit[1] !== undefined) return hit[1]; } return null; }
   function sideValue(v) { const s = String(v ?? '').toLowerCase(); if (['buy', '0', 'خرید', 'long'].includes(s) || s.includes('buy')) return 'Buy'; if (['sell', '1', 'فروش', 'short'].includes(s) || s.includes('sell')) return 'Sell'; return String(v || '—'); }
@@ -2293,8 +2768,8 @@
     return { added, updated, valid: map.size };
   }
 
-  function cloudflareConfigured() { return !!(String(app?.data?.settings?.workerUrl || sessionStorage.getItem(WORKER_URL_KEY) || '').trim() && String(sessionStorage.getItem(CLOUD_TOKEN_KEY) || '')); }
-  function cloudflareBase() { return String(app?.data?.settings?.workerUrl || sessionStorage.getItem(WORKER_URL_KEY) || '').trim().replace(/\/+$/, ''); }
+  function cloudflareConfigured() { return !!String(sessionStorage.getItem(CLOUD_TOKEN_KEY) || ''); }
+  function cloudflareBase() { return DEFAULT_WORKER_URL; }
   async function cloudflareApi(path, options = {}) {
     if (!cloudflareConfigured()) throw new Error('نشست ابری فعال نیست؛ دوباره وارد شو.');
     const token = sessionStorage.getItem(CLOUD_TOKEN_KEY) || '';
@@ -2535,7 +3010,7 @@
     $('lockBtn').onclick = () => lockApp();
     $('syncBtn').onclick = () => { syncFromCloudflare(); refreshMt5Control(true); };
     if ($('cloudflareSyncNow')) $('cloudflareSyncNow').onclick = syncFromCloudflare;
-    if ($('cloudflareSave')) $('cloudflareSave').onclick = () => { const raw = String($('workerUrl')?.value || '').trim().replace(/\/+$/, ''); if (raw) { sessionStorage.setItem(WORKER_URL_KEY, raw); app.data.settings.workerUrl = raw; toast('آدرس Worker در نشست فعلی تنظیم شد.'); } };
+    if ($('cloudflareSave')) $('cloudflareSave').onclick = () => { sessionStorage.setItem(WORKER_URL_KEY, DEFAULT_WORKER_URL); app.data.settings.workerUrl = DEFAULT_WORKER_URL; toast('اتصال به سرور اصلی ذهن تریدر فعال است.'); };
     $('sideBuyBtn').onclick = () => { $('fSide').value = 'Buy'; $('sideBuyBtn').classList.add('active'); $('sideSellBtn').classList.remove('active'); };
     $('sideSellBtn').onclick = () => { $('fSide').value = 'Sell'; $('sideSellBtn').classList.add('active'); $('sideBuyBtn').classList.remove('active'); };
     if ($('dashPeriodFilter')) $('dashPeriodFilter').onchange = renderDashboard;
@@ -2576,8 +3051,10 @@
     const el = document.getElementById('zt-hide-login-flash');
     if (el) el.remove();
     bindEvents();
+    sessionStorage.setItem(WORKER_URL_KEY, DEFAULT_WORKER_URL);
+    if ($('loginWorkerUrl')) $('loginWorkerUrl').value = DEFAULT_WORKER_URL;
     const token = sessionStorage.getItem(CLOUD_TOKEN_KEY);
-    const baseUrl = sessionStorage.getItem(WORKER_URL_KEY);
+    const baseUrl = DEFAULT_WORKER_URL;
     if (token && baseUrl) {
       try {
         const r = await fetch(baseUrl + '/api/auth/me', { headers: { Authorization: 'Bearer ' + token }, cache: 'no-store' });
