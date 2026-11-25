@@ -933,6 +933,26 @@
     .dashboard-toolbar-ref .toolbar-select-wrap select{min-height:40px;font-size:11px;padding:8px 11px 8px 30px!important}
   }
 </style>
+<script id="zt-pre-session-hide">
+(function(){
+  try{
+    var hasMarker=sessionStorage.getItem('zt2_session_marker_v1');
+    var hasAct=Number(sessionStorage.getItem('zt2_session_activity_v1')||0);
+    var hasToken=sessionStorage.getItem('zt_cloud_session_v1');
+    var hasUrl=localStorage.getItem('zt_cloud_worker_url_v1');
+    var authRaw=localStorage.getItem('zt2_auth_v1');
+    var auth=authRaw?JSON.parse(authRaw):null;
+    var hasBio=Boolean(auth&&auth.biometric&&auth.biometric.credentialId);
+    if((hasMarker&&hasAct&&(Date.now()-hasAct)<=600000&&hasToken&&hasUrl)||hasBio){
+      var s=document.createElement('style');
+      s.id='zt-hide-login-flash';
+      s.textContent='#loginWrap{opacity:0;pointer-events:none}';
+      document.head.appendChild(s);
+      setTimeout(function(){var el=document.getElementById('zt-hide-login-flash');if(el)el.remove();},1500);
+    }
+  }catch(e){}
+})();
+</script>
 </head>
 <body>
   <div id="loginWrap" class="login-wrap">
@@ -1446,8 +1466,100 @@
   async function derivePasskeyWrapKey(prfBytes,salt){const material=await crypto.subtle.importKey('raw',prfBytes,'HKDF',false,['deriveKey']);return crypto.subtle.deriveKey({name:'HKDF',hash:'SHA-256',salt,info:enc.encode('ZehnTrader local vault Passkey PRF v1')},material,{name:'AES-GCM',length:256},false,['encrypt','decrypt'])}
   async function getPasskeyPrf(credentialId,salt){const assertion=await navigator.credentials.get({publicKey:{challenge:crypto.getRandomValues(new Uint8Array(32)),allowCredentials:[{type:'public-key',id:unb64(credentialId)}],userVerification:'required',timeout:60000,extensions:{prf:{eval:{first:salt}}}}});const result=assertion?.getClientExtensionResults?.().prf?.results?.first;if(!result)throw new Error('این Passkey خروجی امن PRF ارائه نکرد. از رمز عبور استفاده کن یا Passkey سازگار دیگری ثبت کن.');return new Uint8Array(result)}
   async function deriveDeviceFallbackWrapKey(credentialId,salt){const base=await crypto.subtle.importKey('raw',unb64(credentialId),'PBKDF2',false,['deriveKey']);return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:150000,hash:'SHA-256'},base,{name:'AES-GCM',length:256},false,['encrypt','decrypt'])}
-  async function registerPasskey(){if(!app.key||!biometricSupported())throw new Error('برای ثبت اثر انگشت به بستر امن HTTPS و مرورگر سازگار نیاز است.');const password=prompt('برای اتصال امن اثر انگشت، رمز فضای امن محلی ذهن تریدر را وارد کن:');if(!password)return;const auth=JSON.parse(localStorage.getItem(AUTH_KEY)||'null');if(!auth)throw new Error('فضای امن محلی یافت نشد.');const checkKey=await deriveKey(password,unb64(auth.salt));if(await decryptText(checkKey,auth.verifier)!=='ZehnTrader-Verified-v1')throw new Error('رمز فضای امن محلی نادرست است.');const exportKey=await deriveKeyExportable(password,unb64(auth.salt));const salt=crypto.getRandomValues(new Uint8Array(32));const credential=await navigator.credentials.create({publicKey:{challenge:crypto.getRandomValues(new Uint8Array(32)),rp:{name:'ذهن تریدر',id:location.hostname},user:{id:crypto.getRandomValues(new Uint8Array(16)),name:'zehn-trader-user',displayName:'ذهن تریدر'},pubKeyCredParams:[{type:'public-key',alg:-7},{type:'public-key',alg:-257}],authenticatorSelection:{authenticatorAttachment:'platform',residentKey:'preferred',userVerification:'required'},timeout:60000,extensions:{prf:{eval:{first:salt}}}}});if(!credential)throw new Error('ثبت اثر انگشت لغو شد.');const credentialId=b64(credential.rawId);let wrapKey,mode='prf';try{const prfBytes=await getPasskeyPrf(credentialId,salt);wrapKey=await derivePasskeyWrapKey(prfBytes,salt)}catch(e){mode='uv';wrapKey=await deriveDeviceFallbackWrapKey(credentialId,salt)}const rawKey=new Uint8Array(await crypto.subtle.exportKey('raw',exportKey));const cloudCreds=app.cloudCreds?await encryptText(exportKey,JSON.stringify(app.cloudCreds)):null;auth.biometric={credentialId,salt:b64(salt),mode,wrappedKey:await encryptBytes(wrapKey,rawKey),cloudCreds,createdAt:new Date().toISOString()};localStorage.setItem(AUTH_KEY,JSON.stringify(auth));refreshPasskeyUI();toast('ورود با اثر انگشت / Passkey این دستگاه فعال شد.')}
-  async function unlockWithPasskey(){const auth=JSON.parse(localStorage.getItem(AUTH_KEY)||'null');if(!auth?.biometric)throw new Error('برای این دستگاه اثر انگشت ثبت نشده است.');if(!biometricSupported())throw new Error('ورود بیومتریک فقط در بستر HTTPS و مرورگر سازگار فعال می‌شود.');const salt=unb64(auth.biometric.salt);let wrapKey;if(auth.biometric.mode==='uv'){await navigator.credentials.get({publicKey:{challenge:crypto.getRandomValues(new Uint8Array(32)),rpId:location.hostname,allowCredentials:[{type:'public-key',id:unb64(auth.biometric.credentialId)}],userVerification:'required',timeout:60000}});wrapKey=await deriveDeviceFallbackWrapKey(auth.biometric.credentialId,salt)}else{const prfBytes=await getPasskeyPrf(auth.biometric.credentialId,salt);wrapKey=await derivePasskeyWrapKey(prfBytes,salt)}const rawKey=await decryptBytes(wrapKey,auth.biometric.wrappedKey);const key=await crypto.subtle.importKey('raw',rawKey,{name:'AES-GCM'},false,['encrypt','decrypt']);const verified=await decryptText(key,auth.verifier);if(verified!=='ZehnTrader-Verified-v1')throw new Error('این اثر انگشت به فضای امن فعلی متصل نیست. با رمز عبور وارد شو.');const raw=localStorage.getItem(VAULT_KEY);const data=raw?JSON.parse(await decryptText(key,JSON.parse(raw))):clone(DEFAULT_STATE);app.key=key;app.data={...clone(DEFAULT_STATE),...data,settings:{...DEFAULT_STATE.settings,...(data.settings||{})},readiness:{...DEFAULT_STATE.readiness,...(data.readiness||{})}};if(auth.biometric.cloudCreds){try{const creds=JSON.parse(await decryptText(key,auth.biometric.cloudCreds));if(creds?.base&&creds?.username&&creds?.password){const res=await fetch(creds.base+'/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},cache:'no-store',body:JSON.stringify({username:creds.username,password:creds.password})});const payload=await res.json();if(res.ok&&payload.status==='success'){sessionStorage.setItem(CLOUD_TOKEN_KEY,payload.token);localStorage.setItem(WORKER_URL_KEY,creds.base);app.cloudUser=payload.user}}}catch(e){}}await showApp();toast('ورود با اثر انگشت موفق بود.')}
+  async function registerPasskey(){
+    if(!app.key||!biometricSupported())throw new Error('برای ثبت اثر انگشت به بستر امن HTTPS و مرورگر سازگار نیاز است.');
+    const password=prompt('برای اتصال امن اثر انگشت، رمز فضای امن محلی ذهن تریدر را وارد کن:');
+    if(!password)return;
+    const auth=JSON.parse(localStorage.getItem(AUTH_KEY)||'null');
+    if(!auth)throw new Error('فضای امن محلی یافت نشد.');
+    const checkKey=await deriveKey(password,unb64(auth.salt));
+    if(await decryptText(checkKey,auth.verifier)!=='ZehnTrader-Verified-v1')throw new Error('رمز فضای امن محلی نادرست است.');
+    const exportKey=await deriveKeyExportable(password,unb64(auth.salt));
+    const salt=crypto.getRandomValues(new Uint8Array(32));
+    const rpId=location.hostname||'localhost';
+    let credential=null;
+    try{
+      credential=await navigator.credentials.create({publicKey:{challenge:crypto.getRandomValues(new Uint8Array(32)),rp:{name:'ذهن تریدر',id:rpId},user:{id:crypto.getRandomValues(new Uint8Array(16)),name:'zehn-trader-user',displayName:'ذهن تریدر'},pubKeyCredParams:[{type:'public-key',alg:-7},{type:'public-key',alg:-257}],authenticatorSelection:{authenticatorAttachment:'platform',residentKey:'preferred',userVerification:'required'},timeout:60000,extensions:{prf:{eval:{first:salt}}}}});
+    }catch(firstErr){
+      // Fallback when platform attachment or PRF extension is rejected by device/browser
+      credential=await navigator.credentials.create({publicKey:{challenge:crypto.getRandomValues(new Uint8Array(32)),rp:{name:'ذهن تریدر',id:rpId},user:{id:crypto.getRandomValues(new Uint8Array(16)),name:'zehn-trader-user',displayName:'ذهن تریدر'},pubKeyCredParams:[{type:'public-key',alg:-7},{type:'public-key',alg:-257}],authenticatorSelection:{residentKey:'discouraged',userVerification:'preferred'},timeout:60000}});
+    }
+    if(!credential)throw new Error('ثبت اثر انگشت لغو شد.');
+    const credentialId=b64(credential.rawId);
+    let wrapKey,mode='prf';
+    try{
+      const prfBytes=await getPasskeyPrf(credentialId,salt);
+      wrapKey=await derivePasskeyWrapKey(prfBytes,salt);
+    }catch(e){
+      mode='uv';
+      wrapKey=await deriveDeviceFallbackWrapKey(credentialId,salt);
+    }
+    const rawKey=new Uint8Array(await crypto.subtle.exportKey('raw',exportKey));
+    const cloudCreds=app.cloudCreds?await encryptText(exportKey,JSON.stringify(app.cloudCreds)):null;
+    auth.biometric={credentialId,salt:b64(salt),mode,wrappedKey:await encryptBytes(wrapKey,rawKey),cloudCreds,createdAt:new Date().toISOString()};
+    localStorage.setItem(AUTH_KEY,JSON.stringify(auth));
+    refreshPasskeyUI();
+    toast('ورود با اثر انگشت / Passkey این دستگاه فعال شد.');
+  }
+  async function unlockWithPasskey(){
+    const auth=JSON.parse(localStorage.getItem(AUTH_KEY)||'null');
+    if(!auth?.biometric)throw new Error('برای این دستگاه اثر انگشت ثبت نشده است. ابتدا با رمز عبور وارد شو و در تنظیمات اثر انگشت را فعال کن.');
+    if(!biometricSupported())throw new Error('ورود بیومتریک فقط در بستر امن HTTPS و مرورگر سازگار فعال می‌شود.');
+    const salt=unb64(auth.biometric.salt);
+    const rpId=location.hostname||'localhost';
+    let wrapKey;
+    if(auth.biometric.mode==='uv'){
+      const assertion=await navigator.credentials.get({publicKey:{challenge:crypto.getRandomValues(new Uint8Array(32)),rpId,allowCredentials:[{type:'public-key',id:unb64(auth.biometric.credentialId)}],userVerification:'required',timeout:60000}});
+      if(!assertion)throw new Error('تأیید اثر انگشت انجام نشد.');
+      wrapKey=await deriveDeviceFallbackWrapKey(auth.biometric.credentialId,salt);
+    }else{
+      try{
+        const prfBytes=await getPasskeyPrf(auth.biometric.credentialId,salt);
+        wrapKey=await derivePasskeyWrapKey(prfBytes,salt);
+      }catch(prfErr){
+        const assertion=await navigator.credentials.get({publicKey:{challenge:crypto.getRandomValues(new Uint8Array(32)),rpId,allowCredentials:[{type:'public-key',id:unb64(auth.biometric.credentialId)}],userVerification:'required',timeout:60000}});
+        if(!assertion)throw prfErr;
+        wrapKey=await deriveDeviceFallbackWrapKey(auth.biometric.credentialId,salt);
+      }
+    }
+    let key=null;
+    try{
+      const rawKey=await decryptBytes(wrapKey,auth.biometric.wrappedKey);
+      key=await crypto.subtle.importKey('raw',rawKey,{name:'AES-GCM'},false,['encrypt','decrypt']);
+      const verified=await decryptText(key,auth.verifier);
+      if(verified!=='ZehnTrader-Verified-v1')key=null;
+    }catch(decErr){
+      key=null;
+    }
+    if(!key){
+      const fallbackPass=prompt('اثر انگشت تأیید شد؛ برای بازگشایی مخزن، رمز فضای امن محلی را وارد کن:');
+      if(!fallbackPass)throw new Error('رمز فضای امن محلی وارد نشد.');
+      const checkKey=await deriveKey(fallbackPass,unb64(auth.salt));
+      if(await decryptText(checkKey,auth.verifier)!=='ZehnTrader-Verified-v1')throw new Error('رمز فضای امن محلی نادرست است.');
+      key=checkKey;
+    }
+    const raw=localStorage.getItem(VAULT_KEY);
+    const data=raw?JSON.parse(await decryptText(key,JSON.parse(raw))):clone(DEFAULT_STATE);
+    app.key=key;
+    app.data={...clone(DEFAULT_STATE),...data,settings:{...DEFAULT_STATE.settings,...(data.settings||{})},readiness:{...DEFAULT_STATE.readiness,...(data.readiness||{})}};
+    if(auth.biometric.cloudCreds){
+      try{
+        const creds=JSON.parse(await decryptText(key,auth.biometric.cloudCreds));
+        if(creds?.base&&creds?.username&&creds?.password){
+          app.cloudCreds=creds;
+          const res=await fetch(creds.base+'/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},cache:'no-store',body:JSON.stringify({username:creds.username,password:creds.password})});
+          const payload=await res.json();
+          if(res.ok&&payload.status==='success'){
+            sessionStorage.setItem(CLOUD_TOKEN_KEY,payload.token);
+            localStorage.setItem(WORKER_URL_KEY,creds.base);
+            app.cloudUser=payload.user;
+          }
+        }
+      }catch(e){}
+    }
+    await showApp();
+    toast('ورود با اثر انگشت موفق بود.');
+  }
   async function removePasskey(){const auth=JSON.parse(localStorage.getItem(AUTH_KEY)||'null');if(!auth?.biometric){toast('Passkey فعالی ثبت نشده است.');return}if(!confirm('اتصال Passkey این دستگاه از ذهن تریدر حذف شود؟'))return;delete auth.biometric;localStorage.setItem(AUTH_KEY,JSON.stringify(auth));refreshPasskeyUI();toast('اتصال Passkey از این برنامه حذف شد. خود Passkey ممکن است همچنان در تنظیمات دستگاه باقی بماند.')}
   function persist(){if(!app.key||!app.data){toast('ذخیره انجام نشد؛ نشست امن برنامه فعال نیست.');return Promise.resolve(false)}const key=app.key,snapshot=JSON.stringify(app.data),previous=app.saveChain||Promise.resolve();const operation=previous.catch(()=>{}).then(async()=>{if(app.key!==key)throw new Error('نشست برنامه هنگام ذخیره تغییر کرده است.');const encrypted=await encryptText(key,snapshot),serialized=JSON.stringify(encrypted);localStorage.setItem(VAULT_KEY,serialized);if(localStorage.getItem(VAULT_KEY)!==serialized)throw new Error('تأیید نوشتن اطلاعات در حافظه ناموفق بود.');return true});app.saveChain=operation;return operation.catch(e=>{toast('ذخیره اطلاعات انجام نشد: '+(e?.message||e));return false})}
   async function exportBackup(){try{if(!(await persist()))return;const authRaw=localStorage.getItem(AUTH_KEY),vaultRaw=localStorage.getItem(VAULT_KEY);if(!authRaw||!vaultRaw)throw new Error('اطلاعات احراز هویت یا مخزن رمزگذاری‌شده پیدا نشد.');const auth=JSON.parse(authRaw),vault=JSON.parse(vaultRaw);if(!vault.iv||!vault.data)throw new Error('مخزن ذخیره‌شده معتبر نیست.');delete auth.biometric;const file={app:'ZehnTrader',version:VERSION,createdAt:new Date().toISOString(),auth,vault};downloadBlob(JSON.stringify(file,null,2),'zehn-trader-backup-'+new Date().toISOString().slice(0,10)+'.json','application/json');toast('پشتیبان رمزگذاری‌شده آماده شد.')}catch(e){toast('ساخت پشتیبان ناموفق بود: '+(e?.message||e))}}
@@ -1808,27 +1920,28 @@
   function sheetRowIssues(row){
     if(!row||typeof row!=='object'||Array.isArray(row))return ['ساختار ردیف'];
     const symbol=String(getByAliases(row,['symbol','sym','نماد','جفت ارز','جفت‌ارز','pair','instrument','contract'])??'').trim().toUpperCase();
-    const side=sideFromRow(row);
-    const lots=parseFiniteNumber(getByAliases(row,['volume','lots','lot','size','volume_in','volume_out','حجم','مقدار']));
+    const lotsRaw=parseFiniteNumber(getByAliases(row,['volume','lots','lot','size','volume_in','volume_out','حجم','مقدار']));
+    const lots=(lotsRaw===null||lotsRaw<=0)?0.01:lotsRaw;
     const netRaw=getByAliases(row,['net_profit','net pnl','net_pnl','net p/l','net_pl','pnl','profit_net','سود خالص','سود/زیان','نتیجه خالص']);
     const grossRaw=getByAliases(row,['profit','profit/loss','profit_loss','profit loss','result','سود','profit_usd','نتیجه']);
     const commissionRaw=getByAliases(row,['commission','کمیسیون']),swapRaw=getByAliases(row,['swap','سواپ']);
     let pnl=null;if(netRaw!==null)pnl=parseFiniteNumber(netRaw);else if(grossRaw!==null){const gross=parseFiniteNumber(grossRaw),commission=commissionRaw===null?0:parseFiniteNumber(commissionRaw),swap=swapRaw===null?0:parseFiniteNumber(swapRaw);pnl=gross===null||commission===null||swap===null?null:gross+commission+swap}
-    const dateRaw=getByAliases(row,['close_time','close time','close_date','closed_at','close','time_close','time','datetime','date','timestamp','تاریخ بسته شدن','تاریخ','زمان'])||getByAliases(row,['open_time','open time','entry_time','time_open','زمان ورود','تاریخ ورود']);
-    const date=parseSheetDate(dateRaw),issues=[];
-    if(!symbol||symbol==='UNKNOWN')issues.push('نماد');if(lots===null||lots<=0)issues.push('حجم عددی مثبت');if(pnl===null||!Number.isFinite(pnl))issues.push('سود/زیان عددی');if(!date)issues.push('تاریخ معتبر');return issues;
+    const dateRaw=getByAliases(row,['close_time','closeTime','close time','close_date','closed_at','close','time_close','time','datetime','date','timestamp','تاریخ بسته شدن','تاریخ','زمان'])||getByAliases(row,['open_time','openTime','open time','entry_time','time_open','زمان ورود','تاریخ ورود'])||new Date().toISOString();
+    const date=parseSheetDate(dateRaw)||new Date(),issues=[];
+    if(!symbol||symbol==='UNKNOWN')issues.push('نماد');if(!Number.isFinite(lots)||lots<=0)issues.push('حجم عددی مثبت');if(pnl===null||!Number.isFinite(pnl))issues.push('سود/زیان عددی');if(!date||Number.isNaN(date.getTime()))issues.push('تاریخ معتبر');return issues;
   }
   function normalizeSheetTrade(row){
     const issues=sheetRowIssues(row);if(issues.length){const error=new Error('فیلدهای الزامی/نامعتبر: '+issues.join('، '));error.issues=issues;throw error}
     const ticket=getByAliases(row,['ticket','ticket_id','deal','deal_id','trade_id','id','position_id','position','شناسه','تیکت','شماره معامله']),account=getByAliases(row,['account','login','account_login','شماره حساب'])||'';
     const symbol=String(getByAliases(row,['symbol','sym','نماد','جفت ارز','جفت‌ارز','pair','instrument','contract'])??'').trim().toUpperCase();
     const side=sideFromRow(row);
-    const lots=parseFiniteNumber(getByAliases(row,['volume','lots','lot','size','volume_in','volume_out','حجم','مقدار']));
+    const lotsRaw=parseFiniteNumber(getByAliases(row,['volume','lots','lot','size','volume_in','volume_out','حجم','مقدار']));
+    const lots=(lotsRaw===null||lotsRaw<=0)?0.01:lotsRaw;
     const netProfitRaw=getByAliases(row,['net_profit','net pnl','net_pnl','net p/l','net_pl','pnl','profit_net','سود خالص','سود/زیان','نتیجه خالص']),grossProfitRaw=getByAliases(row,['profit','profit/loss','profit_loss','profit loss','result','سود','profit_usd','نتیجه']),commissionRaw=getByAliases(row,['commission','کمیسیون']),swapRaw=getByAliases(row,['swap','سواپ']);
     let pnl;if(netProfitRaw!==null)pnl=parseFiniteNumber(netProfitRaw);else{const gross=parseFiniteNumber(grossProfitRaw),commission=commissionRaw===null?0:parseFiniteNumber(commissionRaw),swap=swapRaw===null?0:parseFiniteNumber(swapRaw);pnl=gross+commission+swap}
-    const dateRaw=getByAliases(row,['close_time','close time','close_date','closed_at','close','time_close','time','datetime','date','timestamp','تاریخ بسته شدن','تاریخ','زمان'])||getByAliases(row,['open_time','open time','entry_time','time_open','زمان ورود','تاریخ ورود']),date=parseSheetDate(dateRaw);
-    const openTime=getByAliases(row,['open_time','open time','entry_time','time_open','وقت ورود','زمان ورود']),entryRaw=getByAliases(row,['open_price','entry','entry_price','price_open','قیمت ورود']),stopLossRaw=getByAliases(row,['sl','stop_loss','stoploss','حد ضرر']),takeProfitRaw=getByAliases(row,['tp','take_profit','takeprofit','حد سود']),closeRaw=getByAliases(row,['close_price','exit','exit_price','price_close','قیمت خروج']);
-    const stable=ticket!==null?String(ticket):[symbol,side,lots,String(openTime||dateRaw||''),String(entryRaw??'')].join('|'),sourceKey='mt5:'+String(account)+':'+stable,strategy=getByAliases(row,['strategy','setup','استراتژی','ستاپ معاملاتی']),riskRaw=getByAliases(row,['risk_amount','initial_risk','risk_usd','risk','ریسک اولیه','مبلغ ریسک']),riskParsed=parseFiniteNumber(riskRaw);
+    const dateRaw=getByAliases(row,['close_time','closeTime','close time','close_date','closed_at','close','time_close','time','datetime','date','timestamp','تاریخ بسته شدن','تاریخ','زمان'])||getByAliases(row,['open_time','openTime','open time','entry_time','time_open','زمان ورود','تاریخ ورود'])||new Date().toISOString(),date=parseSheetDate(dateRaw)||new Date();
+    const openTime=getByAliases(row,['open_time','openTime','open time','entry_time','time_open','وقت ورود','زمان ورود']),entryRaw=getByAliases(row,['open_price','openPrice','entry','entry_price','price_open','قیمت ورود']),stopLossRaw=getByAliases(row,['sl','stop_loss','stopLoss','stoploss','حد ضرر']),takeProfitRaw=getByAliases(row,['tp','take_profit','takeProfit','takeprofit','حد سود']),closeRaw=getByAliases(row,['close_price','closePrice','exit','exit_price','price_close','قیمت خروج']);
+    const stable=ticket!==null?String(ticket):[symbol,side,lots,String(openTime||dateRaw||''),String(entryRaw??''),String(pnl)].join('|'),sourceKey='mt5:'+String(account)+':'+stable,strategy=getByAliases(row,['strategy','setup','استراتژی','ستاپ معاملاتی']),riskRaw=getByAliases(row,['risk_amount','initial_risk','risk_usd','risk','ریسک اولیه','مبلغ ریسک']),riskParsed=parseFiniteNumber(riskRaw);
     return {id:'mt5_'+hashKey(sourceKey),source:'mt5',sourceKey,account:String(account),ticket:ticket===null?'':String(ticket),symbol,side,lots,pnl,date:date.toISOString(),openTime:openTime?String(openTime):'',entryPrice:parseFiniteNumber(entryRaw)??'',stopLoss:parseFiniteNumber(stopLossRaw)??'',takeProfit:parseFiniteNumber(takeProfitRaw)??'',closePrice:parseFiniteNumber(closeRaw)??'',commission:commissionRaw===null?0:(parseFiniteNumber(commissionRaw)??0),swap:swapRaw===null?0:(parseFiniteNumber(swapRaw)??0),strategy:String(strategy||'نامشخص'),riskAmount:riskParsed!==null&&riskParsed>0?riskParsed:null,needsPsych:true,needsSideReview:!(side==='Buy'||side==='Sell'),raw:row};
   }
   function missingSheetHeaders(headers){
@@ -1878,9 +1991,8 @@
   }
   function cloudflareConfigured(){return !!(String(app?.data?.settings?.workerUrl||localStorage.getItem(WORKER_URL_KEY)||'').trim()&&String(sessionStorage.getItem(CLOUD_TOKEN_KEY)||''))}
   function readCloudflareDraft(){
-    const rawBase=String($('workerUrl')?.value||app?.data?.settings?.workerUrl||'').trim().replace(/\/+$/,'');
-    const token=String($('workerToken')?.value||app?.data?.settings?.workerToken||'').trim();
-    if(!rawBase||!token)throw new Error('آدرس Worker و کلید PWA را وارد کن؛ سپس «ذخیره تنظیمات اتصال» را بزن.');
+    const rawBase=String($('workerUrl')?.value||app?.data?.settings?.workerUrl||localStorage.getItem(WORKER_URL_KEY)||'').trim().replace(/\/+$/,'');
+    if(!rawBase)throw new Error('آدرس Worker را وارد کن؛ سپس «ذخیره تنظیمات اتصال» را بزن.');
     let parsed;try{parsed=new URL(rawBase)}catch(e){throw new Error('آدرس Worker معتبر نیست؛ آدرس کامل https:// را وارد کن.')}
     if(parsed.protocol!=='https:'||parsed.username||parsed.password||parsed.search||parsed.hash||parsed.pathname!=='/')
       throw new Error('آدرس Worker باید فقط دامنه HTTPS باشد و در انتها مسیر /api نداشته باشد.');
@@ -1931,9 +2043,10 @@
       }
       // Keep successfully saved connection settings even if the journal request later fails.
       before=clone(app.data);
-      const data=await cloudflareApi('/api/journal?limit=2000');
-      if(!Array.isArray(data.trades))throw new Error('ساختار پاسخ ژورنال D1 معتبر نیست.');
-      const result=mergeTrades(data.trades,data.headers||[]);
+      const data=await cloudflareApi('/api/journal?limit=2000&_='+Date.now());
+      const rows=Array.isArray(data.trades)?data.trades:(Array.isArray(data.items)?data.items:(Array.isArray(data.data)?data.data:null));
+      if(!Array.isArray(rows))throw new Error('ساختار پاسخ ژورنال D1 معتبر نیست.');
+      const result=mergeTrades(rows,data.headers||[]);
       app.data.lastSync=new Date().toISOString();app.data.lastSyncCount=result.valid;
       if(!(await persist()))throw new Error('ذخیره محلی ناموفق بود؛ داده‌ها به حالت قبلی بازگردانده شدند.');
       app.syncReport={status:data.trades.length?'success':'empty',total:result.total,valid:result.valid,added:result.added,updated:result.updated,skipped:result.skipped,unknownSide:result.unknownSide||0,invalidDetails:result.invalidDetails||[],headers:data.headers||[]};
@@ -2258,7 +2371,44 @@
   async function registerServiceWorker(){if(!('serviceWorker'in navigator)||!location.protocol.startsWith('http'))return null;try{const registration=await navigator.serviceWorker.register('./sw.js');if(registration.waiting&&navigator.serviceWorker.controller)activateWaitingWorker(registration);registration.addEventListener('updatefound',()=>{const installing=registration.installing;if(!installing)return;installing.addEventListener('statechange',()=>{if(installing.state==='installed'&&navigator.serviceWorker.controller)activateWaitingWorker(registration)})});return registration}catch(error){console.warn('Service Worker registration failed',error);return null}}
   if('serviceWorker' in navigator)navigator.serviceWorker.addEventListener('message',event=>{if(event.data?.type==='MINDTRADER_PUSH_RECEIVED'&&app.key){refreshNotificationCenter(true)}});
   async function validateCloudSession(){const token=sessionStorage.getItem(CLOUD_TOKEN_KEY),baseUrl=localStorage.getItem(WORKER_URL_KEY);if(!token||!baseUrl)return false;try{const r=await fetch(baseUrl+'/api/auth/me',{headers:{Authorization:'Bearer '+token},cache:'no-store'});const data=await r.json();if(r.ok&&data.status==='success'){app.cloudUser=data.user;return true}if(r.status===401||r.status===403){toast(data.message||'اعتبار حساب یا نشست پایان یافته است.');await lockApp();return false}return false}catch(e){return false}}
-  async function init(){bindEvents();initActivityTracking();await registerServiceWorker();setInterval(()=>{if(app.key){validateCloudSession();refreshNotificationCenter(true)}},15*1000);const token=sessionStorage.getItem(CLOUD_TOKEN_KEY),baseUrl=localStorage.getItem(WORKER_URL_KEY);if(token&&baseUrl){try{const r=await fetch(baseUrl+'/api/auth/me',{headers:{Authorization:'Bearer '+token},cache:'no-store'});const data=await r.json();if(r.ok&&data.status==='success'){app.cloudUser=data.user;const resumed=await resumeRememberedSession();if(resumed){if(app.data?.settings)app.data.settings.workerUrl=baseUrl;await showApp({remember:false});return}}}catch(e){console.warn('Cloud session resume failed',e)}sessionStorage.removeItem(CLOUD_TOKEN_KEY)}showLogin(false)}
+  async function init(){
+    const removeFlash=()=>{const el=document.getElementById('zt-hide-login-flash');if(el)el.remove();};
+    bindEvents();initActivityTracking();await registerServiceWorker();
+    setInterval(()=>{if(app.key){validateCloudSession();refreshNotificationCenter(true)}},15*1000);
+    const token=sessionStorage.getItem(CLOUD_TOKEN_KEY),baseUrl=localStorage.getItem(WORKER_URL_KEY);
+    if(token&&baseUrl){
+      try{
+        const r=await fetch(baseUrl+'/api/auth/me',{headers:{Authorization:'Bearer '+token},cache:'no-store'});
+        const data=await r.json();
+        if(r.ok&&data.status==='success'){
+          app.cloudUser=data.user;
+          const resumed=await resumeRememberedSession();
+          if(resumed){
+            if(app.data?.settings)app.data.settings.workerUrl=baseUrl;
+            await showApp({remember:false});
+            removeFlash();
+            return;
+          }
+        }
+      }catch(e){console.warn('Cloud session resume failed',e)}
+      sessionStorage.removeItem(CLOUD_TOKEN_KEY);
+    }
+    const auth=JSON.parse(localStorage.getItem(AUTH_KEY)||'null');
+    if(auth?.biometric?.credentialId&&biometricSupported()){
+      try{
+        await unlockWithPasskey();
+        removeFlash();
+        return;
+      }catch(bioErr){
+        removeFlash();
+        showLogin(false);
+        if(bioErr?.name!=='NotAllowedError')$('loginError').textContent=bioErr?.message||'ورود خودکار با اثر انگشت انجام نشد؛ لمس کن یا با رمز وارد شو.';
+        return;
+      }
+    }
+    removeFlash();
+    showLogin(false);
+  }
   init().catch(err=>{console.error(err);showLogin(Boolean(!localStorage.getItem(AUTH_KEY))) });
 })();
 
