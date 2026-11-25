@@ -1189,31 +1189,30 @@
   </div>
   <div id="mt5PaneChart" class="mt5-inner-pane" role="tabpanel" aria-labelledby="mt5TabChart">
     <div class="card mt5-chart-card">
-      <div class="card-head"><h3 id="mt5ChartTitle">نمودار زنده MT5</h3><span class="pill" id="mt5ChartFeedBadge">در انتظار فید MT5</span></div>
+      <div class="card-head"><h3 id="mt5ChartTitle">نمودار TradingView</h3><span class="pill good" id="mt5ChartFeedBadge">TradingView</span></div>
       <div class="mt5-chart-controls" style="flex-wrap:wrap">
         <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-          <select id="mt5ExtSymbol" aria-label="نماد چارت" style="min-height:30px;padding:4px 8px;font-size:11px;width:auto">
-            <option value="XAUUSD" selected>XAUUSD (طلا)</option>
-            <option value="BTCUSD">BTCUSD (بیت‌کوین)</option>
-            <option value="EURUSD">EURUSD</option>
-            <option value="GBPUSD">GBPUSD</option>
+          <select id="tvSymbolSelect" aria-label="نماد تریدینگ‌ویو" style="min-height:30px;padding:4px 8px;font-size:11px;width:auto">
+            <option value="OANDA:XAUUSD" selected>XAUUSD (طلا)</option>
+            <option value="BINANCE:BTCUSDT">BTCUSD (بیت‌کوین)</option>
+            <option value="OANDA:EURUSD">EURUSD</option>
+            <option value="OANDA:GBPUSD">GBPUSD</option>
           </select>
-          <select id="mt5ExtTf" aria-label="تایم‌فریم چارت" style="min-height:30px;padding:4px 8px;font-size:11px;width:auto">
-            <option value="1m">M1</option>
-            <option value="5m" selected>M5</option>
-            <option value="15m">M15</option>
-            <option value="1h">H1</option>
+          <select id="tvIntervalSelect" aria-label="تایم‌فریم تریدینگ‌ویو" style="min-height:30px;padding:4px 8px;font-size:11px;width:auto">
+            <option value="1">M1</option>
+            <option value="5" selected>M5</option>
+            <option value="15">M15</option>
+            <option value="60">H1</option>
+            <option value="240">H4</option>
           </select>
-          <input id="mt5TwelveKey" type="password" placeholder="کلید TwelveData (اختیاری برای طلا/فارکس)" dir="ltr" style="min-height:30px;padding:4px 8px;font-size:11px;width:165px">
         </div>
         <div style="display:flex;gap:8px;align-items:center">
-          <div class="mt5-chart-status"><i class="live-dot"></i><span id="mt5ChartMeta">فید خارجی زنده</span></div>
-          <button type="button" class="mt5-chart-mini-btn" id="mt5ChartReload">↻ بروزرسانی</button>
+          <div class="mt5-chart-status"><i class="live-dot"></i><span id="mt5ChartMeta">TradingView Widget</span></div>
+          <button type="button" class="mt5-chart-mini-btn" id="mt5ChartReload">↻ بارگذاری مجدد</button>
         </div>
       </div>
       <div class="mt5-chart-frame-wrap" id="mt5ChartFrameWrap">
-        <div id="mt5TradingChart" role="img" aria-label="نمودار کندلی زنده MT5"><div class="mt5-chart-empty">در انتظار دریافت کندل‌های واقعی از اکسپرت MT5…</div></div>
-        <div id="mt5ChartTooltip" class="mt5-chart-tooltip" aria-live="polite"></div>
+        <div id="mt5TradingChart" style="width:100%;height:100%"></div>
       </div>
     </div>
   </div>
@@ -2434,148 +2433,91 @@
 </script>
   <div id="pdf-report-root" aria-hidden="true"></div>
 
-<script src="./lightweight-charts.standalone.production.js"></script>
-<script>window.LightweightCharts||document.write('<script src="https://unpkg.com/lightweight-charts@4.2.2/dist/lightweight-charts.standalone.production.js"><\/script>');</script>
 <script id="zt-mt5-dual-view-js">
 (function(){
   const root=document.getElementById('view-mt5control'); if(!root||root.dataset.dualViewReady==='1')return; root.dataset.dualViewReady='1';
   const chartTab=document.getElementById('mt5TabChart'), tradeTab=document.getElementById('mt5TabTrade');
   const chartPane=document.getElementById('mt5PaneChart'), tradePane=document.getElementById('mt5PaneTrade');
-  function setPane(which){const chart=which==='chart'; chartPane.hidden=!chart;tradePane.hidden=chart;chartTab.classList.toggle('active',chart);tradeTab.classList.toggle('active',!chart);chartTab.setAttribute('aria-selected',String(chart));tradeTab.setAttribute('aria-selected',String(!chart));if(chart){if(window.__ztRenderMt5PriceChart&&window.__ztLastChartPayload)window.__ztRenderMt5PriceChart(window.__ztLastChartPayload,window.__ztLastPositions||[]);if(window.__ztMt5ChartResize)window.__ztMt5ChartResize();if(window.__ztMt5RefreshNow)window.__ztMt5RefreshNow();}}
-  chartTab?.addEventListener('click',()=>setPane('chart'));tradeTab?.addEventListener('click',()=>setPane('trade'));
-  document.getElementById('mt5ChartReload')?.addEventListener('click',()=>window.__ztMt5RefreshNow&&window.__ztMt5RefreshNow());
+  function setPane(which){
+    const chart=which==='chart';
+    chartPane.hidden=!chart;tradePane.hidden=chart;
+    chartTab.classList.toggle('active',chart);tradeTab.classList.toggle('active',!chart);
+    chartTab.setAttribute('aria-selected',String(chart));tradeTab.setAttribute('aria-selected',String(!chart));
+    if(chart && window.__ztMountTradingView) window.__ztMountTradingView(false);
+  }
+  chartTab?.addEventListener('click',()=>setPane('chart'));
+  tradeTab?.addEventListener('click',()=>setPane('trade'));
   setPane('chart');
 })();
 </script>
-<script id="zt-mt5-price-chart-js">
+<script id="zt-tradingview-widget-js">
 (function(){
-  const host=document.getElementById('mt5TradingChart'); if(!host||host.dataset.chartReady==='1')return; host.dataset.chartReady='1';
-  const symSel=document.getElementById('mt5ExtSymbol'), tfSel=document.getElementById('mt5ExtTf'), tdKeyInput=document.getElementById('mt5TwelveKey');
-  const tooltip=document.getElementById('mt5ChartTooltip'), badge=document.getElementById('mt5ChartFeedBadge'), meta=document.getElementById('mt5ChartMeta'), title=document.getElementById('mt5ChartTitle');
-  let chart=null,candleSeries=null,volumeSeries=null,positionLines=[],currentPositions=[],resizeObserver=null,pollTimer=null,lastKey='';
-  const TD_STORAGE_KEY='zt_twelvedata_api_key_v1';
-  if(tdKeyInput){try{tdKeyInput.value=localStorage.getItem(TD_STORAGE_KEY)||'';}catch(e){}}
-  tdKeyInput?.addEventListener('change',()=>{try{localStorage.setItem(TD_STORAGE_KEY,tdKeyInput.value.trim());}catch(e){}fetchExtCandles(true);});
-  symSel?.addEventListener('change',()=>fetchExtCandles(true));
-  tfSel?.addEventListener('change',()=>fetchExtCandles(true));
+  const host=document.getElementById('mt5TradingChart');
+  const symSel=document.getElementById('tvSymbolSelect');
+  const tfSel=document.getElementById('tvIntervalSelect');
+  const title=document.getElementById('mt5ChartTitle');
+  const meta=document.getElementById('mt5ChartMeta');
+  if(!host)return;
 
-  const money=v=>{const n=Number(v||0);return (n<0?'-':'')+'$'+Math.abs(n).toFixed(2)};
-  const escHtml=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  let lastMountedKey='';
 
-  function ensureChart(){
-    if(chart)return true;
-    if(!window.LightweightCharts){host.innerHTML='<div class="mt5-chart-empty">کتابخانه نمودار بارگذاری نشد. اتصال اینترنت را بررسی کن.</div>';return false;}
-    const L=window.LightweightCharts;
-    chart=L.createChart(host,{width:host.clientWidth||320,height:host.clientHeight||480,layout:{background:{type:'solid',color:'#050b12'},textColor:'#a9bac9',fontFamily:'Tahoma,Arial',fontSize:11},grid:{vertLines:{color:'#172838'},horzLines:{color:'#172838'}},rightPriceScale:{borderColor:'#26394a',scaleMargins:{top:.08,bottom:.18}},timeScale:{borderColor:'#26394a',timeVisible:true,secondsVisible:false,rightOffset:3},crosshair:{mode:L.CrosshairMode?.Normal??0},handleScroll:{mouseWheel:true,pressedMouseMove:true,horzTouchDrag:true,vertTouchDrag:true},handleScale:{axisPressedMouseMove:true,mouseWheel:true,pinch:true}});
-    candleSeries=chart.addCandlestickSeries({upColor:'#13bd91',downColor:'#ef5366',borderUpColor:'#13bd91',borderDownColor:'#ef5366',wickUpColor:'#13bd91',wickDownColor:'#ef5366',priceLineVisible:true,lastValueVisible:true});
-    volumeSeries=chart.addHistogramSeries({priceFormat:{type:'volume'},priceScaleId:'volume',scaleMargins:{top:.82,bottom:0},lastValueVisible:false,priceLineVisible:false});
-    chart.priceScale('volume').applyOptions({scaleMargins:{top:.82,bottom:0},visible:false});
-    chart.subscribeClick(onChartClick);
-    if('ResizeObserver'in window){resizeObserver=new ResizeObserver(()=>resizeChart());resizeObserver.observe(host);}else window.addEventListener('resize',resizeChart);
-    return true;
-  }
-  function resizeChart(){if(chart&&host.clientWidth>0&&host.clientHeight>0)chart.applyOptions({width:host.clientWidth,height:host.clientHeight});}
-  function clearPositionLines(){for(const x of positionLines){try{candleSeries.removePriceLine(x.line)}catch(e){}}positionLines=[];}
-  function addPositionLines(positions,symbol){
-    if(!candleSeries)return;
-    clearPositionLines();currentPositions=Array.isArray(positions)?positions:[];
-    const normSym=String(symbol||'').toUpperCase().replace(/[^A-Z]/g,'');
-    currentPositions.filter(p=>String(p.symbol||'').toUpperCase().replace(/[^A-Z]/g,'').startsWith(normSym.slice(0,6))).forEach(p=>{
-      const side=String(p.side||'').toUpperCase(),buy=side.includes('BUY'),color=buy?'#24c99a':'#ff6678';
-      const ticket=String(p.ticket||'');
-      const add=(price,label,lineColor,lineStyle)=>{const v=Number(price);if(!(v>0))return;const line=candleSeries.createPriceLine({price:v,color:lineColor,lineWidth:1,lineStyle,axisLabelVisible:true,title:label,axisLabelColor:lineColor,axisLabelTextColor:'#06131d'});positionLines.push({line,kind:label.split(' ')[1]||'ENTRY',ticket,price:v,position:p});};
-      add(p.open,`#${ticket} ENTRY`,color,0);add(p.sl,`#${ticket} SL`,'#f05b6d',2);add(p.tp,`#${ticket} TP`,'#22c995',2);
-    });
-  }
-  function onChartClick(param){
-    if(!param||!param.point||!candleSeries){hideTooltip();return;}
-    const y=param.point.y;let best=null,bestDist=15;
-    for(const p of currentPositions){
-      const price=Number(p.open);if(!(price>0))continue;
-      const py=candleSeries.priceToCoordinate(price);if(py==null)continue;const d=Math.abs(py-y);
-      if(d<bestDist){bestDist=d;best=p;}
-    }
-    if(!best){hideTooltip();return;}
-    const pnl=Number(best.profit||0),side=String(best.side||'');
-    tooltip.innerHTML=`<b>#${escHtml(best.ticket)}</b> · ${escHtml(side)} ${escHtml(best.symbol||'')}<br>حجم: ${escHtml(best.lots??'—')}<br><span class="pnl ${pnl>=0?'positive':'negative'}">${money(pnl)}</span> · سود/زیان شناور`;
-    const x=Math.max(6,Math.min(host.clientWidth-220,param.point.x+10));const top=Math.max(6,Math.min(host.clientHeight-90,y-46));tooltip.style.left=x+'px';tooltip.style.top=top+'px';tooltip.classList.add('show');
-  }
-  function hideTooltip(){tooltip?.classList.remove('show');}
+  function mountWidget(force=false){
+    const sym=symSel?.value||'OANDA:XAUUSD';
+    const interval=tfSel?.value||'5';
+    const isLight=document.body.classList.contains('light');
+    const key=`${sym}|${interval}|${isLight?'light':'dark'}`;
+    if(!force && key===lastMountedKey && host.querySelector('iframe'))return;
+    lastMountedKey=key;
 
-  async function loadBinanceBars(sym,tf){
-    const pair=sym==='BTCUSD'?'BTCUSDT':sym;
-    const r=await fetch(`https://api.binance.com/api/v3/klines?symbol=${pair}&interval=${tf}&limit=180`,{cache:'no-store'});
-    if(!r.ok)throw new Error('Binance HTTP '+r.status);
-    const rows=await r.json();
-    return rows.map(k=>({
-      time:Math.floor(Number(k[0])/1000)-new Date().getTimezoneOffset()*60,
-      open:Number(k[1]),high:Number(k[2]),low:Number(k[3]),close:Number(k[4]),volume:Number(k[5]||0)
-    }));
+    const shortSym=sym.includes(':')?sym.split(':')[1]:sym;
+    if(title)title.textContent=`${shortSym} · TradingView`;
+    if(meta)meta.textContent=`${shortSym} · ${interval}m`;
+
+    const config={
+      autosize:true,
+      symbol:sym,
+      interval:interval,
+      timezone:'Asia/Tehran',
+      theme:isLight?'light':'dark',
+      style:'1',
+      locale:'fa',
+      allow_symbol_change:true,
+      calendar:false,
+      support_host:'https://www.tradingview.com'
+    };
+
+    host.innerHTML='';
+    const wrap=document.createElement('div');
+    wrap.className='tradingview-widget-container';
+    wrap.style.width='100%';
+    wrap.style.height='100%';
+
+    const widgetDiv=document.createElement('div');
+    widgetDiv.className='tradingview-widget-container__widget';
+    widgetDiv.style.width='100%';
+    widgetDiv.style.height='100%';
+
+    const script=document.createElement('script');
+    script.type='text/javascript';
+    script.src='https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js';
+    script.async=true;
+    script.textContent=JSON.stringify(config);
+
+    wrap.appendChild(widgetDiv);
+    wrap.appendChild(script);
+    host.appendChild(wrap);
   }
 
-  async function loadTwelveDataBars(sym,tf,apiKey){
-    const intervalMap={'1m':'1min','5m':'5min','15m':'15min','1h':'1h'};
-    const tdSym=sym==='XAUUSD'?'XAU/USD':(sym.length===6?sym.slice(0,3)+'/'+sym.slice(3):sym);
-    const r=await fetch(`https://api.twelvedata.com/time_series?symbol=${encodeURIComponent(tdSym)}&interval=${intervalMap[tf]||'5min'}&outputsize=180&apikey=${encodeURIComponent(apiKey)}`,{cache:'no-store'});
-    if(!r.ok)throw new Error('TwelveData HTTP '+r.status);
-    const j=await r.json();
-    if(j.status==='error'||!Array.isArray(j.values))throw new Error(j.message||'پاسخ TwelveData نامعتبر است');
-    return j.values.slice().reverse().map(v=>({
-      time:Math.floor(Date.parse(v.datetime.replace(' ','T')+'Z')/1000)-new Date().getTimezoneOffset()*60,
-      open:Number(v.open),high:Number(v.high),low:Number(v.low),close:Number(v.close),volume:Number(v.volume||0)
-    }));
-  }
-
-  async function fetchExtCandles(force=false){
-    const sym=symSel?.value||'XAUUSD';
-    const tf=tfSel?.value||'5m';
-    const apiKey=(tdKeyInput?.value||'').trim();
-    try{
-      let bars=[];
-      if(sym==='BTCUSD'||sym==='BTCUSDT'){
-        bars=await loadBinanceBars(sym,tf);
-      }else if(apiKey){
-        bars=await loadTwelveDataBars(sym,tf,apiKey);
-      }else{
-        if(badge){badge.textContent='نیاز به کلید TwelveData';badge.className='pill warn';}
-        if(meta)meta.textContent='برای XAUUSD/فارکس کلید رایگان TwelveData را وارد کن یا BTCUSD را انتخاب کن';
-        return;
-      }
-      const clean=bars.filter(b=>b.time>0&&b.open>0&&b.high>0&&b.low>0&&b.close>0);
-      if(!clean.length||!ensureChart())return;
-      const sig=clean.map(b=>`${b.time}:${b.open}:${b.high}:${b.low}:${b.close}`).join('|');
-      if(force||sig!==lastKey){
-        candleSeries.setData(clean.map(b=>({time:b.time,open:b.open,high:b.high,low:b.low,close:b.close})));
-        volumeSeries.setData(clean.map(b=>({time:b.time,value:b.volume,color:b.close>=b.open?'rgba(19,189,145,.38)':'rgba(239,83,102,.38)'})));
-        lastKey=sig;
-      }
-      addPositionLines(currentPositions,sym);
-      if(title)title.textContent=`${sym} · ${tf.toUpperCase()}`;
-      if(meta)meta.textContent=`${sym} · ${tf.toUpperCase()} · فید خارجی`;
-      if(badge){badge.textContent='LIVE';badge.className='pill good';}
-      resizeChart();
-    }catch(err){
-      if(badge){badge.textContent='خطای فید';badge.className='pill bad';}
-      if(meta)meta.textContent=err?.message||'خطا در دریافت کندل';
-    }
-  }
-
-  function render(_chartData,positions){
-    currentPositions=Array.isArray(positions)?positions:[];
-    addPositionLines(currentPositions,symSel?.value||'XAUUSD');
-    fetchExtCandles(false);
-  }
-
-  window.__ztRenderMt5PriceChart=render;
-  window.__ztMt5ChartResize=resizeChart;
-  window.__ztMt5RefreshNow=()=>fetchExtCandles(true);
-  document.getElementById('mt5ChartReload')?.addEventListener('click',()=>fetchExtCandles(true));
-  window.addEventListener('pointerdown',e=>{if(!host.contains(e.target)&&!tooltip.contains(e.target))hideTooltip();},{passive:true});
-  clearInterval(pollTimer);
-  pollTimer=setInterval(()=>{if(document.visibilityState==='visible'&&!document.getElementById('mt5PaneChart')?.hidden)fetchExtCandles(false);},5000);
-  setTimeout(()=>fetchExtCandles(true),300);
+  symSel?.addEventListener('change',()=>mountWidget(true));
+  tfSel?.addEventListener('change',()=>mountWidget(true));
+  document.getElementById('mt5ChartReload')?.addEventListener('click',()=>mountWidget(true));
+  document.getElementById('themeBtn')?.addEventListener('click',()=>setTimeout(()=>mountWidget(true),60));
+  window.__ztMountTradingView=mountWidget;
+  window.__ztRenderMt5PriceChart=()=>mountWidget(false);
+  window.__ztMt5ChartResize=()=>{};
+  setTimeout(()=>mountWidget(true),200);
 })();
-</script></script>
+</script>
 
 </body>
 </html>
