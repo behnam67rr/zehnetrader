@@ -3540,11 +3540,13 @@ if(document.readyState==='loading')addEventListener('DOMContentLoaded',startDomB
       const offset=append?noticeCache.length:0;
       const [nRes,aRes,pRes]=await Promise.all([
         callCloud('/api/notifications?limit='+limit+'&offset='+offset),
-        callCloud('/api/price-alerts'),
-        prefsFetched?Promise.resolve({}):callCloud('/api/notification-preferences')
+        callCloud('/api/price-alerts').catch(e=>({alerts:[],_err:e})),
+        prefsFetched?Promise.resolve({}):callCloud('/api/notification-preferences').catch(e=>({_err:e}))
       ]);
+      // A failing side-endpoint (alerts / sound prefs) must not blank the whole list.
+      const softErr=aRes._err||pRes._err;
       if(seq!==refreshSeq&&!append)return; // a newer refresh superseded this one
-      if(!prefsFetched){
+      if(!prefsFetched&&!pRes._err){
         prefsFetched=true;
         if(!soundPrefsLoaded&&pRes.preferences&&Object.keys(pRes.preferences).length){const prefs={...soundDefaults,...pRes.preferences};customAudioData=prefs.customAudio||'';['soundPrice','soundSystem','soundTrade','soundVolume','soundRepeat','quietHours'].forEach((id,i)=>{if($(id))$(id).value=[prefs.price,prefs.system,prefs.trade,prefs.volume,prefs.repeat,prefs.quiet][i]});if($('soundVolumeLabel'))$('soundVolumeLabel').textContent=prefs.volume+'%';soundPrefsLoaded=true;}
       }
@@ -3576,6 +3578,7 @@ if(document.readyState==='loading')addEventListener('DOMContentLoaded',startDomB
       renderNoticeList();
       updatePushStateUI();
       const alerts=Array.isArray(aRes.alerts)?aRes.alerts:[];if($('priceAlertList')){$('priceAlertList').innerHTML=alerts.length?alerts.map(x=>`<div class="notice" style="margin:6px 0;display:flex;justify-content:space-between;align-items:center;gap:8px"><b dir="ltr">${esc(x.symbol)} ${x.condition==='ABOVE'?'≥':'≤'} ${enNum(x.target_price)}</b><button type="button" class="btn danger" data-del-alert="${esc(x.id)}">حذف</button></div>`).join(''):'<div class="empty">هشداری ثبت نشده است.</div>';$('priceAlertList').querySelectorAll('[data-del-alert]').forEach(btn=>btn.onclick=async()=>{try{await callCloud('/api/price-alerts',{method:'POST',body:JSON.stringify({action:'delete',id:btn.dataset.delAlert})});await enhancedRefreshNotifications(false)}catch(e){updatePushStatusText('حذف هشدار ناموفق بود: '+e.message)}})}
+      if(softErr)updatePushStatusText('بخشی از داده‌ها بارگذاری نشد: '+(softErr.message||softErr));
       if(!pushResynced){pushResynced=true;resyncPushSubscription();}
     }catch(e){updatePushStatusText('خطا در دریافت اعلان‌ها: '+(e?.message||e));}
   }
