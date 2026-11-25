@@ -1723,14 +1723,14 @@ if(document.readyState==='loading')addEventListener('DOMContentLoaded',startDomB
           <form id="loginForm">
             <div class="field" id="loginWorkerField" hidden aria-hidden="true"><label for="loginWorkerUrl">آدرس Cloudflare Worker</label><input id="loginWorkerUrl" type="url" dir="ltr" tabindex="-1" autocomplete="off" value="https://wall-street-fx-api.ll3ehi3071.workers.dev"></div>
             <div class="field"><label for="loginUsername">نام کاربری</label><input id="loginUsername" type="text" minlength="3" maxlength="32" autocomplete="username" placeholder="نام کاربری حساب" dir="ltr" required></div>
-            <div class="field"><label for="password">رمز حساب ابری</label><input id="password" type="password" minlength="8" autocomplete="current-password" placeholder="رمز عبور حساب" required></div>
+            <div class="field hidden" id="passwordLoginField"><label for="password">رمز حساب ابری</label><input id="password" type="password" minlength="8" autocomplete="current-password" placeholder="رمز عبور حساب" required></div>
             <div class="field" id="localVaultField"><label for="localVaultPassword">رمزگذاری محلی ژورنال (مستقل از رمز حساب ابری)</label><input id="localVaultPassword" type="password" autocomplete="current-password" placeholder="رمز قبلی فضای امن محلی"></div>
             <div class="field" id="localVaultConfirmField"><label for="localVaultConfirm">تکرار رمز فضای امن محلی</label><input id="localVaultConfirm" type="password" autocomplete="new-password" placeholder="تکرار رمز محلی"></div>
             <div class="field" id="rememberField" style="margin:4px 0 12px">
               <label style="display:flex;align-items:center;gap:8px;color:var(--muted)"><input id="rememberSession" type="checkbox" checked style="width:auto"> این نشست را تا ۱۰ دقیقه عدم فعالیت باز نگه دار</label>
             </div>
             <div id="loginError" class="small negative" style="min-height:18px;margin-bottom:8px"></div>
-            <button class="btn primary login-submit" id="loginSubmit" type="submit">ورود به حساب ابری</button>
+            <button class="btn primary login-submit hidden" id="loginSubmit" type="submit">ورود به حساب ابری</button>
           </form>
           <div class="login-utilities">
             <label class="btn ghost" for="restoreFile">بازیابی پشتیبان رمزگذاری‌شده</label><input id="restoreFile" type="file" accept="application/json,.json" class="hidden">
@@ -2135,6 +2135,7 @@ if(document.readyState==='loading')addEventListener('DOMContentLoaded',startDomB
   const WORKER_URL_KEY = 'zt_cloud_worker_url_v1';
   const DEFAULT_WORKER_URL = 'https://wall-street-fx-api.ll3ehi3071.workers.dev';
   const LAST_LOGIN_USERNAME_KEY = 'zt_last_login_username_session_v1';
+  const LAST_LOGIN_USERNAME_LOCAL_KEY = 'zt_last_login_username_v1';
   const THEME_KEY = 'zt2_theme_v1';
   const DEFAULT_STATE = {
     trades: [],
@@ -2151,6 +2152,19 @@ if(document.readyState==='loading')addEventListener('DOMContentLoaded',startDomB
     ignoredSourceKeys: []
   };
   const $ = id => document.getElementById(id);
+  function saveRememberedUsername(value) {
+    const username = String(value || '').trim();
+    if (!username) return;
+    try { localStorage.setItem(LAST_LOGIN_USERNAME_LOCAL_KEY, username); } catch (_) {}
+    try { sessionStorage.setItem(LAST_LOGIN_USERNAME_KEY, username); } catch (_) {}
+  }
+  function getRememberedUsername() {
+    try {
+      const saved = localStorage.getItem(LAST_LOGIN_USERNAME_LOCAL_KEY);
+      if (saved) return saved;
+    } catch (_) {}
+    try { return sessionStorage.getItem(LAST_LOGIN_USERNAME_KEY) || ''; } catch (_) { return ''; }
+  }
   let app = {
     data: clone(DEFAULT_STATE),
     key: 'online-session',
@@ -2390,7 +2404,7 @@ if(document.readyState==='loading')addEventListener('DOMContentLoaded',startDomB
       sessionStorage.setItem(WORKER_URL_KEY, base);
       app.data.settings.workerUrl = base;
       app.cloudUser = payload.user;
-      sessionStorage.setItem(LAST_LOGIN_USERNAME_KEY, payload.user.username || username);
+      saveRememberedUsername(payload.user.username || username);
 
       setLoginStage('ورود تأیید شد؛ در حال باز کردن برنامه…');
       return payload;
@@ -2503,7 +2517,8 @@ if(document.readyState==='loading')addEventListener('DOMContentLoaded',startDomB
     sessionStorage.setItem('zt_passkey_credential_id_v1', verified.credentialId || assertion.id);
     app.data.settings.workerUrl = base;
     app.cloudUser = verified.user;
-    sessionStorage.setItem(LAST_LOGIN_USERNAME_KEY, verified.user.username || username);
+    saveRememberedUsername(verified.user.username || username);
+    try { localStorage.setItem('zt_passkey_auto_login_v1', '1'); } catch (_) {}
     return verified;
   }
 
@@ -2533,6 +2548,8 @@ if(document.readyState==='loading')addEventListener('DOMContentLoaded',startDomB
       })
     });
     sessionStorage.setItem('zt_passkey_credential_id_v1', result.credentialId);
+    saveRememberedUsername(app.cloudUser?.username || $('loginUsername')?.value || '');
+    try { localStorage.setItem('zt_passkey_auto_login_v1', '1'); } catch (_) {}
     return result;
   }
 
@@ -2581,6 +2598,7 @@ if(document.readyState==='loading')addEventListener('DOMContentLoaded',startDomB
       body: JSON.stringify({ credentialId })
     });
     sessionStorage.removeItem('zt_passkey_credential_id_v1');
+    try { localStorage.removeItem('zt_passkey_auto_login_v1'); } catch (_) {}
     await refreshCloudPasskeyStatus();
     return true;
   }
@@ -2606,14 +2624,69 @@ if(document.readyState==='loading')addEventListener('DOMContentLoaded',startDomB
     $('localVaultConfirmField')?.classList.add('hidden');
     $('rememberField')?.classList.add('hidden');
     $('passkeyLogin')?.parentElement?.classList.remove('hidden');
-    if ($('passkeyHint')) $('passkeyHint').textContent = 'نام کاربری حساب را وارد کن و اثر انگشت را بزن؛ ثبت اولیه Passkey از تنظیمات انجام می‌شود.';
-    $('passwordFallbackToggle')?.classList.add('hidden');
-    $('passwordFallback')?.classList.remove('is-collapsed');
-    $('loginSubmit').textContent = 'ورود به حساب ابری';
-    $('password').value = '';
-    $('cryptoStatus').textContent = 'حالت بدون ذخیره‌سازی محلی (Online Only)';
+    if ($('passkeyHint')) $('passkeyHint').textContent = 'در حال آماده‌سازی ورود با اثر انگشت؛ در صورت نیاز می‌توانی از ورود با رمز عبور استفاده کنی.';
+    $('passwordFallbackToggle')?.classList.remove('hidden');
+    $('passwordFallbackToggle').textContent = 'ورود با رمز عبور';
+    $('passwordLoginField')?.classList.add('hidden');
+    $('loginSubmit')?.classList.add('hidden');
+    if ($('password')) { $('password').value = ''; $('password').required = false; }
+    $('cryptoStatus').textContent = 'حالت کاملاً آنلاین؛ اطلاعات در فضای ابری ذخیره می‌شوند.';
     $('loginWorkerUrl').value = DEFAULT_WORKER_URL;
-    $('loginUsername').value = sessionStorage.getItem(LAST_LOGIN_USERNAME_KEY) || '';
+    $('loginUsername').value = getRememberedUsername();
+    automaticPasskeyAttemptStarted = false;
+    setTimeout(() => { tryAutomaticPasskeyLogin(); }, 350);
+  }
+
+  function revealPasswordLogin(forceOpen = null) {
+    const field = $('passwordLoginField');
+    const submit = $('loginSubmit');
+    const password = $('password');
+    const toggle = $('passwordFallbackToggle');
+    if (!field || !submit) return;
+    const currentlyHidden = field.classList.contains('hidden');
+    const open = forceOpen === null ? currentlyHidden : Boolean(forceOpen);
+    field.classList.toggle('hidden', !open);
+    submit.classList.toggle('hidden', !open);
+    if (password) password.required = open;
+    if (toggle) toggle.textContent = open ? 'بازگشت به ورود با اثر انگشت' : 'ورود با رمز عبور';
+    if (open) password?.focus();
+  }
+
+  let automaticPasskeyAttemptStarted = false;
+  async function tryAutomaticPasskeyLogin() {
+    if (automaticPasskeyAttemptStarted) return;
+    const username = getRememberedUsername();
+    if (!username) {
+      if ($('passkeyHint')) $('passkeyHint').textContent = 'نام کاربری را وارد کن؛ سپس ورود با اثر انگشت را انتخاب کن.';
+      return;
+    }
+    if (!window.isSecureContext || !navigator.credentials || typeof navigator.credentials.get !== 'function') {
+      if ($('passkeyHint')) $('passkeyHint').textContent = 'این مرورگر از ورود بیومتریک پشتیبانی نمی‌کند؛ از ورود با رمز عبور استفاده کن.';
+      return;
+    }
+    automaticPasskeyAttemptStarted = true;
+    $('loginUsername').value = username;
+    const button = $('passkeyLogin');
+    if (button) button.disabled = true;
+    if ($('passkeyHint')) $('passkeyHint').textContent = 'در حال تلاش برای ورود خودکار با اثر انگشت…';
+    try {
+      await cloudAuthPasskeyLogin();
+      if ($('loginError')) $('loginError').textContent = 'هویت تأیید شد؛ در حال بارگذاری اطلاعات ابری…';
+      await showApp();
+    } catch (e) {
+      const message = String(e?.message || e || '');
+      if ($('passkeyHint')) {
+        $('passkeyHint').textContent = e?.name === 'NotAllowedError'
+          ? 'برای ورود، دکمه اثر انگشت را بزن؛ ممکن است مرورگر شروع خودکار را محدود کرده باشد.'
+          : 'ورود خودکار انجام نشد؛ می‌توانی دوباره اثر انگشت را امتحان کنی یا با رمز وارد شوی.';
+      }
+      if ($('loginError') && message && e?.name !== 'NotAllowedError') {
+        $('loginError').style.display = 'block';
+        $('loginError').textContent = message;
+      }
+    } finally {
+      if (button) button.disabled = false;
+    }
   }
 
   async function showApp() {
@@ -2916,6 +2989,15 @@ if(document.readyState==='loading')addEventListener('DOMContentLoaded',startDomB
   }
 
   function bindEvents() {
+    $('passwordFallbackToggle')?.addEventListener('click', () => revealPasswordLogin());
+    $('changeAccountBtn')?.addEventListener('click', () => {
+      $('loginUsername').value = '';
+      try { localStorage.removeItem(LAST_LOGIN_USERNAME_LOCAL_KEY); } catch (_) {}
+      try { sessionStorage.removeItem(LAST_LOGIN_USERNAME_KEY); } catch (_) {}
+      revealPasswordLogin(true);
+      $('loginUsername')?.focus();
+      if ($('passkeyHint')) $('passkeyHint').textContent = 'نام کاربری حساب جدید را وارد کن؛ برای ورود با اثر انگشت نیز می‌توانی از دکمه بالای صفحه استفاده کنی.';
+    });
     $('loginForm').addEventListener('submit', async e => {
       e.preventDefault();
       const errBox = $('loginError');
@@ -3246,6 +3328,19 @@ if(document.readyState==='loading')addEventListener('DOMContentLoaded',startDomB
 <script id="zt-notification-center-fix-js">
 (function(){
   const $ = id => document.getElementById(id);
+  function saveRememberedUsername(value) {
+    const username = String(value || '').trim();
+    if (!username) return;
+    try { localStorage.setItem(LAST_LOGIN_USERNAME_LOCAL_KEY, username); } catch (_) {}
+    try { sessionStorage.setItem(LAST_LOGIN_USERNAME_KEY, username); } catch (_) {}
+  }
+  function getRememberedUsername() {
+    try {
+      const saved = localStorage.getItem(LAST_LOGIN_USERNAME_LOCAL_KEY);
+      if (saved) return saved;
+    } catch (_) {}
+    try { return sessionStorage.getItem(LAST_LOGIN_USERNAME_KEY) || ''; } catch (_) { return ''; }
+  }
   let soundEnabled = false;
   let seenNotifIds = new Set();
   let initializedNotifs = false;
