@@ -1600,7 +1600,7 @@
         </div>
         <div class="card" style="margin-top:14px">
           <div class="card-head"><h3>ورود سریع و امنیت نشست</h3><span class="pill good">Passkey / WebAuthn</span></div>
-          <p class="small muted" style="line-height:2">می‌توانی ورود با اثر انگشت، تشخیص چهره یا PIN امن دستگاه را فعال کنی. کلید رمزگذاری فضای ژورنال با قابلیت PRF در Passkey محافظت می‌شود؛ خود اثر انگشت از دستگاه خارج نمی‌شود. این قابلیت به HTTPS و پشتیبانی مرورگر و احرازگر دستگاه از PRF نیاز دارد.</p>
+          <p class="small muted" style="line-height:2">با Passkey می‌توانی با اثر انگشت، تشخیص چهره یا PIN امن دستگاه وارد حساب ابری شوی. کلید خصوصی Passkey در احرازگر امن دستگاه می‌ماند و فقط کلید عمومی در Cloudflare ذخیره می‌شود؛ اثر انگشت و داده‌های ژورنال به دستگاه محلی منتقل نمی‌شوند. برای فعال‌سازی، HTTPS و پشتیبانی WebAuthn مرورگر لازم است.</p>
           <div class="metric-row"><span>قفل خودکار پس از عدم فعالیت</span><b>۱۰ دقیقه</b></div>
           <div class="metric-row"><span>وضعیت ورود بیومتریک</span><b id="passkeyStatus">در حال بررسی…</b></div>
           <div class="form-actions" style="margin-top:12px"><button class="btn primary" id="registerPasskey" type="button">فعال‌سازی اثر انگشت / Passkey</button><button class="btn danger" id="removePasskey" type="button">حذف اتصال این دستگاه</button></div>
@@ -1932,6 +1932,174 @@
     }
   }
 
+
+  function passkeyBytesFromB64url(value) {
+    const s = String(value || '').replace(/-/g, '+').replace(/_/g, '/');
+    const raw = atob(s + '='.repeat((4 - s.length % 4) % 4));
+    return Uint8Array.from(raw, c => c.charCodeAt(0));
+  }
+
+  function passkeyB64urlFromBytes(value) {
+    const bytes = value instanceof Uint8Array ? value : new Uint8Array(value);
+    let binary = '';
+    for (const b of bytes) binary += String.fromCharCode(b);
+    return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+  }
+
+  async function passkeyPublicRequest(base, path, body) {
+    const response = await fetch(base + path, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      cache: 'no-store',
+      body: JSON.stringify(body || {})
+    });
+    let payload;
+    try { payload = await response.json(); }
+    catch (_) { throw new Error('پاسخ سرور Passkey قابل خواندن نیست؛ HTTP ' + response.status); }
+    if (!response.ok || payload.status !== 'success') {
+      throw new Error(payload.message || ('خطای Passkey؛ HTTP ' + response.status));
+    }
+    return payload;
+  }
+
+  function passkeyCredentialForCreate(credential) {
+    return {
+      id: credential.id,
+      rawId: passkeyB64urlFromBytes(new Uint8Array(credential.rawId)),
+      type: credential.type,
+      response: {
+        clientDataJSON: passkeyB64urlFromBytes(new Uint8Array(credential.response.clientDataJSON)),
+        attestationObject: passkeyB64urlFromBytes(new Uint8Array(credential.response.attestationObject)),
+        transports: typeof credential.response.getTransports === 'function' ? credential.response.getTransports() : []
+      }
+    };
+  }
+
+  function passkeyCredentialForGet(credential) {
+    return {
+      id: credential.id,
+      rawId: passkeyB64urlFromBytes(new Uint8Array(credential.rawId)),
+      type: credential.type,
+      response: {
+        clientDataJSON: passkeyB64urlFromBytes(new Uint8Array(credential.response.clientDataJSON)),
+        authenticatorData: passkeyB64urlFromBytes(new Uint8Array(credential.response.authenticatorData)),
+        signature: passkeyB64urlFromBytes(new Uint8Array(credential.response.signature)),
+        userHandle: credential.response.userHandle
+          ? passkeyB64urlFromBytes(new Uint8Array(credential.response.userHandle))
+          : null
+      }
+    };
+  }
+
+  async function cloudAuthPasskeyLogin() {
+    if (!window.isSecureContext || !navigator.credentials || typeof navigator.credentials.get !== 'function') {
+      throw new Error('این مرورگر ورود Passkey را پشتیبانی نمی‌کند یا صفحه از HTTPS باز نشده است.');
+    }
+    const base = cloudBaseFromLogin();
+    const username = String($('loginUsername')?.value || '').trim();
+    if (!username) throw new Error('ابتدا نام کاربری حساب ابری را وارد کن.');
+    if ($('loginError')) {
+      $('loginError').style.display = 'block';
+      $('loginError').style.color = '#9fb4c8';
+      $('loginError').textContent = 'در حال آماده‌سازی ورود با اثر انگشت…';
+    }
+
+    const optionsData = await passkeyPublicRequest(base, '/api/passkeys/auth/options', { username });
+    const publicKey = { ...optionsData.publicKey };
+    publicKey.challenge = passkeyBytesFromB64url(publicKey.challenge);
+    publicKey.allowCredentials = (publicKey.allowCredentials || []).map(item => ({
+      ...item,
+      id: passkeyBytesFromB64url(item.id)
+    }));
+
+    if ($('loginError')) $('loginError').textContent = 'برای تأیید هویت، اثر انگشت یا PIN دستگاه را تأیید کن…';
+    const assertion = await navigator.credentials.get({ publicKey });
+    if (!assertion) throw new Error('ورود با Passkey لغو شد.');
+
+    const verified = await passkeyPublicRequest(base, '/api/passkeys/auth/verify', {
+      challenge: optionsData.challenge,
+      credential: passkeyCredentialForGet(assertion)
+    });
+
+    if (!verified.token || !verified.user) throw new Error('سرور نشست ابری معتبر برنگرداند.');
+    sessionStorage.setItem(CLOUD_TOKEN_KEY, verified.token);
+    sessionStorage.setItem(WORKER_URL_KEY, base);
+    sessionStorage.setItem('zt_passkey_credential_id_v1', verified.credentialId || assertion.id);
+    app.data.settings.workerUrl = base;
+    app.cloudUser = verified.user;
+    return verified;
+  }
+
+  async function registerCloudPasskey() {
+    if (!window.isSecureContext || !navigator.credentials || typeof navigator.credentials.create !== 'function') {
+      throw new Error('این مرورگر ثبت Passkey را پشتیبانی نمی‌کند یا صفحه از HTTPS باز نشده است.');
+    }
+    const optionsData = await cloudflareApi('/api/passkeys/register/options', {
+      method: 'POST',
+      body: JSON.stringify({})
+    });
+    const publicKey = { ...optionsData.publicKey };
+    publicKey.challenge = passkeyBytesFromB64url(publicKey.challenge);
+    publicKey.user = { ...publicKey.user, id: passkeyBytesFromB64url(publicKey.user.id) };
+    publicKey.excludeCredentials = (publicKey.excludeCredentials || []).map(item => ({
+      ...item,
+      id: passkeyBytesFromB64url(item.id)
+    }));
+
+    const credential = await navigator.credentials.create({ publicKey });
+    if (!credential) throw new Error('ثبت Passkey لغو شد.');
+    const result = await cloudflareApi('/api/passkeys/register/verify', {
+      method: 'POST',
+      body: JSON.stringify({
+        challenge: optionsData.challenge,
+        credential: passkeyCredentialForCreate(credential)
+      })
+    });
+    sessionStorage.setItem('zt_passkey_credential_id_v1', result.credentialId);
+    return result;
+  }
+
+  async function refreshCloudPasskeyStatus() {
+    const status = $('passkeyStatus');
+    const remove = $('removePasskey');
+    if (!status || !cloudflareConfigured()) return;
+    try {
+      const result = await cloudflareApi('/api/passkeys/status');
+      const credentials = Array.isArray(result.credentials) ? result.credentials : [];
+      status.textContent = credentials.length
+        ? 'فعال؛ ' + credentials.length.toLocaleString('fa-IR') + ' کلید ثبت‌شده'
+        : 'هنوز فعال نشده است';
+      if (remove) remove.disabled = credentials.length === 0;
+      if (credentials.length === 1 && !sessionStorage.getItem('zt_passkey_credential_id_v1')) {
+        // No automatic deletion is performed; this only helps the current device's remove action.
+        sessionStorage.setItem('zt_passkey_credential_id_v1', credentials[0].credentialId);
+      }
+    } catch (e) {
+      status.textContent = 'بررسی ناموفق: ' + (e?.message || 'خطای سرور');
+      if (remove) remove.disabled = true;
+    }
+  }
+
+  async function removeCloudPasskey() {
+    let credentialId = sessionStorage.getItem('zt_passkey_credential_id_v1') || '';
+    if (!credentialId) {
+      const result = await cloudflareApi('/api/passkeys/status');
+      const credentials = Array.isArray(result.credentials) ? result.credentials : [];
+      if (credentials.length === 1) credentialId = credentials[0].credentialId;
+      else if (credentials.length > 1) throw new Error('چند Passkey ثبت شده است؛ برای حذف دقیق، ابتدا از همین دستگاه با Passkey وارد شو.');
+    }
+    if (!credentialId) throw new Error('برای این دستگاه Passkey ثبت‌شده‌ای پیدا نشد.');
+    if (!confirm('اتصال Passkey این دستگاه از حساب ابری حذف شود؟')) return false;
+    await cloudflareApi('/api/passkeys/remove', {
+      method: 'POST',
+      body: JSON.stringify({ credentialId })
+    });
+    sessionStorage.removeItem('zt_passkey_credential_id_v1');
+    await refreshCloudPasskeyStatus();
+    return true;
+  }
+
+
   async function cloudAuthLogout() {
     const token = sessionStorage.getItem(CLOUD_TOKEN_KEY);
     const base = sessionStorage.getItem(WORKER_URL_KEY) || app?.data?.settings?.workerUrl;
@@ -1951,7 +2119,8 @@
     $('localVaultField')?.classList.add('hidden');
     $('localVaultConfirmField')?.classList.add('hidden');
     $('rememberField')?.classList.add('hidden');
-    $('passkeyLogin')?.parentElement?.classList.add('hidden');
+    $('passkeyLogin')?.parentElement?.classList.remove('hidden');
+    if ($('passkeyHint')) $('passkeyHint').textContent = 'برای ورود با اثر انگشت، نام کاربری را وارد کن و دکمه Passkey را بزن. اگر هنوز ثبت نکرده‌ای، ابتدا با رمز ابری وارد شو و از تنظیمات فعالش کن.';
     $('passwordFallbackToggle')?.classList.add('hidden');
     $('passwordFallback')?.classList.remove('is-collapsed');
     $('loginSubmit').textContent = 'ورود به حساب ابری';
@@ -1969,6 +2138,7 @@
     $('mobileNav').classList.remove('hidden');
     applyTheme();
     populateSettings();
+    await refreshCloudPasskeyStatus();
     renderAll();
     if (app.cloudUser?.role === 'admin') refreshCloudUsers();
     refreshNotificationCenter(false);
@@ -2291,6 +2461,58 @@
         if (subBtn) subBtn.disabled = false;
       }
     });
+
+    if ($('passkeyLogin')) $('passkeyLogin').addEventListener('click', async () => {
+      const button = $('passkeyLogin');
+      const errBox = $('loginError');
+      button.disabled = true;
+      if (errBox) {
+        errBox.style.display = 'block';
+        errBox.style.color = '#9fb4c8';
+        errBox.textContent = 'در حال اتصال امن با Passkey…';
+      }
+      try {
+        await cloudAuthPasskeyLogin();
+        if (errBox) errBox.textContent = 'هویت تأیید شد؛ در حال بارگذاری اطلاعات ابری…';
+        await showApp();
+      } catch (e) {
+        if (errBox) {
+          errBox.style.display = 'block';
+          errBox.style.color = '#ff7186';
+          errBox.textContent = e?.name === 'NotAllowedError'
+            ? 'تأیید اثر انگشت لغو شد یا Passkey روی این دستگاه در دسترس نیست.'
+            : (e?.message || 'ورود با Passkey ناموفق بود.');
+        }
+      } finally {
+        button.disabled = false;
+      }
+    });
+    if ($('registerPasskey')) $('registerPasskey').addEventListener('click', async () => {
+      const button = $('registerPasskey');
+      button.disabled = true;
+      try {
+        const result = await registerCloudPasskey();
+        toast(result.message || 'Passkey با موفقیت فعال شد.');
+        await refreshCloudPasskeyStatus();
+      } catch (e) {
+        toast('فعال‌سازی Passkey ناموفق بود: ' + (e?.message || e));
+      } finally {
+        button.disabled = false;
+      }
+    });
+    if ($('removePasskey')) $('removePasskey').addEventListener('click', async () => {
+      const button = $('removePasskey');
+      button.disabled = true;
+      try {
+        const removed = await removeCloudPasskey();
+        if (removed) toast('اتصال Passkey حذف شد.');
+      } catch (e) {
+        toast('حذف Passkey ناموفق بود: ' + (e?.message || e));
+      } finally {
+        await refreshCloudPasskeyStatus();
+      }
+    });
+
     $('sideNav').addEventListener('click', e => { const b = e.target.closest('[data-view]'); if (b) switchView(b.dataset.view); });
     $('mobileNav').addEventListener('click', e => { const b = e.target.closest('[data-view]'); if (b) switchView(b.dataset.view, b.dataset.navKey || b.dataset.view); });
     document.querySelectorAll('[data-goto]').forEach(b => b.addEventListener('click', () => switchView(b.dataset.goto)));
@@ -2818,52 +3040,13 @@
 
 <script id="zt-login-biometric-and-submit-fix-js">
 (function(){
-  const $ = id => document.getElementById(id);
-  const hintEl = $('passkeyHint');
-  const passkeyBtn = $('passkeyLogin');
-  const form = $('loginForm');
-  const errEl = $('loginError');
-  const submitBtn = $('loginSubmit');
-
-  if(hintEl){
-    hintEl.textContent = 'برای ورود سریع با رمز یا اتصال مجدد، اطلاعات حساب را در پایین وارد کن یا دکمه ورود را بزن.';
-  }
-
-  if(passkeyBtn){
-    passkeyBtn.disabled = false;
-    passkeyBtn.addEventListener('click', () => {
-      if(form){
-        const urlInp = $('loginWorkerUrl');
-        const userInp = $('loginUsername');
-        const passInp = $('password');
-        if(urlInp && !urlInp.value.trim()){
-          urlInp.focus();
-          if(errEl) errEl.textContent = 'آدرس Cloudflare Worker، نام کاربری و رمز عبور را وارد کن.';
-          return;
-        }
-        if(userInp && !userInp.value.trim()){
-          userInp.focus();
-          if(errEl) errEl.textContent = 'نام کاربری را وارد کن.';
-          return;
-        }
-        if(passInp && !passInp.value){
-          passInp.focus();
-          if(errEl) errEl.textContent = 'رمز عبور حساب ابری را وارد کن.';
-          return;
-        }
-        if(typeof form.requestSubmit === 'function'){
-          form.requestSubmit();
-        }else if(submitBtn){
-          submitBtn.click();
-        }
-      }
-    });
-  }
-
-  if(form && submitBtn){
-    form.addEventListener('submit', () => {
-      if(errEl) errEl.textContent = '';
-    }, true);
+  const hintEl = document.getElementById('passkeyHint');
+  const passkeyBtn = document.getElementById('passkeyLogin');
+  if (!window.isSecureContext || !navigator.credentials || typeof navigator.credentials.get !== 'function') {
+    if (hintEl) hintEl.textContent = 'این مرورگر یا مبدأ HTTPS از ورود Passkey پشتیبانی نمی‌کند؛ از رمز حساب ابری استفاده کن.';
+    if (passkeyBtn) passkeyBtn.disabled = true;
+  } else if (hintEl) {
+    hintEl.textContent = 'نام کاربری را وارد کن و برای ورود با اثر انگشت / PIN دستگاه دکمه زیر را بزن. ابتدا باید Passkey را در تنظیمات ثبت کرده باشی.';
   }
 })();
 </script>
