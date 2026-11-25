@@ -2967,7 +2967,19 @@ if(document.readyState==='loading')addEventListener('DOMContentLoaded',startDomB
       if ($('bellBadge')) { $('bellBadge').textContent = unread > 99 ? '99+' : enNum(unread); $('bellBadge').classList.toggle('hidden', unread <= 0); }
       if ($('notificationList')) $('notificationList').innerHTML = items.length ? items.map(x => `<div class="notice" style="margin:6px 0"><div style="display:flex;justify-content:space-between;gap:8px"><b>${esc(x.title)}</b><small>${esc(fmtDate(x.created_at))}</small></div><div>${esc(x.message)}</div></div>`).join('') : '<div class="empty">اعلانی ثبت نشده است.</div>';
       const alerts = Array.isArray(a.alerts) ? a.alerts : [];
-      if ($('priceAlertList')) $('priceAlertList').innerHTML = alerts.length ? alerts.map(x => `<div class="notice" style="margin:6px 0"><b dir="ltr">${esc(x.symbol)} ${x.condition === 'ABOVE' ? '≥' : '≤'} ${enNum(x.target_price)}</b></div>`).join('') : '<div class="empty">هشداری ثبت نشده است.</div>';
+      if ($('priceAlertList')) {
+        $('priceAlertList').innerHTML = alerts.length ? alerts.map(x => `<div class="notice" style="margin:6px 0;display:flex;justify-content:space-between;align-items:center;gap:8px"><b dir="ltr">${esc(x.symbol)} ${x.condition === 'ABOVE' ? '≥' : '≤'} ${enNum(x.target_price)}</b><button type="button" class="btn danger" data-del-alert="${esc(x.id)}">حذف</button></div>`).join('') : '<div class="empty">هشداری ثبت نشده است.</div>';
+        $('priceAlertList').querySelectorAll('[data-del-alert]').forEach(btn => {
+          btn.onclick = async () => {
+            const aid = btn.dataset.delAlert;
+            if (!aid) return;
+            try {
+              await callCloud('/api/price-alerts', { method: 'POST', body: JSON.stringify({ action: 'delete', id: aid }) });
+              await refreshNotificationCenter();
+            } catch (e) { toast('حذف هشدار ناموفق بود: ' + (e?.message || e)); }
+          };
+        });
+      }
     } catch (e) {}
   }
 
@@ -3463,7 +3475,10 @@ if(document.readyState==='loading')addEventListener('DOMContentLoaded',startDomB
             const aid = btn.dataset.delAlert;
             if(!aid) return;
             try{
-              await callCloud('/api/price-alerts/' + encodeURIComponent(aid), { method: 'DELETE' });
+              await callCloud('/api/price-alerts', {
+                method: 'POST',
+                body: JSON.stringify({ action: 'delete', id: aid })
+              });
               await enhancedRefreshNotifications();
             }catch(e){
               updatePushStatusText('حذف هشدار ناموفق بود: ' + (e?.message || e));
@@ -3582,7 +3597,7 @@ if(document.readyState==='loading')addEventListener('DOMContentLoaded',startDomB
     try{
       await callCloud('/api/price-alerts', {
         method: 'POST',
-        body: JSON.stringify({ symbol, condition, target_price: targetPrice, repeat })
+        body: JSON.stringify({ action: 'create', symbol, condition, targetPrice, repeat })
       });
       if($('priceAlertTarget')) $('priceAlertTarget').value = '';
       await enhancedRefreshNotifications();
