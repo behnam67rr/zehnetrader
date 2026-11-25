@@ -953,6 +953,72 @@
   }catch(e){}
 })();
 </script>
+
+<style id="zt-mt5-compact-sticky-tabs">
+  .topbar{
+    position:sticky!important;
+    top:0!important;
+    z-index:80!important;
+    background:rgba(5,13,22,.96)!important;
+    backdrop-filter:blur(14px)!important;
+  }
+  #mt5InnerTabsSpacer{
+    display:none!important;
+    height:0!important;
+  }
+  #view-mt5control:not(.active) .mt5-inner-tabs{
+    display:none!important;
+  }
+  #view-mt5control.active .mt5-inner-tabs{
+    display:flex!important;
+    flex-direction:row!important;
+    align-items:center!important;
+    position:fixed!important;
+    top:var(--zt-mt5-tabs-top,76px)!important;
+    left:12px!important;
+    width:fit-content!important;
+    max-width:calc(100vw - 24px)!important;
+    margin:0!important;
+    padding:3px!important;
+    gap:4px!important;
+    border-radius:12px!important;
+    z-index:92!important;
+    background:rgba(11,27,43,.97)!important;
+    border:1px solid rgba(38,94,124,.65)!important;
+    backdrop-filter:blur(14px)!important;
+    box-shadow:0 8px 22px rgba(0,0,0,.42)!important;
+  }
+  #view-mt5control.active{
+    padding-top:44px!important;
+  }
+  #view-mt5control .mt5-inner-tab{
+    flex:0 0 auto!important;
+    width:auto!important;
+    min-height:32px!important;
+    padding:5px 10px!important;
+    font-size:11px!important;
+    line-height:1.25!important;
+    border-radius:9px!important;
+    white-space:nowrap!important;
+  }
+  @media(max-width:760px){
+    #view-mt5control .mt5-inner-tab{
+      min-height:30px!important;
+      padding:4px 8px!important;
+      font-size:10.5px!important;
+    }
+  }
+</style>
+<style id="zt-settings-accordion-css">
+  #view-settings .settings-acc-card{padding:0!important;overflow:hidden;margin-bottom:12px}
+  #view-settings .settings-acc-trigger{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:15px 18px;background:transparent;border:0;color:var(--text);text-align:right;font-weight:800;font-size:14px}
+  #view-settings .settings-acc-trigger .acc-left{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  #view-settings .settings-acc-trigger .acc-chevron{width:28px;height:28px;border-radius:9px;border:1px solid var(--line);background:var(--panel2);display:grid;place-items:center;font-size:12px;transition:transform .2s ease;flex:0 0 auto}
+  #view-settings .settings-acc-card.is-open .acc-chevron{transform:rotate(180deg);color:var(--green);border-color:var(--green)}
+  #view-settings .settings-acc-body{padding:0 18px 18px;border-top:1px solid var(--line)}
+  #view-settings .settings-acc-card:not(.is-open) .settings-acc-body{display:none}
+</style>
+
 </head>
 <body>
   <div id="loginWrap" class="login-wrap">
@@ -1184,10 +1250,10 @@
 
             <section class="view" id="view-mt5control">
   <div class="mt5-inner-tabs" id="mt5InnerTabs" role="tablist" aria-label="نمای متاتریدر">
-    <button type="button" class="mt5-inner-tab active" id="mt5TabChart" role="tab" aria-selected="true" aria-controls="mt5PaneChart">نمودار</button>
-    <button type="button" class="mt5-inner-tab" id="mt5TabTrade" role="tab" aria-selected="false" aria-controls="mt5PaneTrade">معاملات و کنترل حساب</button>
+    <button type="button" class="mt5-inner-tab" id="mt5TabChart" role="tab" aria-selected="false" aria-controls="mt5PaneChart">نمودار</button>
+    <button type="button" class="mt5-inner-tab active" id="mt5TabTrade" role="tab" aria-selected="true" aria-controls="mt5PaneTrade">مدیریت و کنترل معاملات</button>
   </div>
-  <div id="mt5PaneChart" class="mt5-inner-pane" role="tabpanel" aria-labelledby="mt5TabChart">
+  <div id="mt5PaneChart" class="mt5-inner-pane" role="tabpanel" aria-labelledby="mt5TabChart" hidden>
     <div class="card mt5-chart-card">
       <div class="card-head"><h3 id="mt5ChartTitle">نمودار TradingView</h3><span class="pill good" id="mt5ChartFeedBadge">TradingView</span></div>
       <div class="mt5-chart-controls" style="flex-wrap:wrap">
@@ -1216,7 +1282,7 @@
       </div>
     </div>
   </div>
-  <div id="mt5PaneTrade" class="mt5-inner-pane" role="tabpanel" aria-labelledby="mt5TabTrade" hidden>
+  <div id="mt5PaneTrade" class="mt5-inner-pane" role="tabpanel" aria-labelledby="mt5TabTrade">
 
         <div class="card" style="margin-bottom:14px">
           <div class="card-head">
@@ -1864,7 +1930,7 @@
 
   init();
 })();
-</script></script>
+</script>
   <div id="pdf-report-root" aria-hidden="true"></div>
 
 <script id="zt-mt5-dual-view-js">
@@ -1881,7 +1947,7 @@
   }
   chartTab?.addEventListener('click',()=>setPane('chart'));
   tradeTab?.addEventListener('click',()=>setPane('trade'));
-  setPane('chart');
+  setPane('trade');
 })();
 </script>
 <script id="zt-tradingview-widget-js">
@@ -1950,6 +2016,71 @@
   window.__ztRenderMt5PriceChart=()=>mountWidget(false);
   window.__ztMt5ChartResize=()=>{};
   setTimeout(()=>mountWidget(true),200);
+})();
+</script>
+
+
+<script id="zt-settings-accordion-js">
+(function(){
+  const root=document.getElementById('view-settings');
+  if(!root||root.dataset.accReady==='1')return;
+  root.dataset.accReady='1';
+  root.querySelectorAll(':scope > .grid > .card, :scope > .card').forEach((card,idx)=>{
+    if(card.classList.contains('settings-acc-card'))return;
+    const head=card.querySelector(':scope > .card-head');
+    const titleText=head?.querySelector('h3')?.textContent?.trim()||'بخش تنظیمات';
+    const pillEl=head?.querySelector('.pill');
+    const pillHtml=pillEl?`<span class="${pillEl.className}">${pillEl.textContent}</span>`:'';
+    head?.remove();
+    const body=document.createElement('div');
+    body.className='settings-acc-body';
+    while(card.firstChild)body.appendChild(card.firstChild);
+    const btn=document.createElement('button');
+    btn.type='button';
+    btn.className='settings-acc-trigger';
+    btn.setAttribute('aria-expanded',idx===0?'true':'false');
+    btn.innerHTML=`<span class="acc-left"><span>${titleText}</span>${pillHtml}</span><span class="acc-chevron" aria-hidden="true">⌄</span>`;
+    card.classList.add('settings-acc-card');
+    if(idx===0)card.classList.add('is-open');
+    card.append(btn,body);
+  });
+  root.addEventListener('click',e=>{
+    const btn=e.target.closest('.settings-acc-trigger');
+    if(!btn)return;
+    const card=btn.closest('.settings-acc-card');
+    if(!card)return;
+    const open=!card.classList.contains('is-open');
+    card.classList.toggle('is-open',open);
+    btn.setAttribute('aria-expanded',String(open));
+  });
+})();
+</script>
+
+
+<script id="zt-mt5-pin-below-header-js">
+(function(){
+  const section=document.getElementById('view-mt5control');
+  const tabs=document.getElementById('mt5InnerTabs');
+  const topbar=document.querySelector('.topbar');
+  if(!section||!tabs)return;
+
+  function syncTopOffset(){
+    if(!topbar)return;
+    const r=topbar.getBoundingClientRect();
+    if(r.height>0){
+      document.documentElement.style.setProperty('--zt-mt5-tabs-top',Math.max(4,Math.round(r.bottom+2))+'px');
+    }
+  }
+
+  window.addEventListener('scroll',syncTopOffset,{passive:true});
+  window.addEventListener('resize',syncTopOffset,{passive:true});
+  document.addEventListener('click',e=>{
+    if(e.target.closest('[data-view]'))setTimeout(syncTopOffset,30);
+  },true);
+
+  const observer=new MutationObserver(()=>setTimeout(syncTopOffset,20));
+  observer.observe(section,{attributes:true,attributeFilter:['class']});
+  setTimeout(syncTopOffset,100);
 })();
 </script>
 
