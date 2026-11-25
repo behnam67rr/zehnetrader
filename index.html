@@ -1205,7 +1205,6 @@
 
 
 <style id="zt-cloud-only-login-ui">
-  #loginWrap .login-biometric,
   #loginWrap .login-quick-links,
   #loginWrap .login-utilities,
   #loginWrap .localVaultField,
@@ -1957,6 +1956,10 @@
     try { payload = await response.json(); }
     catch (_) { throw new Error('پاسخ سرور Passkey قابل خواندن نیست؛ HTTP ' + response.status); }
     if (!response.ok || payload.status !== 'success') {
+      const serverMessage = String(payload?.message || '');
+      if (/no such table.*webauthn_(credentials|challenges)|PASSKEY_MIGRATION_REQUIRED/i.test(serverMessage + ' ' + String(payload?.code || ''))) {
+        throw new Error('جداول امنیتی Passkey هنوز در دیتابیس D1 ساخته نشده‌اند. فایل D1_WEBAUTHN_MIGRATION.sql را روی همان دیتابیسی اجرا کن که به Worker با نام DB متصل است.');
+      }
       throw new Error(payload.message || ('خطای Passkey؛ HTTP ' + response.status));
     }
     return payload;
@@ -2075,7 +2078,16 @@
         sessionStorage.setItem('zt_passkey_credential_id_v1', credentials[0].credentialId);
       }
     } catch (e) {
-      status.textContent = 'بررسی ناموفق: ' + (e?.message || 'خطای سرور');
+      const message = String(e?.message || 'خطای سرور');
+      const migrationMissing = /no such table.*webauthn_(credentials|challenges)|PASSKEY_MIGRATION_REQUIRED|جداول امنیتی Passkey هنوز/i.test(message);
+      status.textContent = migrationMissing
+        ? 'نیازمند نصب جداول امنیتی در D1'
+        : 'بررسی ناموفق؛ اتصال سرور را بررسی کن';
+      status.title = migrationMissing
+        ? 'فایل D1_WEBAUTHN_MIGRATION.sql را روی دیتابیس متصل به Worker اجرا کن و صفحه را دوباره بارگذاری کن.'
+        : message;
+      const register = $('registerPasskey');
+      if (register) register.disabled = true;
       if (remove) remove.disabled = true;
     }
   }
