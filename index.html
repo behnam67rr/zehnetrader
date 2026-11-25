@@ -1697,12 +1697,25 @@
     const username = $('loginUsername').value.trim();
     const password = $('password').value;
     if (!username || password.length < 8) throw new Error('نام کاربری و رمز عبور معتبر را وارد کن.');
-    const res = await fetch(base + '/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      cache: 'no-store',
-      body: JSON.stringify({ username, password })
-    });
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 10000);
+    let res;
+    try {
+      res = await fetch(base + '/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        cache: 'no-store',
+        signal: controller.signal,
+        body: JSON.stringify({ username, password })
+      });
+    } catch (e) {
+      if (e?.name === 'AbortError') {
+        throw new Error('پاسخ از سرور Cloudflare بعد از ۱۰ ثانیه دریافت نشد (وضعیت Worker یا VPN/اینترنت را بررسی کن).');
+      }
+      throw e;
+    } finally {
+      clearTimeout(timer);
+    }
     let payload;
     try { payload = await res.json(); } catch (e) { throw new Error('پاسخ سرور احراز هویت معتبر نیست.'); }
     if (!res.ok || payload.status !== 'success') throw new Error(payload.message || 'ورود ابری ناموفق بود.');
