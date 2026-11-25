@@ -1922,8 +1922,8 @@
     const symbol=String(getByAliases(row,['symbol','sym','نماد','جفت ارز','جفت‌ارز','pair','instrument','contract'])??'').trim().toUpperCase();
     const lotsRaw=parseFiniteNumber(getByAliases(row,['volume','lots','lot','size','volume_in','volume_out','حجم','مقدار']));
     const lots=(lotsRaw===null||lotsRaw<=0)?0.01:lotsRaw;
-    const netRaw=getByAliases(row,['net_profit','net pnl','net_pnl','net p/l','net_pl','pnl','profit_net','سود خالص','سود/زیان','نتیجه خالص']);
-    const grossRaw=getByAliases(row,['profit','profit/loss','profit_loss','profit loss','result','سود','profit_usd','نتیجه']);
+    const netRaw=getByAliases(row,['net_profit','netProfit','net pnl','net_pnl','net p/l','net_pl','pnl','pl','p/l','realized_pnl','realizedPnl','profit_net','سود خالص','سود/زیان','نتیجه خالص']);
+    const grossRaw=getByAliases(row,['profit','gross_profit','grossProfit','profit/loss','profit_loss','profit loss','result','سود','profit_usd','نتیجه']);
     const commissionRaw=getByAliases(row,['commission','کمیسیون']),swapRaw=getByAliases(row,['swap','سواپ']);
     let pnl=null;if(netRaw!==null)pnl=parseFiniteNumber(netRaw);else if(grossRaw!==null){const gross=parseFiniteNumber(grossRaw),commission=commissionRaw===null?0:parseFiniteNumber(commissionRaw),swap=swapRaw===null?0:parseFiniteNumber(swapRaw);pnl=gross===null||commission===null||swap===null?null:gross+commission+swap}
     const dateRaw=getByAliases(row,['close_time','closeTime','close time','close_date','closed_at','close','time_close','time','datetime','date','timestamp','تاریخ بسته شدن','تاریخ','زمان'])||getByAliases(row,['open_time','openTime','open time','entry_time','time_open','زمان ورود','تاریخ ورود'])||new Date().toISOString();
@@ -1937,7 +1937,7 @@
     const side=sideFromRow(row);
     const lotsRaw=parseFiniteNumber(getByAliases(row,['volume','lots','lot','size','volume_in','volume_out','حجم','مقدار']));
     const lots=(lotsRaw===null||lotsRaw<=0)?0.01:lotsRaw;
-    const netProfitRaw=getByAliases(row,['net_profit','net pnl','net_pnl','net p/l','net_pl','pnl','profit_net','سود خالص','سود/زیان','نتیجه خالص']),grossProfitRaw=getByAliases(row,['profit','profit/loss','profit_loss','profit loss','result','سود','profit_usd','نتیجه']),commissionRaw=getByAliases(row,['commission','کمیسیون']),swapRaw=getByAliases(row,['swap','سواپ']);
+    const netProfitRaw=getByAliases(row,['net_profit','netProfit','net pnl','net_pnl','net p/l','net_pl','pnl','pl','p/l','realized_pnl','realizedPnl','profit_net','سود خالص','سود/زیان','نتیجه خالص']),grossProfitRaw=getByAliases(row,['profit','gross_profit','grossProfit','profit/loss','profit_loss','profit loss','result','سود','profit_usd','نتیجه']),commissionRaw=getByAliases(row,['commission','کمیسیون']),swapRaw=getByAliases(row,['swap','سواپ']);
     let pnl;if(netProfitRaw!==null)pnl=parseFiniteNumber(netProfitRaw);else{const gross=parseFiniteNumber(grossProfitRaw),commission=commissionRaw===null?0:parseFiniteNumber(commissionRaw),swap=swapRaw===null?0:parseFiniteNumber(swapRaw);pnl=gross+commission+swap}
     const dateRaw=getByAliases(row,['close_time','closeTime','close time','close_date','closed_at','close','time_close','time','datetime','date','timestamp','تاریخ بسته شدن','تاریخ','زمان'])||getByAliases(row,['open_time','openTime','open time','entry_time','time_open','زمان ورود','تاریخ ورود'])||new Date().toISOString(),date=parseSheetDate(dateRaw)||new Date();
     const openTime=getByAliases(row,['open_time','openTime','open time','entry_time','time_open','وقت ورود','زمان ورود']),entryRaw=getByAliases(row,['open_price','openPrice','entry','entry_price','price_open','قیمت ورود']),stopLossRaw=getByAliases(row,['sl','stop_loss','stopLoss','stoploss','حد ضرر']),takeProfitRaw=getByAliases(row,['tp','take_profit','takeProfit','takeprofit','حد سود']),closeRaw=getByAliases(row,['close_price','closePrice','exit','exit_price','price_close','قیمت خروج']);
@@ -2178,7 +2178,9 @@
       if($('mt5BtnSignal')){$('mt5BtnSignal').textContent='سیگنال: '+(st.signalEnabled?'روشن 🟢':'خاموش 🔴');$('mt5BtnSignal').className='btn '+(st.signalEnabled?'primary':'')}
       if($('mt5BtnDaily')){$('mt5BtnDaily').textContent='حد ضرر روزانه: '+(st.dailyLimitEnabled?'روشن 🟢':'خاموش 🔴');$('mt5BtnDaily').className='btn '+(st.dailyLimitEnabled?'warn':'')}
       const pos=Array.isArray(st.positions)?st.positions:[];
-      if(window.__ztRenderMt5PriceChart) window.__ztRenderMt5PriceChart(st.chart||null,pos);
+      const chartPayload=st.chart||payload?.chart||(Array.isArray(st.bars)?{bars:st.bars,symbol:st.symbol,timeframe:st.timeframe,serverOffset:st.serverOffset}:null);
+      window.__ztLastChartPayload=chartPayload;window.__ztLastPositions=pos;
+      if(window.__ztRenderMt5PriceChart) window.__ztRenderMt5PriceChart(chartPayload,pos);
       if($('mt5PosCount'))$('mt5PosCount').textContent=enNum(pos.length)+' پوزیشن';
       if($('mt5PositionsWrap')){
         $('mt5PositionsWrap').innerHTML=pos.length?`<table><thead><tr><th>تیکت</th><th>نماد</th><th>جهت</th><th>حجم</th><th>ورود</th><th>SL</th><th>TP</th><th>سود</th><th>عملیات</th></tr></thead><tbody>${pos.map(p=>`<tr><td dir="ltr">#${esc(p.ticket)}</td><td>${esc(p.symbol)}</td><td>${esc(p.side)}</td><td dir="ltr">${esc(p.lots)}</td><td dir="ltr">${esc(p.open)}</td><td dir="ltr">${esc(p.sl)}</td><td dir="ltr">${esc(p.tp)}</td><td dir="ltr" class="${Number(p.profit)>=0?'positive':'negative'}">${fmtMoney(p.profit)}</td><td><button type="button" class="btn warn" style="padding:4px 8px;font-size:10px" onclick="window.__ztMt5Cmd('BREAKEVEN_POS',{ticket:${Number(p.ticket)}})">BE</button> <button type="button" class="btn danger" style="padding:4px 8px;font-size:10px" onclick="window.__ztMt5Cmd('CLOSE_POS',{ticket:${Number(p.ticket)}})">بستن</button></td></tr>`).join('')}</tbody></table>`:'<div class="empty">پوزیشن بازی وجود ندارد.</div>';
@@ -2422,7 +2424,7 @@
   const root=document.getElementById('view-mt5control'); if(!root||root.dataset.dualViewReady==='1')return; root.dataset.dualViewReady='1';
   const chartTab=document.getElementById('mt5TabChart'), tradeTab=document.getElementById('mt5TabTrade');
   const chartPane=document.getElementById('mt5PaneChart'), tradePane=document.getElementById('mt5PaneTrade');
-  function setPane(which){const chart=which==='chart'; chartPane.hidden=!chart;tradePane.hidden=chart;chartTab.classList.toggle('active',chart);tradeTab.classList.toggle('active',!chart);chartTab.setAttribute('aria-selected',String(chart));tradeTab.setAttribute('aria-selected',String(!chart));if(chart){if(window.__ztMt5ChartResize)window.__ztMt5ChartResize();if(window.__ztMt5RefreshNow)window.__ztMt5RefreshNow();}}
+  function setPane(which){const chart=which==='chart'; chartPane.hidden=!chart;tradePane.hidden=chart;chartTab.classList.toggle('active',chart);tradeTab.classList.toggle('active',!chart);chartTab.setAttribute('aria-selected',String(chart));tradeTab.setAttribute('aria-selected',String(!chart));if(chart){if(window.__ztRenderMt5PriceChart&&window.__ztLastChartPayload)window.__ztRenderMt5PriceChart(window.__ztLastChartPayload,window.__ztLastPositions||[]);if(window.__ztMt5ChartResize)window.__ztMt5ChartResize();if(window.__ztMt5RefreshNow)window.__ztMt5RefreshNow();}}
   chartTab?.addEventListener('click',()=>setPane('chart'));tradeTab?.addEventListener('click',()=>setPane('trade'));
   document.getElementById('mt5ChartReload')?.addEventListener('click',()=>window.__ztMt5RefreshNow&&window.__ztMt5RefreshNow());
   setPane('chart');
@@ -2473,11 +2475,16 @@
   }
   function hideTooltip(){tooltip?.classList.remove('show');}
   function render(chartData,positions){
-    if(!chartData||!Array.isArray(chartData.bars)||!chartData.bars.length){if(badge)badge.textContent='در انتظار فید کندل MT5';if(meta)meta.textContent='اکسپرت باید نسخه دارای ارسال کندل باشد';return;}
+    const sourceBars=Array.isArray(chartData?.bars)?chartData.bars:(Array.isArray(chartData?.candles)?chartData.candles:(Array.isArray(chartData?.data)?chartData.data:null));
+    if(!chartData||!Array.isArray(sourceBars)||!sourceBars.length){if(badge)badge.textContent='در انتظار فید کندل MT5';if(meta)meta.textContent='اکسپرت باید نسخه دارای ارسال کندل باشد';return;}
     if(!ensureChart())return;
     // MT5 candle times are broker-server time; shift them so the axis shows the device's local time.
     const srvOff=Number(chartData.serverOffset),localOff=-new Date().getTimezoneOffset()*60,shift=Number.isFinite(srvOff)&&chartData.serverOffset!==undefined?(localOff-srvOff):0;
-    const raw=chartData.bars.map(b=>({time:Number(b.time)+shift,open:Number(b.open),high:Number(b.high),low:Number(b.low),close:Number(b.close),volume:Number(b.volume||0)})).filter(b=>b.time>0&&b.open>0&&b.high>0&&b.low>0&&b.close>0).sort((a,b)=>a.time-b.time);
+    const raw=sourceBars.map(b=>{
+      const rawTime=b.time??b.t??b.timestamp;
+      const numTime=typeof rawTime==='string'&&/^\d+$/.test(rawTime)?Number(rawTime):(typeof rawTime==='number'?rawTime:Math.floor(Date.parse(rawTime)/1000)||0);
+      return {time:numTime+shift,open:Number(b.open??b.o),high:Number(b.high??b.h),low:Number(b.low??b.l),close:Number(b.close??b.c),volume:Number(b.volume??b.v??b.tick_volume??0)};
+    }).filter(b=>b.time>0&&b.open>0&&b.high>0&&b.low>0&&b.close>0).sort((a,b)=>a.time-b.time);
     if(!raw.length)return;
     const bars=raw.map(b=>({time:b.time,open:b.open,high:b.high,low:b.low,close:b.close}));
     const volumes=raw.map(b=>({time:b.time,value:b.volume,color:b.close>=b.open?'rgba(19,189,145,.38)':'rgba(239,83,102,.38)'}));
