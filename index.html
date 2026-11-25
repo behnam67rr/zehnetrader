@@ -2146,7 +2146,7 @@ if(document.readyState==='loading')addEventListener('DOMContentLoaded',startDomB
       </div></details>
 
       <details class="nc-accordion"><summary><span class="nc-summary-icon">◖</span><span class="nc-summary-text">تنظیمات اعلان‌ها و صدا</span><span class="nc-summary-hint">Web Push، مرورگر و صدای اختصاصی</span><i></i></summary><div class="nc-accordion-body">
-        <div class="nc-push-actions"><button class="btn primary" type="button" id="enableWebPush">فعال‌سازی Web Push</button><button class="btn" type="button" id="disableWebPush">غیرفعال‌سازی Web Push</button><button class="btn" type="button" id="enableBrowserNotifications">فعال‌سازی مرورگر</button><button class="btn" type="button" id="enableNotificationSound">فعال‌سازی صدا</button></div>
+        <div class="nc-push-actions"><button class="btn primary" type="button" id="enableWebPush">فعال‌سازی Web Push</button><button class="btn" type="button" id="disableWebPush">غیرفعال‌سازی Web Push</button><button class="btn" type="button" id="testWebPush">ارسال اعلان آزمایشی</button><button class="btn" type="button" id="enableBrowserNotifications">فعال‌سازی مرورگر</button><button class="btn" type="button" id="enableNotificationSound">فعال‌سازی صدا</button></div>
         <div class="nc-sound-tabs"><span class="nc-sound-chip selected">◎ هشدار قیمت</span><span class="nc-sound-chip">پیام سیستم</span><span class="nc-sound-chip">معاملاتی</span></div>
         <div class="form-grid"><div class="field"><label for="soundPrice">صدای هشدار قیمت</label><select id="soundPrice"><option value="digital">دیجیتال</option><option value="soft">ملایم</option><option value="classic">کلاسیک</option><option value="urgent">هشدار برجسته</option><option value="off">بی‌صدا</option></select></div><div class="field"><label for="soundSystem">صدای پیام‌های سیستم</label><select id="soundSystem"><option value="soft">ملایم</option><option value="digital">دیجیتال</option><option value="classic">کلاسیک</option><option value="off">بی‌صدا</option></select></div><div class="field"><label for="soundTrade">صدای رویدادهای معاملاتی</label><select id="soundTrade"><option value="classic">کلاسیک</option><option value="digital">دیجیتال</option><option value="soft">ملایم</option><option value="off">بی‌صدا</option></select></div><div class="field"><label for="soundVolume">شدت صدا: <span id="soundVolumeLabel">70%</span></label><input id="soundVolume" type="range" min="0" max="100" value="70"></div><div class="field"><label for="soundRepeat">تعداد تکرار</label><select id="soundRepeat"><option value="1">یک بار</option><option value="2">دو بار</option><option value="3">سه بار</option></select></div><div class="field"><label for="quietHours">ساعات سکوت</label><select id="quietHours"><option value="off">غیرفعال</option><option value="night">۲۲ تا ۸</option></select></div></div>
         <div class="notice-actions"><label class="small"><input id="customSoundFile" type="file" accept="audio/*"> صدای اختصاصی (فقط روی همین دستگاه)</label><button class="btn" type="button" id="testNotificationSound">پخش صدای آزمایشی</button><button class="btn primary" type="button" id="saveNotificationSound">ذخیره تنظیمات صدا</button></div>
@@ -3006,6 +3006,7 @@ if(document.readyState==='loading')addEventListener('DOMContentLoaded',startDomB
 
   async function refreshNotificationCenter() {
     if (!cloudflareConfigured()) return;
+    if (typeof window.__ztRefreshNotifications === 'function') return window.__ztRefreshNotifications(false);
     try {
       const [n, a] = await Promise.all([cloudflareApi('/api/notifications'), cloudflareApi('/api/price-alerts')]);
       const items = Array.isArray(n.notifications) ? n.notifications : [];
@@ -3495,16 +3496,16 @@ if(document.readyState==='loading')addEventListener('DOMContentLoaded',startDomB
     if(mode==='off'||p.volume<=0)return;
     const hour=new Date().getHours(); if(p.quiet==='night'&&(hour>=22||hour<8))return;
     try{const C=window.AudioContext||window.webkitAudioContext;if(!C)return;const ctx=new C();const tones={digital:[880,660],soft:[523,659],classic:[740,587],urgent:[1046,784,1046]};const seq=tones[mode]||tones.digital;let t=ctx.currentTime;for(let r=0;r<Math.max(1,Math.min(3,p.repeat));r++){seq.forEach((f,i)=>{const o=ctx.createOscillator(),g=ctx.createGain();o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(Math.max(.001,p.volume/100*.11),t+i*.13);g.gain.exponentialRampToValueAtTime(.001,t+i*.13+.11);o.connect(g);g.connect(ctx.destination);o.start(t+i*.13);o.stop(t+i*.13+.12)});t+=seq.length*.13+.16;}setTimeout(()=>ctx.close().catch(()=>{}),1500);}catch(_){}}
-  function renderNoticeList(){
+  function renderNoticeListRaw(){
     const q=String($('noticeSearch')?.value||'').trim().toLowerCase(), cat=$('noticeCategory')?.value||'all', read=$('noticeReadFilter')?.value||'all', sort=$('noticeSort')?.value||'newest';
     let rows=noticeCache.filter(x=>{const hay=[x.title,x.message,x.category,x.payload?.symbol].join(' ').toLowerCase();if(q&&!hay.includes(q))return false;if(cat!=='all'&&String(x.category)!==cat)return false;if(read==='unread'&&x.read_at)return false;if(read==='read'&&!x.read_at)return false;if(read==='archived'&&!x.archived_at)return false;if(read!=='archived'&&x.archived_at)return false;return true;});
     rows.sort((a,b)=>{const pin=(b.pinned_at?1:0)-(a.pinned_at?1:0);if(pin)return pin;const d=String(a.created_at||'').localeCompare(String(b.created_at||''));return sort==='oldest'?d:-d;});
     const box=$('notificationList');if(!box)return;
     const pinned=noticeCache.filter(x=>x.pinned_at).length, unread=noticeCache.filter(x=>!x.read_at&&!x.archived_at).length;
     const price=noticeCache.filter(x=>x.category==='price_alert').length, trade=noticeCache.filter(x=>String(x.category||'').startsWith('position_')).length;
-    [['ncTotalCount',noticeCache.length],['ncUnreadCount',unread],['ncPriceCount',price],['ncTradeCount',trade],['ncPinnedCount',pinned]].forEach(([id,v])=>{if($(id))$(id).textContent=Number(v).toLocaleString('fa-IR')});
+    [['ncTotalCount',serverTotal??noticeCache.length],['ncUnreadCount',unread],['ncPriceCount',price],['ncTradeCount',trade],['ncPinnedCount',pinned]].forEach(([id,v])=>{if($(id))$(id).textContent=Number(v).toLocaleString('fa-IR')});
     if($('ncListHint'))$('ncListHint').textContent=rows.length.toLocaleString('fa-IR')+' اعلان در این فهرست';
-    box.innerHTML=rows.length?rows.map(x=>{const id=String(x.id),checked=noticeSelected.has(id),category=x.category==='price_alert'?'هشدار قیمت':String(x.category||'سیستم').startsWith('position_')?'رویداد معامله':'سیستم';const kind=x.category==='price_alert'?'price':String(x.category||'').startsWith('position_')?'trade':'system';const icon=kind==='price'?'◎':kind==='trade'?'⇄':'◈';return `<details class="notice-item ${x.read_at?'':'is-unread'} ${x.pinned_at?'is-pinned':''}"><summary class="notice-item-summary"><input type="checkbox" aria-label="انتخاب اعلان" data-notice-select="${esc(id)}" ${checked?'checked':''}><span class="notice-kind-icon ${kind}">${icon}</span><span class="notice-main"><b class="notice-title">${esc(x.title||'اعلان ذهن تریدر')}</b><small class="notice-message">${esc(x.message||'')}</small><span class="notice-meta"><span>${esc(category)}</span><span>${esc(fmtDate(x.created_at))}</span><span>${x.read_at?'خوانده‌شده':'جدید'}</span>${x.pinned_at?'<span>سنجاق‌شده</span>':''}</span></span><span class="notice-expand" aria-hidden="true">⌄</span></summary><div class="notice-expanded"><div class="notice-expanded-copy">${esc(x.message||'جزئیاتی برای این اعلان ثبت نشده است.')}</div><div class="notice-tools"><button class="btn" data-notice-read="${esc(id)}">${x.read_at?'خوانده‌شده':'علامت‌گذاری به‌عنوان خوانده‌شده'}</button><button class="btn" data-notice-pin="${esc(id)}" data-action="${x.pinned_at?'unpin':'pin'}">${x.pinned_at?'برداشتن سنجاق':'سنجاق'}</button><button class="btn" data-notice-archive="${esc(id)}" data-action="${x.archived_at?'unarchive':'archive'}">${x.archived_at?'بازگردانی از آرشیو':'آرشیو'}</button><button class="btn danger" data-notice-delete="${esc(id)}">حذف</button></div></div></details>`}).join(''):'<div class="notice-empty">اعلانی با این فیلترها پیدا نشد.</div>';
+    box.innerHTML=rows.length?rows.map(x=>{const id=String(x.id),checked=noticeSelected.has(id),category=x.category==='price_alert'?'هشدار قیمت':String(x.category||'سیستم').startsWith('position_')?'رویداد معامله':'سیستم';const kind=x.category==='price_alert'?'price':String(x.category||'').startsWith('position_')?'trade':'system';const icon=kind==='price'?'◎':kind==='trade'?'⇄':'◈';return `<details data-notice-id="${esc(id)}" class="notice-item ${x.read_at?'':'is-unread'} ${x.pinned_at?'is-pinned':''}"><summary class="notice-item-summary"><input type="checkbox" aria-label="انتخاب اعلان" data-notice-select="${esc(id)}" ${checked?'checked':''}><span class="notice-kind-icon ${kind}">${icon}</span><span class="notice-main"><b class="notice-title">${esc(x.title||'اعلان ذهن تریدر')}</b><small class="notice-message">${esc(x.message||'')}</small><span class="notice-meta"><span>${esc(category)}</span><span>${esc(fmtDate(x.created_at))}</span><span>${x.read_at?'خوانده‌شده':'جدید'}</span>${x.pinned_at?'<span>سنجاق‌شده</span>':''}</span></span><span class="notice-expand" aria-hidden="true">⌄</span></summary><div class="notice-expanded"><div class="notice-expanded-copy">${esc(x.message||'جزئیاتی برای این اعلان ثبت نشده است.')}</div><div class="notice-tools"><button class="btn" data-notice-read="${esc(id)}">${x.read_at?'خوانده‌شده':'علامت‌گذاری به‌عنوان خوانده‌شده'}</button><button class="btn" data-notice-pin="${esc(id)}" data-action="${x.pinned_at?'unpin':'pin'}">${x.pinned_at?'برداشتن سنجاق':'سنجاق'}</button><button class="btn" data-notice-archive="${esc(id)}" data-action="${x.archived_at?'unarchive':'archive'}">${x.archived_at?'بازگردانی از آرشیو':'آرشیو'}</button><button class="btn danger" data-notice-delete="${esc(id)}">حذف</button></div></div></details>`}).join(''):'<div class="notice-empty">اعلانی با این فیلترها پیدا نشد.</div>';
     if($('loadMoreNotifications'))$('loadMoreNotifications').classList.toggle('hidden',!noticeHasMore);
     box.querySelectorAll('[data-notice-select]').forEach(el=>{el.onclick=e=>e.stopPropagation();el.onchange=e=>{e.stopPropagation();if(el.checked)noticeSelected.add(el.dataset.noticeSelect);else noticeSelected.delete(el.dataset.noticeSelect)}});
     box.querySelectorAll('[data-notice-read]').forEach(el=>el.onclick=e=>{e.preventDefault();e.stopPropagation();noticeAction('read',el.dataset.noticeRead)});
@@ -3512,24 +3513,147 @@ if(document.readyState==='loading')addEventListener('DOMContentLoaded',startDomB
     box.querySelectorAll('[data-notice-archive]').forEach(el=>el.onclick=e=>{e.preventDefault();e.stopPropagation();noticeAction(el.dataset.action,el.dataset.noticeArchive)});
     box.querySelectorAll('[data-notice-delete]').forEach(el=>el.onclick=e=>{e.preventDefault();e.stopPropagation();if(confirm('این اعلان حذف شود؟'))noticeAction('delete',el.dataset.noticeDelete)});
   }
-  async function noticeAction(action,id){try{await callCloud('/api/notifications',{method:'POST',body:JSON.stringify({action,id})});await enhancedRefreshNotifications(true); }catch(e){updatePushStatusText('عملیات اعلان انجام نشد: '+(e?.message||e));}}
+  async function noticeAction(action,id){try{await callCloud('/api/notifications',{method:'POST',body:JSON.stringify({action,id})});await enhancedRefreshNotifications(false); }catch(e){updatePushStatusText('عملیات اعلان انجام نشد: '+(e?.message||e));}}
+
+  // Re-render only when something visible changed, and keep expanded items open.
+  let lastNoticeSig='';
+  function renderNoticeList(){
+    const box=$('notificationList');if(!box)return;
+    const sig=[$('noticeSearch')?.value,$('noticeCategory')?.value,$('noticeReadFilter')?.value,$('noticeSort')?.value,noticeHasMore,serverTotal,[...noticeSelected].join(','),noticeCache.map(x=>[x.id,x.read_at||'',x.pinned_at||'',x.archived_at||''].join(':')).join('|')].join('\u00a7');
+    if(sig===lastNoticeSig)return;
+    lastNoticeSig=sig;
+    const openIds=new Set([...box.querySelectorAll('details.notice-item[open]')].map(d=>d.dataset.noticeId));
+    const scroller=box.closest('.modal-box')||box,top=scroller.scrollTop;
+    renderNoticeListRaw();
+    if(openIds.size)box.querySelectorAll('details.notice-item').forEach(d=>{if(openIds.has(d.dataset.noticeId))d.open=true;});
+    scroller.scrollTop=top;
+  }
+
+  let serverTotal=null,prefsFetched=false,hasPushSub=false,pushResynced=false,refreshSeq=0;
   async function enhancedRefreshNotifications(append=false){
     if(!getCloudBase()||!getCloudToken())return;
+    const seq=++refreshSeq;
     try{
-      if(!append)noticeOffset=0;
-      const [nRes,aRes,pRes]=await Promise.all([callCloud('/api/notifications?limit=100&offset='+noticeOffset),callCloud('/api/price-alerts'),callCloud('/api/notification-preferences')]);
-      if(!soundPrefsLoaded&&pRes.preferences&&Object.keys(pRes.preferences).length){const prefs={...soundDefaults,...pRes.preferences};customAudioData=prefs.customAudio||'';['soundPrice','soundSystem','soundTrade','soundVolume','soundRepeat','quietHours'].forEach((id,i)=>{if($(id))$(id).value=[prefs.price,prefs.system,prefs.trade,prefs.volume,prefs.repeat,prefs.quiet][i]});if($('soundVolumeLabel'))$('soundVolumeLabel').textContent=prefs.volume+'%';soundPrefsLoaded=true;}
+      // Non-append refresh re-reads everything already loaded (up to 300) so
+      // "load more" pages are not dropped; append only fetches the next page.
+      const limit=append?100:Math.min(300,Math.max(100,noticeCache.length));
+      const offset=append?noticeCache.length:0;
+      const [nRes,aRes,pRes]=await Promise.all([
+        callCloud('/api/notifications?limit='+limit+'&offset='+offset),
+        callCloud('/api/price-alerts'),
+        prefsFetched?Promise.resolve({}):callCloud('/api/notification-preferences')
+      ]);
+      if(seq!==refreshSeq&&!append)return; // a newer refresh superseded this one
+      if(!prefsFetched){
+        prefsFetched=true;
+        if(!soundPrefsLoaded&&pRes.preferences&&Object.keys(pRes.preferences).length){const prefs={...soundDefaults,...pRes.preferences};customAudioData=prefs.customAudio||'';['soundPrice','soundSystem','soundTrade','soundVolume','soundRepeat','quietHours'].forEach((id,i)=>{if($(id))$(id).value=[prefs.price,prefs.system,prefs.trade,prefs.volume,prefs.repeat,prefs.quiet][i]});if($('soundVolumeLabel'))$('soundVolumeLabel').textContent=prefs.volume+'%';soundPrefsLoaded=true;}
+      }
       const items=Array.isArray(nRes.notifications)?nRes.notifications:[];
-      if(append)noticeCache=[...noticeCache,...items];else noticeCache=items;
-      noticeHasMore=Boolean(nRes.has_more);const unread=Number(nRes.unread_count??noticeCache.filter(x=>!x.read_at&&!x.archived_at).length);
+      const keyOf=x=>String(x.id??(x.title+'|'+x.created_at));
+      if(append){
+        const have=new Set(noticeCache.map(keyOf));
+        noticeCache=[...noticeCache,...items.filter(x=>!have.has(keyOf(x)))];
+      }else noticeCache=items;
+      serverTotal=Number.isFinite(Number(nRes.total))?Number(nRes.total):null;
+      noticeHasMore=Boolean(nRes.has_more);
+      const unread=Number(nRes.unread_count??noticeCache.filter(x=>!x.read_at&&!x.archived_at).length);
       if($('notificationUnreadCount'))$('notificationUnreadCount').textContent=unread.toLocaleString('en-US')+' خوانده‌نشده';
       if($('bellBadge')){$('bellBadge').textContent=unread>99?'99+':unread.toLocaleString('en-US');$('bellBadge').classList.toggle('hidden',unread<=0)}
-      if($('ncBrowserStatus'))$('ncBrowserStatus').textContent=('Notification'in window?Notification.permission:'پشتیبانی نمی‌شود')==='granted'?'فعال':'غیرفعال';if($('ncPushStatus'))$('ncPushStatus').textContent='برای وضعیت دقیق، اتصال Web Push را بررسی کن.';
-      if(initializedNotifs){for(const x of items){const key=String(x.id??(x.title+'|'+x.created_at));if(!x.read_at&&!seenNotifIds.has(key)){seenNotifIds.add(key);const kind=x.category==='price_alert'?'price':String(x.category||'').startsWith('position_')?'trade':'system';playTone(kind);if('Notification'in window&&Notification.permission==='granted'&&document.visibilityState==='hidden'){try{new Notification(String(x.title||'اعلان ذهن تریدر'),{body:String(x.message||''),tag:'zt-'+key})}catch(_){}}}}}else{items.forEach(x=>seenNotifIds.add(String(x.id??(x.title+'|'+x.created_at))));initializedNotifs=true;}
+      if(append){
+        items.forEach(x=>seenNotifIds.add(keyOf(x)));
+      }else if(initializedNotifs){
+        for(const x of items){
+          const key=keyOf(x);
+          if(!x.read_at&&!x.archived_at&&!seenNotifIds.has(key)){
+            seenNotifIds.add(key);
+            const kind=x.category==='price_alert'?'price':String(x.category||'').startsWith('position_')?'trade':'system';
+            playTone(kind);
+            // With a Web Push subscription the system notification already comes from the server; avoid a duplicate.
+            if(!hasPushSub&&document.visibilityState==='hidden')showLocalNotification(String(x.title||'اعلان ذهن تریدر'),{body:String(x.message||''),tag:'zt-'+key,dir:'rtl',lang:'fa',icon:'icon-192.png'});
+          }
+        }
+      }else{items.forEach(x=>seenNotifIds.add(keyOf(x)));initializedNotifs=true;}
       renderNoticeList();
+      updatePushStateUI();
       const alerts=Array.isArray(aRes.alerts)?aRes.alerts:[];if($('priceAlertList')){$('priceAlertList').innerHTML=alerts.length?alerts.map(x=>`<div class="notice" style="margin:6px 0;display:flex;justify-content:space-between;align-items:center;gap:8px"><b dir="ltr">${esc(x.symbol)} ${x.condition==='ABOVE'?'≥':'≤'} ${enNum(x.target_price)}</b><button type="button" class="btn danger" data-del-alert="${esc(x.id)}">حذف</button></div>`).join(''):'<div class="empty">هشداری ثبت نشده است.</div>';$('priceAlertList').querySelectorAll('[data-del-alert]').forEach(btn=>btn.onclick=async()=>{try{await callCloud('/api/price-alerts',{method:'POST',body:JSON.stringify({action:'delete',id:btn.dataset.delAlert})});await enhancedRefreshNotifications(false)}catch(e){updatePushStatusText('حذف هشدار ناموفق بود: '+e.message)}})}
+      if(!pushResynced){pushResynced=true;resyncPushSubscription();}
     }catch(e){updatePushStatusText('خطا در دریافت اعلان‌ها: '+(e?.message||e));}
   }
+  window.__ztRefreshNotifications=enhancedRefreshNotifications;
+
+  // ---------- Web Push helpers ----------
+  const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  const isStandalone=(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;
+  function pushSupportProblem(){
+    if(!window.isSecureContext)return 'Web Push فقط روی HTTPS کار می‌کند.';
+    if(isIOS&&!isStandalone)return 'در iOS ابتدا از منوی Share گزینهٔ «Add to Home Screen» را بزن، برنامه را از روی آیکون باز کن و سپس Web Push را فعال کن (iOS 16.4 به بالا).';
+    if(!('serviceWorker' in navigator)||!('PushManager' in window)||!('Notification' in window))return 'این مرورگر یا محیط از Web Push پشتیبانی نمی‌کند.';
+    return '';
+  }
+  async function getReadyRegistration(){
+    let reg=await navigator.serviceWorker.getRegistration();
+    if(!reg)reg=await navigator.serviceWorker.register('./sw.js');
+    return await Promise.race([
+      navigator.serviceWorker.ready,
+      new Promise((_,reject)=>setTimeout(()=>reject(new Error('Service Worker فعال نشد؛ صفحه را دوباره بارگذاری کن.')),10000))
+    ]);
+  }
+  function sameBytes(a,b){if(!a||!b||a.length!==b.length)return false;for(let i=0;i<a.length;i++)if(a[i]!==b[i])return false;return true;}
+  async function ensurePushSubscription(){
+    const reg=await getReadyRegistration();
+    const kRes=await callCloud('/api/push/public-key');
+    const vapidKey=kRes?.publicKey||kRes?.vapidPublicKey;
+    if(!vapidKey)throw new Error('کلید VAPID روی سرور تنظیم نشده است.');
+    const appKey=urlBase64ToUint8Array(vapidKey);
+    let sub=await reg.pushManager.getSubscription();
+    if(sub){
+      const cur=sub.options&&sub.options.applicationServerKey?new Uint8Array(sub.options.applicationServerKey):null;
+      if(cur&&!sameBytes(cur,appKey)){await sub.unsubscribe();sub=null;} // key changed on the server: old subscription is unusable
+    }
+    if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:appKey});
+    await callCloud('/api/push/subscribe',{method:'POST',body:JSON.stringify({subscription:sub})});
+    try{localStorage.setItem('zt_push_enabled','1');}catch(_){}
+    return sub;
+  }
+  async function resyncPushSubscription(){
+    try{
+      if(pushSupportProblem()||Notification.permission!=='granted')return;
+      if(!localStorage.getItem('zt_push_enabled'))return;
+      await ensurePushSubscription();
+    }catch(_){}
+    updatePushStateUI();
+  }
+  async function updatePushStateUI(){
+    const perm='Notification' in window?Notification.permission:'unsupported';
+    const problem=pushSupportProblem();
+    let sub=null;
+    if(!problem){try{const reg=await navigator.serviceWorker.getRegistration();sub=reg?await reg.pushManager.getSubscription():null;}catch(_){}}
+    hasPushSub=Boolean(sub)&&perm==='granted';
+    if($('ncBrowserStatus'))$('ncBrowserStatus').textContent=perm==='granted'?'فعال':perm==='denied'?'مسدود':perm==='default'?'درخواست نشده':'پشتیبانی نمی‌شود';
+    if($('ncPushStatus'))$('ncPushStatus').textContent=problem?(isIOS&&!isStandalone?'نیازمند نصب روی Home Screen':'پشتیبانی نمی‌شود'):hasPushSub?'فعال':'غیرفعال';
+  }
+  async function showLocalNotification(title,opts){
+    if(!('Notification' in window)||Notification.permission!=='granted')return false;
+    try{
+      const reg='serviceWorker' in navigator?await navigator.serviceWorker.getRegistration():null;
+      if(reg&&reg.showNotification){await reg.showNotification(title,opts);return true;}
+    }catch(_){}
+    try{new Notification(title,opts);return true;}catch(_){return false;} // Android Chrome PWAs throw here; the SW path above is used instead
+  }
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('./sw.js').catch(()=>{});
+    navigator.serviceWorker.addEventListener('message',e=>{
+      const t=e.data&&e.data.type;
+      if(t==='push-received')enhancedRefreshNotifications(false);
+      else if(t==='open-notifications'){$('notifModal')?.classList.add('open');enhancedRefreshNotifications(false);}
+      else if(t==='resubscribe')resyncPushSubscription();
+    });
+  }
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')enhancedRefreshNotifications(false);});
+  if(location.hash==='#notifications'){
+    setTimeout(()=>{$('notifModal')?.classList.add('open');enhancedRefreshNotifications(false);try{history.replaceState(null,'',location.pathname+location.search);}catch(_){}},900);
+  }
+  updatePushStateUI();
 
   loadSoundPrefs();
   ['noticeSearch','noticeCategory','noticeReadFilter','noticeSort'].forEach(id=>$(id)?.addEventListener(id==='noticeSearch'?'input':'change',renderNoticeList));
@@ -3537,7 +3661,7 @@ if(document.readyState==='loading')addEventListener('DOMContentLoaded',startDomB
   $('customSoundFile')?.addEventListener('change',()=>{const f=$('customSoundFile').files?.[0];if(!f)return;if(f.size>300000){updatePushStatusText('فایل صدا باید کمتر از 300 کیلوبایت باشد.');$('customSoundFile').value='';return;}const r=new FileReader();r.onload=()=>{customAudioData=String(r.result||'');updatePushStatusText('صدای اختصاصی انتخاب شد؛ برای همگام‌سازی روی همه دستگاه‌ها ذخیره تنظیمات را بزن.');};r.readAsDataURL(f);});
   $('saveNotificationSound')?.addEventListener('click',async()=>{try{const prefs=currentSoundPrefs();localStorage.setItem(soundKey(),JSON.stringify(prefs));await callCloud('/api/notification-preferences',{method:'PUT',body:JSON.stringify({preferences:prefs})});updatePushStatusText('تنظیمات صدا در فضای ابری ذخیره شد و با دستگاه‌های دیگر همگام می‌شود.')}catch(e){updatePushStatusText('ذخیره ابری تنظیمات ناموفق بود: '+(e?.message||e))}});
   $('testNotificationSound')?.addEventListener('click',()=>playTone('price'));
-  $('loadMoreNotifications')?.addEventListener('click',()=>{noticeOffset+=100;enhancedRefreshNotifications(true)});
+  $('loadMoreNotifications')?.addEventListener('click',()=>{enhancedRefreshNotifications(true)});
   $('archiveSelectedNotifications')?.addEventListener('click',async()=>{if(!noticeSelected.size)return updatePushStatusText('ابتدا اعلان‌ها را انتخاب کن.');try{await callCloud('/api/notifications',{method:'POST',body:JSON.stringify({action:'archive_many',ids:[...noticeSelected]})});noticeSelected.clear();await enhancedRefreshNotifications(false)}catch(e){updatePushStatusText(e.message)}});
   $('deleteSelectedNotifications')?.addEventListener('click',async()=>{if(!noticeSelected.size)return updatePushStatusText('ابتدا اعلان‌ها را انتخاب کن.');if(!confirm('اعلان‌های انتخاب‌شده برای همیشه حذف شوند؟'))return;try{await callCloud('/api/notifications',{method:'POST',body:JSON.stringify({action:'delete_many',ids:[...noticeSelected]})});noticeSelected.clear();await enhancedRefreshNotifications(false)}catch(e){updatePushStatusText(e.message)}});
   $('exportNotifications')?.addEventListener('click',()=>{const rows=[['زمان','دسته','عنوان','پیام','وضعیت'],...noticeCache.map(x=>[x.created_at,x.category,x.title,x.message,x.read_at?'خوانده‌شده':'خوانده‌نشده'])];const csv='\ufeff'+rows.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='mindtrader-notifications.csv';a.click();URL.revokeObjectURL(a.href)});
@@ -3546,14 +3670,19 @@ if(document.readyState==='loading')addEventListener('DOMContentLoaded',startDomB
       updatePushStatusText('این مرورگر از اعلان‌های سیستمی پشتیبانی نمی‌کند.');
       return;
     }
+    if(Notification.permission==='denied'){
+      updatePushStatusText('مجوز اعلان مسدود است؛ از تنظیمات مرورگر/سیستم (Site settings › Notifications) آن را Allow کن.');
+      return;
+    }
     const perm = await Notification.requestPermission();
     if(perm === 'granted'){
-      updatePushStatusText('اعلان مرورگر فعال شد.');
-      try{ new Notification('ذهن تریدر', { body: 'اعلان‌های مرورگر با موفقیت فعال شدند.' }); }catch(e){}
+      const shown = await showLocalNotification('ذهن تریدر', { body: 'اعلان‌های مرورگر با موفقیت فعال شدند.', dir: 'rtl', lang: 'fa', icon: 'icon-192.png' });
+      updatePushStatusText(shown ? 'اعلان مرورگر فعال شد.' : 'مجوز داده شد، اما نمایش اعلان آزمایشی ممکن نشد.');
       playAlertTone();
     }else{
       updatePushStatusText('مجوز اعلان مرورگر داده نشد یا مسدود است (' + perm + ').');
     }
+    updatePushStateUI();
   });
 
   $('enableNotificationSound')?.addEventListener('click', () => {
@@ -3567,45 +3696,42 @@ if(document.readyState==='loading')addEventListener('DOMContentLoaded',startDomB
 
   $('enableWebPush')?.addEventListener('click', async () => {
     try{
-      if(!('serviceWorker' in navigator) || !('PushManager' in window)){
-        updatePushStatusText('این مرورگر یا محیط از Web Push پس‌زمینه پشتیبانی نمی‌کند.');
+      const problem = pushSupportProblem();
+      if(problem){ updatePushStatusText(problem); return; }
+      if(Notification.permission === 'denied'){
+        updatePushStatusText('مجوز اعلان برای این سایت مسدود است؛ از تنظیمات مرورگر/سیستم (Site settings › Notifications) آن را Allow کن و دوباره تلاش کن.');
         return;
       }
-      if('Notification' in window && Notification.permission !== 'granted'){
+      if(Notification.permission !== 'granted'){
         const perm = await Notification.requestPermission();
         if(perm !== 'granted'){
           updatePushStatusText('برای Web Push ابتدا مجوز اعلان را فعال کن.');
+          updatePushStateUI();
           return;
         }
       }
-      const reg = await navigator.serviceWorker.register('./sw.js').catch(() => navigator.serviceWorker.ready);
-      let vapidKey = '';
-      for(const endpoint of ['/api/push/public-key']){
-        try{
-          const kRes = await callCloud(endpoint);
-          if(kRes?.publicKey || kRes?.vapidPublicKey){
-            vapidKey = kRes.publicKey || kRes.vapidPublicKey;
-            break;
-          }
-        }catch(e){}
-      }
-      if(!vapidKey){
-        updatePushStatusText('اعلان مرورگر فعال است؛ کلید VAPID در سرور تنظیم نشده تا پوشِ زمان بسته بودن کامل شود.');
-        return;
-      }
-      const sub = await reg.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(vapidKey)
-      });
-      await callCloud('/api/push/subscribe', { method: 'POST', body: JSON.stringify({ subscription: sub }) });
-      updatePushStatusText('اشتراک Web Push با موفقیت روی سرور ثبت شد.');
+      updatePushStatusText('در حال ثبت اشتراک…');
+      await ensurePushSubscription();
+      updatePushStatusText('اشتراک Web Push ثبت شد. برای اطمینان «ارسال اعلان آزمایشی» را بزن.');
     }catch(e){
       updatePushStatusText('فعال‌سازی Web Push ناموفق بود: ' + (e?.message || e));
+    }
+    updatePushStateUI();
+  });
+
+  $('testWebPush')?.addEventListener('click', async () => {
+    try{
+      updatePushStatusText('در حال ارسال اعلان آزمایشی…');
+      const r = await callCloud('/api/push/test', { method: 'POST', body: '{}' });
+      updatePushStatusText(r?.message || 'اعلان آزمایشی ارسال شد.');
+    }catch(e){
+      updatePushStatusText('تست ناموفق: ' + (e?.message || e));
     }
   });
 
   $('disableWebPush')?.addEventListener('click', async () => {
     try{
+      try{ localStorage.removeItem('zt_push_enabled'); }catch(_){}
       if('serviceWorker' in navigator){
         const reg = await navigator.serviceWorker.getRegistration();
         const sub = await reg?.pushManager?.getSubscription();
@@ -3618,6 +3744,7 @@ if(document.readyState==='loading')addEventListener('DOMContentLoaded',startDomB
     }catch(e){
       updatePushStatusText('خطا در لغو Web Push: ' + (e?.message || e));
     }
+    updatePushStateUI();
   });
 
   $('markAllNotificationsRead')?.addEventListener('click', async () => {
@@ -3657,12 +3784,8 @@ if(document.readyState==='loading')addEventListener('DOMContentLoaded',startDomB
     }
   });
 
-  $('bellBtn')?.addEventListener('click', () => {
-    setTimeout(enhancedRefreshNotifications, 120);
-  });
-
   setInterval(() => {
-    if(document.visibilityState === 'visible' && getCloudBase() && getCloudToken()){
+    if(getCloudBase() && getCloudToken() && (document.visibilityState === 'visible' || !hasPushSub)){
       enhancedRefreshNotifications();
     }
   }, 15000);
