@@ -3432,6 +3432,7 @@ if(document.readyState==='loading')addEventListener('DOMContentLoaded',startDomB
 <script id="zt-notification-center-fix-js">
 (function(){
   const $ = id => document.getElementById(id);
+  const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   function saveRememberedUsername(value) {
     const username = String(value || '').trim();
     if (!username) return;
